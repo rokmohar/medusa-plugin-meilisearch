@@ -1,5 +1,5 @@
 import { LoaderOptions } from '@medusajs/types'
-import MeiliSearchService from '../services/meilisearch'
+import { MeiliSearchService } from '../services'
 import { MeilisearchPluginOptions } from '../types'
 import { asValue } from 'awilix'
 

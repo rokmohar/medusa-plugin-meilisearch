@@ -1,5 +1,5 @@
 import Loader from './loaders'
-import MeiliSearchService from './services/meilisearch'
+import { MeiliSearchService } from './services'
 import { ModuleExports } from "@medusajs/types";
 
 const service = MeiliSearchService
@@ -13,4 +13,5 @@ const moduleDefinition: ModuleExports = {
 export default moduleDefinition
 
 export * from "./initialize"
+export * from "./services"
 export * from "./types"

@@ -5,7 +5,7 @@ import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct } from '../utils/transformer'
 import { joinerConfig } from "../joiner-config";
 
-class MeiliSearchService extends SearchUtils.AbstractSearchService {
+export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   isDefault = false
 
   protected readonly config_: MeilisearchPluginOptions
@@ -105,5 +105,3 @@ class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
   }
 }
-
-export default MeiliSearchService

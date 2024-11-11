@@ -12,7 +12,7 @@ export const initialize = async (
   const serviceKey = 'medusa-plugin-meilisearch'
   const loaded = await MedusaModule.bootstrap<ISearchService>({
     moduleKey: serviceKey,
-    defaultPath: serviceKey,
+    defaultPath: '@rokmohar/medusa-plugin-meilisearch',
     declaration: options as
       | InternalModuleDeclaration
       | ExternalModuleDeclaration,
