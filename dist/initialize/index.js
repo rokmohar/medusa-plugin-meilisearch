@@ -6,7 +6,7 @@ const initialize = async (options) => {
     const serviceKey = 'medusa-plugin-meilisearch';
     const loaded = await modules_sdk_1.MedusaModule.bootstrap({
         moduleKey: serviceKey,
-        defaultPath: '@rokmohar/medusa-plugin-meilisearch',
+        defaultPath: '@anwarpro/medusa-plugin-meilisearch',
         declaration: options,
     });
     return loaded[serviceKey];
