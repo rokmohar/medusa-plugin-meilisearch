@@ -1,5 +1,5 @@
 {
-  "name": "@rokmohar/medusa-plugin-meilisearch",
+  "name": "@anwarpro/medusa-plugin-meilisearch",
   "version": "0.1.1",
   "description": "Meilisearch plugin for Medusa 2",
   "main": "dist/index.js",
