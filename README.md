@@ -78,7 +78,7 @@ import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { IProductModuleService } from '@medusajs/framework/types'
 import { Modules } from '@medusajs/framework/utils'
 import { ProductEvents, SearchUtils } from '@medusajs/utils'
-import MeiliSearchService from "@rokmohar/medusa-plugin-meilisearch";
+import { MeiliSearchService } from '@rokmohar/medusa-plugin-meilisearch'
 
 export default async function productUpsertHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
   const productId = data.id
@@ -100,7 +100,7 @@ export const config: SubscriberConfig = {
 ```js
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { ProductEvents } from '@medusajs/utils'
-import MeiliSearchService from "@rokmohar/medusa-plugin-meilisearch";
+import { MeiliSearchService } from '@rokmohar/medusa-plugin-meilisearch'
 
 export default async function productDeleteHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
     const productId = data.id
@@ -116,7 +116,7 @@ export const config: SubscriberConfig = {
 
 ## docker-compose
 
-You can add the followint configuration for Meilisearch to your `docker-compose.yml`:
+You can add the following configuration for Meilisearch to your `docker-compose.yml`:
 
 ```yml
 services:
