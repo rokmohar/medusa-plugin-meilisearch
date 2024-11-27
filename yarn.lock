@@ -1141,13 +1141,13 @@ auto-bind@~4.0.0:
   resolved "https://registry.yarnpkg.com/auto-bind/-/auto-bind-4.0.0.tgz#e3589fc6c2da8f7ca43ba9f84fa52a744fc997fb"
   integrity sha512-Hdw8qdNiqdJ8LqT0iK0sVzkFbzg6fhnQqqfWhBDxcHZvU75+B+ayzTy8x+k5Ix0Y92XOhOUlx74ps+bA6BeYMQ==
 
-awilix@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.yarnpkg.com/awilix/-/awilix-8.0.1.tgz#4f4704038cc5df3f8f2b9254031af79d4d3708bb"
-  integrity sha512-zDSp4R204scvQIDb2GMoWigzXemn0+3AKKIAt543T9v2h7lmoypvkmcx1W/Jet/nm27R1N1AsqrsYVviAR9KrA==
+awilix@^12.0.3:
+  version "12.0.3"
+  resolved "https://registry.yarnpkg.com/awilix/-/awilix-12.0.3.tgz#6c9f010b49d0da3151f6b1d8b84fedc7fbf47125"
+  integrity sha512-UBFALNvqVOj4V4s6yPW9JYTwg3Bih4w9kQRoD/J/z0iskMBRiCUkakmgPmSHRzjxEcJac7FiQhSpvD5JvSoLew==
   dependencies:
     camel-case "^4.1.2"
-    fast-glob "^3.2.12"
+    fast-glob "^3.3.2"
 
 axios@^1.6.8:
   version "1.7.7"
@@ -1689,7 +1689,7 @@ expect@^29.7.0:
     jest-message-util "^29.7.0"
     jest-util "^29.7.0"
 
-fast-glob@^3.2.12:
+fast-glob@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/fast-glob/-/fast-glob-3.3.2.tgz#a904501e57cfdd2ffcded45e99a54fef55e46129"
   integrity sha512-oX2ruAFQwf/Orj8m737Y5adxDQO0LAB7/S5MnxCdTNDd4p6BsyIVsv9JQsATbTSq8KHRpLwIHbVlUNatxd+1Ow==
