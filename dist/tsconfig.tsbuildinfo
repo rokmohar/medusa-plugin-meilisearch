@@ -1,0 +1,1 @@
+{"root":["../src/index.ts","../src/joiner-config.ts","../src/initialize/index.ts","../src/loaders/index.ts","../src/services/index.ts","../src/services/meilisearch.ts","../src/types/index.ts","../src/utils/transformer.ts"],"version":"5.6.3"}
