@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Meilisearch plugin for Medusa 2",
   "main": "dist/index.js",
   "files": [
@@ -9,7 +9,7 @@
   "engines": {
     "node": ">=20"
   },
-  "author": "Medusa",
+  "author": "Rok Mohar",
   "license": "MIT",
   "scripts": {
     "test": "jest --passWithNoTests src",
@@ -34,6 +34,8 @@
     "awilix": "^8.0.1"
   },
   "keywords": [
+    "medusa",
+    "meilisearch",
     "medusa-plugin",
     "medusa-plugin-meilisearch"
   ]
