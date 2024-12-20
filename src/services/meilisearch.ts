@@ -3,9 +3,11 @@ import { SearchUtils } from '@medusajs/utils'
 import { MeiliSearch, Settings } from 'meilisearch'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct } from '../utils/transformer'
-import { joinerConfig } from "../joiner-config";
+import { joinerConfig } from '../joiner-config'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
+  static identifier = 'index-meilisearch'
+
   isDefault = false
 
   protected readonly config_: MeilisearchPluginOptions

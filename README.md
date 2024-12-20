@@ -38,7 +38,7 @@ module.exports = defineConfig({
           products: {
             indexSettings: {
               searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['title', 'description', 'variant_sku', 'thumbnail', 'handle'],
+              displayedAttributes: ['id', 'title', 'description', 'variant_sku', 'thumbnail', 'handle'],
             },
             primaryKey: 'id',
           },

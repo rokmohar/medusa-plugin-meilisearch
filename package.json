@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Meilisearch plugin for Medusa 2",
   "main": "dist/index.js",
   "files": [
