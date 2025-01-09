@@ -1,9 +1,8 @@
-import { ModuleJoinerConfig, SearchTypes } from '@medusajs/types'
+import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
 import { MeiliSearch, Settings } from 'meilisearch'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct } from '../utils/transformer'
-import { joinerConfig } from '../joiner-config'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   static identifier = 'index-meilisearch'
@@ -13,7 +12,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   protected readonly config_: MeilisearchPluginOptions
   protected readonly client_: MeiliSearch
 
-  constructor(container, options: MeilisearchPluginOptions) {
+  constructor(container: any, options: MeilisearchPluginOptions) {
     super(container, options)
 
     this.config_ = options
@@ -31,10 +30,6 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
 
     this.client_ = new MeiliSearch(options.config)
-  }
-
-  __joinerConfig(): ModuleJoinerConfig {
-    return joinerConfig
   }
 
   async createIndex(indexName: string, options: Record<string, unknown> = { primaryKey: 'id' }) {

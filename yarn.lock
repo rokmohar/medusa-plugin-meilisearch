@@ -906,40 +906,40 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@medusajs/modules-sdk@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@medusajs/modules-sdk/-/modules-sdk-2.1.3.tgz#e14b7933121db99c5a1f70fb001a26424f772417"
-  integrity sha512-n31HfUDS2QCpuNtAc0NiMHe9gyXQn5dhXihiYrW8n+KXOTbvn9icOqImnAoN8Uq/97a/yKa8+LKQUY9BokgdXg==
+"@medusajs/modules-sdk@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@medusajs/modules-sdk/-/modules-sdk-2.2.0.tgz#91fc4fc6d8f23047eb276734be02b5fc534820df"
+  integrity sha512-njFMiZNbbUr1Gjdk1VfTnbbu3lCuXLStg3ade0YvgzKrgJS4rRW0DEWz7TlbcCm3OaysvRB1DG0H8lQDszAv+A==
   dependencies:
-    "@medusajs/orchestration" "^2.1.3"
-    "@medusajs/types" "^2.1.3"
-    "@medusajs/utils" "^2.1.3"
+    "@medusajs/orchestration" "^2.2.0"
+    "@medusajs/types" "^2.2.0"
+    "@medusajs/utils" "^2.2.0"
 
-"@medusajs/orchestration@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@medusajs/orchestration/-/orchestration-2.1.3.tgz#b64fe7fb503aa9a19a8d67231e365acc209ff27d"
-  integrity sha512-1VmYlRYqtyouGawc5C0wV3MgD225llmIXAHDkmyvhdSR1+RbZaSlR1Y5xt+Z5SFIa4TodTAzVYL3zLaTViZxLg==
+"@medusajs/orchestration@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@medusajs/orchestration/-/orchestration-2.2.0.tgz#ae52cc85ad53a1f252e6140a58e09c3f1b88edbe"
+  integrity sha512-Vf1K4HSt5JvMeT3fWlzQwQCwz3kgl36yMAWIYjOxjWSW5NHr9PcaZOrWSm+MlBumgp9VBhlVYFU2hqvOdl8fyQ==
   dependencies:
-    "@medusajs/types" "^2.1.3"
-    "@medusajs/utils" "^2.1.3"
+    "@medusajs/types" "^2.2.0"
+    "@medusajs/utils" "^2.2.0"
 
-"@medusajs/types@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@medusajs/types/-/types-2.1.3.tgz#efd8c89330695a8d699074b0ae7c789b77155679"
-  integrity sha512-+mjijFb0bUco1tggdEx8V2R7PpYjaJLjrALRTh3nbHQxa682pQxkr78jsonU9DQU/TzbLAQKAMluYb3c+XwKpw==
+"@medusajs/types@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@medusajs/types/-/types-2.2.0.tgz#a31bbb66ea46a42eabcafc5174414fede05b4c6d"
+  integrity sha512-xMgd05x7MlyB++KzeVjf5zKqm3W1d/Eu46EWKocbkHaN5KpeL4pTb5k39uOeazzNizUC5kLxK1emwOw1vlegoQ==
   dependencies:
     bignumber.js "^9.1.2"
 
-"@medusajs/utils@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@medusajs/utils/-/utils-2.1.3.tgz#4130caf7b4da11158ab26a5cab27dc14eae2b4fb"
-  integrity sha512-i/bU4nCuW98z5QoSSDLe7tVPqhBT/XctVsWWfxrYzCcIY69Q7CijT99hitCw6lcNGZXgNsUKtYb3tFAVaezwiw==
+"@medusajs/utils@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@medusajs/utils/-/utils-2.2.0.tgz#a2d846541c82f1b36128e59b91bb9aba8139909c"
+  integrity sha512-9pxa/0/K58EodtF7qOHy0E2lqY/xFAXQ3O0vaAsaAKrIXoFnU4/55BDF6G6ilg/uYUyfn8VORQTGWIOSCocLQQ==
   dependencies:
     "@graphql-codegen/core" "^4.0.2"
     "@graphql-codegen/typescript" "^4.0.9"
     "@graphql-tools/merge" "^9.0.7"
     "@graphql-tools/schema" "^10.0.6"
-    "@medusajs/types" "^2.1.3"
+    "@medusajs/types" "^2.2.0"
     "@types/pluralize" "^0.0.33"
     bignumber.js "^9.1.2"
     dotenv "^16.4.5"
