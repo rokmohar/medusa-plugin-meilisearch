@@ -1,4 +1,4 @@
-# medusa-plugin-meilisearch
+# Meilisearch plugin for Medusa V2
 
 ## Installation
 
@@ -48,6 +48,11 @@ module.exports = defineConfig({
               displayedAttributes: ['id', 'title', 'description', 'variant_sku', 'thumbnail', 'handle'],
             },
             primaryKey: 'id',
+            // Create your own transformer
+            /*transformer: (product) => ({
+              id: product.id,
+              // other attributes...
+            }),*/
           },
         },
       },
@@ -141,3 +146,6 @@ services:
       retries: 5
 ```
 
+## Add search to Medusa NextJS starter
+
+You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.
