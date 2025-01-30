@@ -1,33 +1,35 @@
 {
   "compilerOptions": {
-    "lib": ["es2021"],
-    "target": "es2021",
-    "jsx": "react-jsx" /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */,
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "declarationMap": true,
+    "allowJs": true,
+    "baseUrl": ".",
+    "checkJs": false,
     "declaration": true,
+    "declarationMap": true,
+    "downlevelIteration": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "inlineSourceMap": true,
+    "jsx": "react-jsx",
+    "lib": ["es2021"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "noImplicitReturns": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
     "noImplicitThis": true,
-    "allowJs": true,
+    "outDir": "./.medusa/server",
+    "resolveJsonModule": true,
+    "rootDir": "./",
+    "skipDefaultLibCheck": true,
     "skipLibCheck": true,
-    "downlevelIteration": true, // to use ES5 specific tooling
-    "inlineSourceMap": true /* Emit a single file with source maps instead of having a separate file. */
+    "sourceMap": false,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "target": "es2021"
   },
-  "include": ["src"],
-  "exclude": [
-    "dist",
-    "build",
-    "src/**/__tests__",
-    "src/**/__mocks__",
-    "src/**/__fixtures__",
-    "node_modules",
-    ".eslintrc.js"
-  ]
+  "exclude": [".cache", ".medusa/admin", ".medusa/server", "node_modules", "src/admin"],
+  "include": ["**/*", ".medusa/types/*"],
+  "ts-node": {
+    "swc": true
+  }
 }

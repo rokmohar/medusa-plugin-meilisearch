@@ -8,5 +8,6 @@ These are instructions on how to add search to a [Medusa NextJS starter](https:/
 4. You might need to install packages and add environment variables
 
 Required packages:
+
 - MeiliSearch: `@meilisearch/instant-meilisearch`
 - React InstantSearch Hooks: `react-instantsearch-hooks-web`

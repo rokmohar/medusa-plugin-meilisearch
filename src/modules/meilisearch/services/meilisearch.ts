@@ -20,13 +20,15 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     if (process.env.NODE_ENV !== 'development') {
       if (!options.config?.apiKey) {
         throw Error(
-          'Meilisearch API key is missing in plugin config. See https://docs.medusajs.com/add-plugins/meilisearch',
+          'Meilisearch API key is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
         )
       }
     }
 
     if (!options.config?.host) {
-      throw Error('Meilisearch host is missing in plugin config. See https://docs.medusajs.com/add-plugins/meilisearch')
+      throw Error(
+        'Meilisearch host is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
+      )
     }
 
     this.client_ = new MeiliSearch(options.config)

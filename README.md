@@ -14,12 +14,13 @@ Or with **yarn**:
 yarn add @rokmohar/medusa-plugin-meilisearch
 ```
 
-### Upgrade v0.1 to v0.2
+### Upgrade to v1.0
 
-*This step is required only if you are upgrading from v0.1 to v0.2. The plugin now supports MedusaJS v2.2.*
+_This step is required only if you are upgrading from previous version to v1.0._
 
-Service was renamed from `@rokmohar/medusa-plugin-meilisearch` to `meilisearch`.
-You will need to adjust your custom `subscribers` accordingly.
+- The plugin now supports new MedusaJS plugin system.
+- Subscribers are included in the plugin.
+- You don't need custom subscribers anymore, you can remove them.
 
 ## Configuration
 
@@ -32,8 +33,8 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
 module.exports = defineConfig({
   // ... other config
-  modules: [
-    // ... other modules
+  plugins: [
+    // ... other plugins
     {
       resolve: '@rokmohar/medusa-plugin-meilisearch',
       options: {
@@ -79,50 +80,6 @@ MEILISEARCH_HOST=http://127.0.0.1:7700
 MEILISEARCH_API_KEY=ms
 ```
 
-## Subscribers
-
-You must add the following subscribers to the `src/subscribers`:
-
-### product-upsert.ts
-
-```js
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { Modules } from '@medusajs/framework/utils'
-import { ProductEvents, SearchUtils } from '@medusajs/utils'
-
-export default async function productUpsertHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
-  const productId = data.id
-
-  const productModuleService = container.resolve(Modules.PRODUCT)
-  const meiliSearchService = container.resolve('meilisearch')
-
-  const product = await productModuleService.retrieveProduct(productId)
-  await meiliSearchService.addDocuments('products', [product], SearchUtils.indexTypes.PRODUCTS)
-}
-
-export const config: SubscriberConfig = {
-  event: [ProductEvents.PRODUCT_CREATED, ProductEvents.PRODUCT_UPDATED],
-}
-```
-
-### product-delete.ts
-
-```js
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { ProductEvents } from '@medusajs/utils'
-
-export default async function productDeleteHandler({ event: { data }, container }: SubscriberArgs<{ id: string }>) {
-    const productId = data.id
-
-    const meiliSearchService = container.resolve('meilisearch')
-    await meiliSearchService.deleteDocument('products', productId)
-}
-
-export const config: SubscriberConfig = {
-    event: ProductEvents.PRODUCT_DELETED,
-}
-```
-
 ## docker-compose
 
 You can add the following configuration for Meilisearch to your `docker-compose.yml`:
@@ -134,13 +91,13 @@ services:
   meilisearch:
     image: getmeili/meilisearch:latest
     ports:
-      - "7700:7700"
+      - '7700:7700'
     volumes:
       - ~/data.ms:/data.ms
     environment:
       - MEILI_MASTER_KEY=ms
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7700"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:7700']
       interval: 10s
       timeout: 5s
       retries: 5
