@@ -8,16 +8,16 @@ export default async ({ container, options }: LoaderOptions<MeilisearchPluginOpt
     throw new Error('Missing meilisearch configuration')
   }
 
-  const meiliSearchService: MeiliSearchService = new MeiliSearchService(container, options)
+  const meilisearchService: MeiliSearchService = new MeiliSearchService(container, options)
   const { settings } = options
 
   container.register({
-    meiliSearchService: asValue(meiliSearchService),
+    meilisearchService: asValue(meilisearchService),
   })
 
   await Promise.all(
     Object.entries(settings || {}).map(async ([indexName, value]) => {
-      return await meiliSearchService.updateSettings(indexName, value)
+      return await meilisearchService.updateSettings(indexName, value)
     }),
   )
 }
