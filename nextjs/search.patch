@@ -1,5 +1,265 @@
-Subject: [PATCH] Add search to NextJS starter Medusa
+Subject: [PATCH] Add search to storefront
 ---
+Index: src/modules/search/templates/search-results-template/index.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/modules/search/templates/search-results-template/index.tsx b/src/modules/search/templates/search-results-template/index.tsx
+new file mode 100644
+--- /dev/null	(date 1738512096945)
++++ b/src/modules/search/templates/search-results-template/index.tsx	(date 1738512096945)
+@@ -0,0 +1,63 @@
++import { Heading, Text } from "@medusajs/ui"
++import Link from "next/link"
++
++import RefinementList from "@modules/store/components/refinement-list"
++import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
++import PaginatedProducts from "@modules/store/templates/paginated-products"
++import LocalizedClientLink from "@modules/common/components/localized-client-link"
++
++type SearchResultsTemplateProps = {
++  query: string
++  ids: string[]
++  sortBy?: SortOptions
++  page?: string
++  countryCode: string
++}
++
++const SearchResultsTemplate = ({
++  query,
++  ids,
++  sortBy,
++  page,
++  countryCode,
++}: SearchResultsTemplateProps) => {
++  const pageNumber = page ? parseInt(page) : 1
++
++  return (
++    <>
++      <div className="flex justify-between border-b w-full py-6 px-8 small:px-14 items-center">
++        <div className="flex flex-col items-start">
++          <Text className="text-ui-fg-muted">Search Results for:</Text>
++          <Heading>
++            {decodeURI(query)} ({ids.length})
++          </Heading>
++        </div>
++        <LocalizedClientLink
++          href="/store"
++          className="txt-medium text-ui-fg-subtle hover:text-ui-fg-base"
++        >
++          Clear
++        </LocalizedClientLink>
++      </div>
++      <div className="flex flex-col small:flex-row small:items-start p-6">
++        {ids.length > 0 ? (
++          <>
++            <RefinementList sortBy={sortBy || "created_at"} search />
++            <div className="content-container">
++              <PaginatedProducts
++                productsIds={ids}
++                sortBy={sortBy}
++                page={pageNumber}
++                countryCode={countryCode}
++              />
++            </div>
++          </>
++        ) : (
++          <Text className="ml-8 small:ml-14 mt-3">No results.</Text>
++        )}
++      </div>
++    </>
++  )
++}
++
++export default SearchResultsTemplate
+Index: src/modules/search/components/hit/index.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/modules/search/components/hit/index.tsx b/src/modules/search/components/hit/index.tsx
+new file mode 100644
+--- /dev/null	(date 1738512096945)
++++ b/src/modules/search/components/hit/index.tsx	(date 1738512096945)
+@@ -0,0 +1,52 @@
++import { Container, Text } from "@medusajs/ui"
++
++import Thumbnail from "@modules/products/components/thumbnail"
++import LocalizedClientLink from "@modules/common/components/localized-client-link"
++import { HttpTypes } from "@medusajs/types"
++
++export type ProductHit = {
++  id: string
++  title: string
++  handle: string
++  description: string | null
++  thumbnail: string | null
++  variants: HttpTypes.StoreProductVariant[]
++  collection_handle: string | null
++  collection_id: string | null
++}
++
++type HitProps = {
++  hit: ProductHit
++}
++
++const Hit = ({ hit }: HitProps) => {
++  return (
++    <LocalizedClientLink
++      href={`/products/${hit.handle}`}
++      data-testid="search-result"
++    >
++      <Container
++        key={hit.id}
++        className="flex sm:flex-col gap-2 w-full p-4 shadow-elevation-card-rest hover:shadow-elevation-card-hover items-center sm:justify-center"
++      >
++        <Thumbnail
++          thumbnail={hit.thumbnail}
++          size="square"
++          className="group h-12 w-12 sm:h-full sm:w-full"
++        />
++        <div className="flex flex-col justify-between group">
++          <div className="flex flex-col">
++            <Text
++              className="text-ui-fg-subtle"
++              data-testid="search-result-title"
++            >
++              {hit.title}
++            </Text>
++          </div>
++        </div>
++      </Container>
++    </LocalizedClientLink>
++  )
++}
++
++export default Hit
+Index: src/modules/search/components/hits/index.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/modules/search/components/hits/index.tsx b/src/modules/search/components/hits/index.tsx
+new file mode 100644
+--- /dev/null	(date 1738512128155)
++++ b/src/modules/search/components/hits/index.tsx	(date 1738512128155)
+@@ -0,0 +1,56 @@
++import { clx } from "@medusajs/ui"
++import React, { type JSX } from "react";
++import {
++  UseHitsProps,
++  useHits,
++  useSearchBox,
++} from "react-instantsearch"
++
++import { ProductHit } from "../hit"
++import ShowAll from "../show-all"
++
++type HitsProps<THit> = React.ComponentProps<"div"> &
++  UseHitsProps & {
++    hitComponent: (props: { hit: THit }) => JSX.Element
++  }
++
++const Hits = ({
++  hitComponent: Hit,
++  className,
++  ...props
++}: HitsProps<ProductHit>) => {
++  const { query } = useSearchBox()
++  const { hits } = useHits(props)
++
++  return (
++    <div
++      className={clx(
++        "transition-[height,max-height,opacity] duration-300 ease-in-out sm:overflow-hidden w-full sm:w-[50vw] mb-1 p-px",
++        className,
++        {
++          "max-h-full opacity-100": !!query,
++          "max-h-0 opacity-0": !query && !hits.length,
++        }
++      )}
++    >
++      <div
++        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4"
++        data-testid="search-results"
++      >
++        {hits.slice(0, 6).map((hit, index) => (
++          <li
++            key={index}
++            className={clx("list-none", {
++              "hidden sm:block": index > 2,
++            })}
++          >
++            <Hit hit={hit as unknown as ProductHit} />
++          </li>
++        ))}
++      </div>
++      <ShowAll />
++    </div>
++  )
++}
++
++export default Hits
+Index: src/modules/search/components/show-all/index.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/modules/search/components/show-all/index.tsx b/src/modules/search/components/show-all/index.tsx
+new file mode 100644
+--- /dev/null	(date 1738512166503)
++++ b/src/modules/search/components/show-all/index.tsx	(date 1738512166503)
+@@ -0,0 +1,33 @@
++import { Container, Text } from "@medusajs/ui"
++import { useHits, useSearchBox } from "react-instantsearch"
++
++import InteractiveLink from "@modules/common/components/interactive-link"
++
++const ShowAll = () => {
++  const { hits } = useHits()
++  const { query } = useSearchBox()
++  const width = typeof window !== "undefined" ? window.innerWidth : 0
++
++  if (query === "") return null
++  if (hits.length > 0 && hits.length <= 6) return null
++
++  if (hits.length === 0) {
++    return (
++      <Container
++        className="flex gap-2 justify-center h-fit py-2"
++        data-testid="no-search-results-container"
++      >
++        <Text>No results found.</Text>
++      </Container>
++    )
++  }
++
++  return (
++    <Container className="flex sm:flex-col small:flex-row gap-2 justify-center items-center h-fit py-4 small:py-2">
++      <Text>Showing the first {width > 640 ? 6 : 3} results.</Text>
++      <InteractiveLink href={`/results/${query}`}>View all</InteractiveLink>
++    </Container>
++  )
++}
++
++export default ShowAll
+Index: src/modules/layout/components/side-menu/index.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/modules/layout/components/side-menu/index.tsx b/src/modules/layout/components/side-menu/index.tsx
+--- a/src/modules/layout/components/side-menu/index.tsx	(revision 8db3a5ea6bf08afa49a38ac70bfe5c943fee02ef)
++++ b/src/modules/layout/components/side-menu/index.tsx	(date 1738512096945)
+@@ -12,6 +12,7 @@
+ const SideMenuItems = {
+   Home: "/",
+   Store: "/store",
++  Search: "/search",
+   Account: "/account",
+   Cart: "/cart",
+ }
 Index: src/modules/search/templates/search-modal/index.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
@@ -7,12 +267,12 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/src/modules/search/templates/search-modal/index.tsx b/src/modules/search/templates/search-modal/index.tsx
 new file mode 100644
---- /dev/null	(date 1737910563716)
-+++ b/src/modules/search/templates/search-modal/index.tsx	(date 1737910563716)
+--- /dev/null	(date 1738512166498)
++++ b/src/modules/search/templates/search-modal/index.tsx	(date 1738512166498)
 @@ -0,0 +1,84 @@
 +"use client"
 +
-+import { InstantSearch } from "react-instantsearch-hooks-web"
++import { InstantSearch } from "react-instantsearch"
 +import { useRouter } from "next/navigation"
 +import { MagnifyingGlassMini } from "@medusajs/icons"
 +
@@ -94,178 +354,75 @@ new file mode 100644
 +    </div>
 +  )
 +}
-Index: src/modules/search/actions.ts
+Index: src/app/[countryCode]/(main)/search/page.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
-diff --git a/src/modules/search/actions.ts b/src/modules/search/actions.ts
+diff --git a/src/app/[countryCode]/(main)/search/page.tsx b/src/app/[countryCode]/(main)/search/page.tsx
 new file mode 100644
---- /dev/null	(date 1737910563749)
-+++ b/src/modules/search/actions.ts	(date 1737910563749)
-@@ -0,0 +1,30 @@
-+"use server"
+--- /dev/null	(date 1738512096945)
++++ b/src/app/[countryCode]/(main)/search/page.tsx	(date 1738512096945)
+@@ -0,0 +1,5 @@
++import SearchModal from "@modules/search/templates/search-modal"
 +
-+import { SEARCH_INDEX_NAME, searchClient } from "@lib/search-client"
-+
-+interface Hits {
-+  readonly objectID?: string
-+  id?: string
-+  [x: string | number | symbol]: unknown
++export default function SearchModalRoute() {
++  return <SearchModal />
 +}
-+
-+/**
-+ * Uses MeiliSearch or Algolia to search for a query
-+ * @param {string} query - search query
-+ */
-+export async function search(query: string) {
-+  // MeiliSearch
-+  const queries = [{ params: { query }, indexName: SEARCH_INDEX_NAME }]
-+  const { results } = (await searchClient.search(queries)) as Record<
-+    string,
-+    any
-+  >
-+  const { hits } = results[0] as { hits: Hits[] }
-+
-+  // In case you want to use Algolia instead of MeiliSearch, uncomment the following lines and delete the above lines.
-+
-+  // const index = searchClient.initIndex(SEARCH_INDEX_NAME)
-+  // const { hits } = (await index.search(query)) as { hits: Hits[] }
-+
-+  return hits
-+}
-Index: src/modules/search/templates/search-results-template/index.tsx
+Index: src/app/[countryCode]/(main)/results/[query]/page.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
-diff --git a/src/modules/search/templates/search-results-template/index.tsx b/src/modules/search/templates/search-results-template/index.tsx
+diff --git a/src/app/[countryCode]/(main)/results/[query]/page.tsx b/src/app/[countryCode]/(main)/results/[query]/page.tsx
 new file mode 100644
---- /dev/null	(date 1737910563728)
-+++ b/src/modules/search/templates/search-results-template/index.tsx	(date 1737910563728)
-@@ -0,0 +1,63 @@
-+import { Heading, Text } from "@medusajs/ui"
-+import Link from "next/link"
+--- /dev/null	(date 1738512096945)
++++ b/src/app/[countryCode]/(main)/results/[query]/page.tsx	(date 1738512096945)
+@@ -0,0 +1,44 @@
++import { Metadata } from "next"
 +
-+import RefinementList from "@modules/store/components/refinement-list"
++import SearchResultsTemplate from "@modules/search/templates/search-results-template"
++
++import { search } from "@modules/search/actions"
 +import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-+import PaginatedProducts from "@modules/store/templates/paginated-products"
-+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 +
-+type SearchResultsTemplateProps = {
-+  query: string
-+  ids: string[]
-+  sortBy?: SortOptions
-+  page?: string
-+  countryCode: string
++export const metadata: Metadata = {
++  title: "Search",
++  description: "Explore all of our products.",
 +}
 +
-+const SearchResultsTemplate = ({
-+  query,
-+  ids,
-+  sortBy,
-+  page,
-+  countryCode,
-+}: SearchResultsTemplateProps) => {
-+  const pageNumber = page ? parseInt(page) : 1
++type Params = {
++  params: Promise<{ query: string; countryCode: string }>
++  searchParams: Promise<{
++    sortBy?: SortOptions
++    page?: string
++  }>
++}
++
++export default async function SearchResults(props: Params) {
++  const searchParams = await props.searchParams;
++  const params = await props.params;
++  const { query } = params
++  const { sortBy, page } = searchParams
++
++  const hits = await search(query).then((data) => data)
++
++  const ids = hits
++    .map((h) => h.objectID || h.id)
++    .filter((id): id is string => {
++      return typeof id === "string"
++    })
 +
 +  return (
-+    <>
-+      <div className="flex justify-between border-b w-full py-6 px-8 small:px-14 items-center">
-+        <div className="flex flex-col items-start">
-+          <Text className="text-ui-fg-muted">Search Results for:</Text>
-+          <Heading>
-+            {decodeURI(query)} ({ids.length})
-+          </Heading>
-+        </div>
-+        <LocalizedClientLink
-+          href="/store"
-+          className="txt-medium text-ui-fg-subtle hover:text-ui-fg-base"
-+        >
-+          Clear
-+        </LocalizedClientLink>
-+      </div>
-+      <div className="flex flex-col small:flex-row small:items-start p-6">
-+        {ids.length > 0 ? (
-+          <>
-+            <RefinementList sortBy={sortBy || "created_at"} search />
-+            <div className="content-container">
-+              <PaginatedProducts
-+                productsIds={ids}
-+                sortBy={sortBy}
-+                page={pageNumber}
-+                countryCode={countryCode}
-+              />
-+            </div>
-+          </>
-+        ) : (
-+          <Text className="ml-8 small:ml-14 mt-3">No results.</Text>
-+        )}
-+      </div>
-+    </>
++    <SearchResultsTemplate
++      query={query}
++      ids={ids}
++      sortBy={sortBy}
++      page={page}
++      countryCode={params.countryCode}
++    />
 +  )
 +}
-+
-+export default SearchResultsTemplate
-Index: src/modules/search/components/show-all/index.tsx
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/modules/search/components/show-all/index.tsx b/src/modules/search/components/show-all/index.tsx
-new file mode 100644
---- /dev/null	(date 1737910563693)
-+++ b/src/modules/search/components/show-all/index.tsx	(date 1737910563693)
-@@ -0,0 +1,33 @@
-+import { Container, Text } from "@medusajs/ui"
-+import { useHits, useSearchBox } from "react-instantsearch-hooks-web"
-+
-+import InteractiveLink from "@modules/common/components/interactive-link"
-+
-+const ShowAll = () => {
-+  const { hits } = useHits()
-+  const { query } = useSearchBox()
-+  const width = typeof window !== "undefined" ? window.innerWidth : 0
-+
-+  if (query === "") return null
-+  if (hits.length > 0 && hits.length <= 6) return null
-+
-+  if (hits.length === 0) {
-+    return (
-+      <Container
-+        className="flex gap-2 justify-center h-fit py-2"
-+        data-testid="no-search-results-container"
-+      >
-+        <Text>No results found.</Text>
-+      </Container>
-+    )
-+  }
-+
-+  return (
-+    <Container className="flex sm:flex-col small:flex-row gap-2 justify-center items-center h-fit py-4 small:py-2">
-+      <Text>Showing the first {width > 640 ? 6 : 3} results.</Text>
-+      <InteractiveLink href={`/results/${query}`}>View all</InteractiveLink>
-+    </Container>
-+  )
-+}
-+
-+export default ShowAll
-Index: src/modules/layout/components/side-menu/index.tsx
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/modules/layout/components/side-menu/index.tsx b/src/modules/layout/components/side-menu/index.tsx
---- a/src/modules/layout/components/side-menu/index.tsx	(revision b2c667121d716795f232a8511f37994ec4446fd1)
-+++ b/src/modules/layout/components/side-menu/index.tsx	(date 1737910662834)
-@@ -12,6 +12,7 @@
- const SideMenuItems = {
-   Home: "/",
-   Store: "/store",
-+  Search: "/search",
-   Account: "/account",
-   Cart: "/cart",
- }
 Index: src/modules/search/components/search-box/index.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
@@ -273,8 +430,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/src/modules/search/components/search-box/index.tsx b/src/modules/search/components/search-box/index.tsx
 new file mode 100644
---- /dev/null	(date 1737910563650)
-+++ b/src/modules/search/components/search-box/index.tsx	(date 1737910563650)
+--- /dev/null	(date 1738512096945)
++++ b/src/modules/search/components/search-box/index.tsx	(date 1738512096945)
 @@ -0,0 +1,91 @@
 +import { XMarkMini } from "@medusajs/icons"
 +import { FormEvent } from "react"
@@ -367,60 +524,6 @@ new file mode 100644
 +}
 +
 +export default SearchBox
-Index: src/app/[countryCode]/(main)/results/[query]/page.tsx
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/app/[countryCode]/(main)/results/[query]/page.tsx b/src/app/[countryCode]/(main)/results/[query]/page.tsx
-new file mode 100644
---- /dev/null	(date 1737910572306)
-+++ b/src/app/[countryCode]/(main)/results/[query]/page.tsx	(date 1737910572306)
-@@ -0,0 +1,44 @@
-+import { Metadata } from "next"
-+
-+import SearchResultsTemplate from "@modules/search/templates/search-results-template"
-+
-+import { search } from "@modules/search/actions"
-+import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-+
-+export const metadata: Metadata = {
-+  title: "Search",
-+  description: "Explore all of our products.",
-+}
-+
-+type Params = {
-+  params: Promise<{ query: string; countryCode: string }>
-+  searchParams: Promise<{
-+    sortBy?: SortOptions
-+    page?: string
-+  }>
-+}
-+
-+export default async function SearchResults(props: Params) {
-+  const searchParams = await props.searchParams;
-+  const params = await props.params;
-+  const { query } = params
-+  const { sortBy, page } = searchParams
-+
-+  const hits = await search(query).then((data) => data)
-+
-+  const ids = hits
-+    .map((h) => h.objectID || h.id)
-+    .filter((id): id is string => {
-+      return typeof id === "string"
-+    })
-+
-+  return (
-+    <SearchResultsTemplate
-+      query={query}
-+      ids={ids}
-+      sortBy={sortBy}
-+      page={page}
-+      countryCode={params.countryCode}
-+    />
-+  )
-+}
 Index: src/modules/search/components/search-box-wrapper/index.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
@@ -428,8 +531,8 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/src/modules/search/components/search-box-wrapper/index.tsx b/src/modules/search/components/search-box-wrapper/index.tsx
 new file mode 100644
---- /dev/null	(date 1737910563672)
-+++ b/src/modules/search/components/search-box-wrapper/index.tsx	(date 1737910563672)
+--- /dev/null	(date 1738512166491)
++++ b/src/modules/search/components/search-box-wrapper/index.tsx	(date 1738512166491)
 @@ -0,0 +1,93 @@
 +import { useRouter } from "next/navigation"
 +import {
@@ -440,7 +543,7 @@ new file mode 100644
 +  useRef,
 +  useState,
 +} from "react"
-+import { UseSearchBoxProps, useSearchBox } from "react-instantsearch-hooks-web"
++import { UseSearchBoxProps, useSearchBox } from "react-instantsearch"
 +
 +export type ControlledSearchBoxProps = React.ComponentProps<"div"> & {
 +  inputRef: RefObject<HTMLInputElement | null>
@@ -524,177 +627,14 @@ new file mode 100644
 +}
 +
 +export default SearchBoxWrapper
-Index: src/modules/search/components/hit/index.tsx
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/modules/search/components/hit/index.tsx b/src/modules/search/components/hit/index.tsx
-new file mode 100644
---- /dev/null	(date 1737910563596)
-+++ b/src/modules/search/components/hit/index.tsx	(date 1737910563596)
-@@ -0,0 +1,52 @@
-+import { Container, Text } from "@medusajs/ui"
-+
-+import Thumbnail from "@modules/products/components/thumbnail"
-+import LocalizedClientLink from "@modules/common/components/localized-client-link"
-+import { HttpTypes } from "@medusajs/types"
-+
-+export type ProductHit = {
-+  id: string
-+  title: string
-+  handle: string
-+  description: string | null
-+  thumbnail: string | null
-+  variants: HttpTypes.StoreProductVariant[]
-+  collection_handle: string | null
-+  collection_id: string | null
-+}
-+
-+type HitProps = {
-+  hit: ProductHit
-+}
-+
-+const Hit = ({ hit }: HitProps) => {
-+  return (
-+    <LocalizedClientLink
-+      href={`/products/${hit.handle}`}
-+      data-testid="search-result"
-+    >
-+      <Container
-+        key={hit.id}
-+        className="flex sm:flex-col gap-2 w-full p-4 shadow-elevation-card-rest hover:shadow-elevation-card-hover items-center sm:justify-center"
-+      >
-+        <Thumbnail
-+          thumbnail={hit.thumbnail}
-+          size="square"
-+          className="group h-12 w-12 sm:h-full sm:w-full"
-+        />
-+        <div className="flex flex-col justify-between group">
-+          <div className="flex flex-col">
-+            <Text
-+              className="text-ui-fg-subtle"
-+              data-testid="search-result-title"
-+            >
-+              {hit.title}
-+            </Text>
-+          </div>
-+        </div>
-+      </Container>
-+    </LocalizedClientLink>
-+  )
-+}
-+
-+export default Hit
-Index: src/lib/search-client.ts
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/lib/search-client.ts b/src/lib/search-client.ts
-new file mode 100644
---- /dev/null	(date 1737910924885)
-+++ b/src/lib/search-client.ts	(date 1737910924885)
-@@ -0,0 +1,25 @@
-+import { instantMeiliSearch } from "@meilisearch/instant-meilisearch"
-+
-+const endpoint =
-+  process.env.NEXT_PUBLIC_SEARCH_ENDPOINT || "http://127.0.0.1:7700"
-+
-+const apiKey = process.env.NEXT_PUBLIC_SEARCH_API_KEY || "test_key"
-+
-+export const searchClient = instantMeiliSearch(endpoint, apiKey)
-+
-+export const SEARCH_INDEX_NAME =
-+  process.env.NEXT_PUBLIC_INDEX_NAME || "products"
-+
-+// If you want to use Algolia instead then uncomment the following lines, and delete the above lines
-+// you should also install algoliasearch - yarn add algoliasearch
-+
-+//import { liteClient } from "algoliasearch/lite"
-+
-+//const appId = process.env.NEXT_PUBLIC_SEARCH_APP_ID || "test_app_id"
-+
-+//const apiKey = process.env.NEXT_PUBLIC_SEARCH_API_KEY || "test_key"
-+
-+//export const searchClient = liteClient(appId, apiKey)
-+
-+//export const SEARCH_INDEX_NAME =
-+//  process.env.NEXT_PUBLIC_INDEX_NAME || "products"
-Index: src/modules/search/components/hits/index.tsx
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/modules/search/components/hits/index.tsx b/src/modules/search/components/hits/index.tsx
-new file mode 100644
---- /dev/null	(date 1737910563621)
-+++ b/src/modules/search/components/hits/index.tsx	(date 1737910563621)
-@@ -0,0 +1,56 @@
-+import { clx } from "@medusajs/ui"
-+import React, { type JSX } from "react";
-+import {
-+  UseHitsProps,
-+  useHits,
-+  useSearchBox,
-+} from "react-instantsearch-hooks-web"
-+
-+import { ProductHit } from "../hit"
-+import ShowAll from "../show-all"
-+
-+type HitsProps<THit> = React.ComponentProps<"div"> &
-+  UseHitsProps & {
-+    hitComponent: (props: { hit: THit }) => JSX.Element
-+  }
-+
-+const Hits = ({
-+  hitComponent: Hit,
-+  className,
-+  ...props
-+}: HitsProps<ProductHit>) => {
-+  const { query } = useSearchBox()
-+  const { hits } = useHits(props)
-+
-+  return (
-+    <div
-+      className={clx(
-+        "transition-[height,max-height,opacity] duration-300 ease-in-out sm:overflow-hidden w-full sm:w-[50vw] mb-1 p-px",
-+        className,
-+        {
-+          "max-h-full opacity-100": !!query,
-+          "max-h-0 opacity-0": !query && !hits.length,
-+        }
-+      )}
-+    >
-+      <div
-+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4"
-+        data-testid="search-results"
-+      >
-+        {hits.slice(0, 6).map((hit, index) => (
-+          <li
-+            key={index}
-+            className={clx("list-none", {
-+              "hidden sm:block": index > 2,
-+            })}
-+          >
-+            <Hit hit={hit as unknown as ProductHit} />
-+          </li>
-+        ))}
-+      </div>
-+      <ShowAll />
-+    </div>
-+  )
-+}
-+
-+export default Hits
 Index: src/modules/layout/templates/nav/index.tsx
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/src/modules/layout/templates/nav/index.tsx b/src/modules/layout/templates/nav/index.tsx
---- a/src/modules/layout/templates/nav/index.tsx	(revision b2c667121d716795f232a8511f37994ec4446fd1)
-+++ b/src/modules/layout/templates/nav/index.tsx	(date 1737910662828)
+--- a/src/modules/layout/templates/nav/index.tsx	(revision 8db3a5ea6bf08afa49a38ac70bfe5c943fee02ef)
++++ b/src/modules/layout/templates/nav/index.tsx	(date 1738512096945)
 @@ -31,6 +31,16 @@
  
            <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
@@ -712,18 +652,63 @@ diff --git a/src/modules/layout/templates/nav/index.tsx b/src/modules/layout/tem
                <LocalizedClientLink
                  className="hover:text-ui-fg-base"
                  href="/account"
-Index: src/app/[countryCode]/(main)/search/page.tsx
+Index: src/modules/search/actions.ts
 IDEA additional info:
 Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
-diff --git a/src/app/[countryCode]/(main)/search/page.tsx b/src/app/[countryCode]/(main)/search/page.tsx
+diff --git a/src/modules/search/actions.ts b/src/modules/search/actions.ts
 new file mode 100644
---- /dev/null	(date 1737910570806)
-+++ b/src/app/[countryCode]/(main)/search/page.tsx	(date 1737910570806)
-@@ -0,0 +1,5 @@
-+import SearchModal from "@modules/search/templates/search-modal"
+--- /dev/null	(date 1738512192955)
++++ b/src/modules/search/actions.ts	(date 1738512192955)
+@@ -0,0 +1,25 @@
++"use server"
 +
-+export default function SearchModalRoute() {
-+  return <SearchModal />
++import { SEARCH_INDEX_NAME, searchClient } from "@lib/search-client"
++
++interface Hits {
++  readonly objectID?: string
++  id?: string
++  [x: string | number | symbol]: unknown
 +}
++
++/**
++ * Uses MeiliSearch to search for a query
++ * @param {string} query - search query
++ */
++export async function search(query: string) {
++  // MeiliSearch
++  const queries = [{ params: { query }, indexName: SEARCH_INDEX_NAME }]
++  const { results } = (await searchClient.search(queries)) as Record<
++    string,
++    any
++  >
++  const { hits } = results[0] as { hits: Hits[] }
++
++  return hits
++}
+Index: src/lib/search-client.ts
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/lib/search-client.ts b/src/lib/search-client.ts
+new file mode 100644
+--- /dev/null	(date 1738513866275)
++++ b/src/lib/search-client.ts	(date 1738513866275)
+@@ -0,0 +1,15 @@
++import { instantMeiliSearch } from "@meilisearch/instant-meilisearch"
++import { SearchClient } from "instantsearch.js";
++
++const endpoint =
++  process.env.NEXT_PUBLIC_SEARCH_ENDPOINT || "http://127.0.0.1:7700"
++
++const apiKey = process.env.NEXT_PUBLIC_SEARCH_API_KEY || "test_key"
++
++const ms = instantMeiliSearch(endpoint, apiKey)
++export const searchClient = (ms.searchClient as unknown) as SearchClient
++
++console.log(searchClient)
++
++export const SEARCH_INDEX_NAME =
++  process.env.NEXT_PUBLIC_INDEX_NAME || "products"

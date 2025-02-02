@@ -22,6 +22,12 @@ _This step is required only if you are upgrading from previous version to v1.0._
 - Subscribers are included in the plugin.
 - You don't need custom subscribers anymore, you can remove them.
 
+## ⚠️ MedusaJS v2.4.0 or newer
+
+This plugin is only for MedusaJS v2.4.0 or newer.
+
+If you are using MedusaJS v2.3.1 or older, please use the [older version of this plugin](https://github.com/rokmohar/medusa-plugin-meilisearch/tree/v0.2.1).
+
 ## Configuration
 
 Add the plugin to your `medusa-config.ts` file:
