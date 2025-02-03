@@ -708,7 +708,5 @@ new file mode 100644
 +const ms = instantMeiliSearch(endpoint, apiKey)
 +export const searchClient = (ms.searchClient as unknown) as SearchClient
 +
-+console.log(searchClient)
-+
 +export const SEARCH_INDEX_NAME =
 +  process.env.NEXT_PUBLIC_INDEX_NAME || "products"
