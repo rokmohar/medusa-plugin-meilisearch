@@ -8,7 +8,12 @@ export default async function meilisearchProductsIndexJob(container: MedusaConta
   const meilisearchService: MeiliSearchService = container.resolve('meilisearch')
 
   const products = await productService.listProducts()
-  await meilisearchService.addDocuments('products', products, SearchUtils.indexTypes.PRODUCTS)
+
+  const publishedProducts = products.filter((p) => p.status === 'published')
+  const deleteDocumentIds = products.filter((p) => p.status !== 'published').map((p) => p.id)
+
+  await meilisearchService.addDocuments('products', publishedProducts, SearchUtils.indexTypes.PRODUCTS)
+  await meilisearchService.deleteDocuments('products', deleteDocumentIds)
 }
 
 export const config: CronJobConfig = {
