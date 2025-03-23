@@ -1,5 +1,4 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { ProductEvents } from '@medusajs/utils'
 import { MeiliSearchService } from '../modules/meilisearch'
 
 export default async function meilisearchProductDeleteMeilisearchHandler({
@@ -13,5 +12,5 @@ export default async function meilisearchProductDeleteMeilisearchHandler({
 }
 
 export const config: SubscriberConfig = {
-  event: ProductEvents.PRODUCT_DELETED,
+  event: "product.deleted",
 }
