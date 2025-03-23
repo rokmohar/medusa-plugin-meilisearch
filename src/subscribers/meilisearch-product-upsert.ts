@@ -11,11 +11,14 @@ export default async function meilisearchProductUpsertHandler({
   const productModuleService = container.resolve(Modules.PRODUCT)
   const meilisearchService: MeiliSearchService = container.resolve('meilisearch')
 
+
   const product = await productModuleService.retrieveProduct(productId,
     {
       relations: ["*"],
     }
   )
+
+
 
   if (product.status === 'published') {
     // If status is "published", add or update the document in MeiliSearch

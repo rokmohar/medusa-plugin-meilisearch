@@ -58,6 +58,10 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return await this.client_.index(indexName).deleteDocument(documentId)
   }
 
+  async deleteDocuments(indexName: string, documentIds: string[]) {
+    return await this.client_.index(indexName).deleteDocuments(documentIds)
+  }
+
   async deleteAllDocuments(indexName: string) {
     return await this.client_.index(indexName).deleteAllDocuments()
   }
