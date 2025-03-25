@@ -1,7 +1,7 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { MeiliSearchService } from '../modules/meilisearch'
 
-export default async function meilisearchProductDeleteMeilisearchHandler({
+export default async function meilisearchProductDeleteHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {

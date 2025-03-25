@@ -2,7 +2,7 @@ import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { Modules, SearchUtils } from '@medusajs/utils'
 import { MeiliSearchService } from '../modules/meilisearch'
 
-export default async function meilisearchProductUpsertHandler({
+export default async function meilisearchProductUpdateHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
