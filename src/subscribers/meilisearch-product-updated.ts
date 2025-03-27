@@ -2,7 +2,7 @@ import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { Modules, SearchUtils } from '@medusajs/utils'
 import { MeiliSearchService } from '../modules/meilisearch'
 
-export default async function meilisearchProductUpdateHandler({
+export default async function meilisearchProductUpdatedHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
@@ -11,14 +11,9 @@ export default async function meilisearchProductUpdateHandler({
   const productModuleService = container.resolve(Modules.PRODUCT)
   const meilisearchService: MeiliSearchService = container.resolve('meilisearch')
 
-
-  const product = await productModuleService.retrieveProduct(productId,
-    {
-      relations: ["*"],
-    }
-  )
-
-
+  const product = await productModuleService.retrieveProduct(productId, {
+    relations: ['*'],
+  })
 
   if (product.status === 'published') {
     // If status is "published", add or update the document in MeiliSearch
@@ -30,5 +25,5 @@ export default async function meilisearchProductUpdateHandler({
 }
 
 export const config: SubscriberConfig = {
-  event: "product.updated",
+  event: 'product.updated',
 }
