@@ -15,12 +15,19 @@ export default async function meilisearchProductUpdatedHandler({
     relations: ['*'],
   })
 
+  // Get all enabled indexes with type "products"
+  const productIndexes = meilisearchService.getIndexesByType(SearchUtils.indexTypes.PRODUCTS)
+
   if (product.status === 'published') {
-    // If status is "published", add or update the document in MeiliSearch
-    await meilisearchService.addDocuments('products', [product], SearchUtils.indexTypes.PRODUCTS)
+    // If status is "published", add or update the document in all product indexes
+    await Promise.all(
+      productIndexes.map((indexKey) =>
+        meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS),
+      ),
+    )
   } else {
-    // If status is not "published", remove the document from MeiliSearch
-    await meilisearchService.deleteDocument('products', productId)
+    // If status is not "published", remove the document from all product indexes
+    await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, productId)))
   }
 }
 

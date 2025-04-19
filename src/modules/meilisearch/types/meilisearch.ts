@@ -14,6 +14,9 @@ export interface MeilisearchPluginOptions {
    * Index settings
    */
   settings?: {
-    [key: string]: SearchTypes.IndexSettings
+    [key: string]: SearchTypes.IndexSettings & {
+      type: string
+      enabled?: boolean
+    }
   }
 }

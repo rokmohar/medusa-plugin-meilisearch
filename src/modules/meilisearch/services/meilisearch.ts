@@ -17,12 +17,10 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
     this.config_ = options
 
-    if (process.env.NODE_ENV !== 'development') {
-      if (!options.config?.apiKey) {
-        throw Error(
-          'Meilisearch API key is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
-        )
-      }
+    if (!options.config?.apiKey) {
+      throw Error(
+        'Meilisearch API key is missing in plugin config. See https://github.com/rokmohar/medusa-plugin-meilisearch',
+      )
     }
 
     if (!options.config?.host) {
@@ -34,59 +32,67 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     this.client_ = new MeiliSearch(options.config)
   }
 
-  async createIndex(indexName: string, options: Record<string, unknown> = { primaryKey: 'id' }) {
-    return await this.client_.createIndex(indexName, options)
+  getIndexesByType(type: string): string[] {
+    return Object.entries(this.config_.settings || {})
+      .filter(([, config]) => config.type === type && config.enabled !== false)
+      .map(([key]) => key)
   }
 
-  getIndex(indexName: string) {
-    return this.client_.index(indexName)
+  async createIndex(indexKey: string, options: Record<string, unknown> = { primaryKey: 'id' }) {
+    return await this.client_.createIndex(indexKey, options)
   }
 
-  async addDocuments(indexName: string, documents: any, type: string) {
+  getIndex(indexKey: string) {
+    return this.client_.index(indexKey)
+  }
+
+  async addDocuments(indexKey: string, documents: any, type: string) {
     const transformedDocuments = this.getTransformedDocuments(type, documents)
-
-    return await this.client_.index(indexName).addDocuments(transformedDocuments, { primaryKey: 'id' })
+    return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
   }
 
-  async replaceDocuments(indexName: string, documents: any, type: string) {
+  async replaceDocuments(indexKey: string, documents: any, type: string) {
     const transformedDocuments = this.getTransformedDocuments(type, documents)
-
-    return await this.client_.index(indexName).addDocuments(transformedDocuments, { primaryKey: 'id' })
+    return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
   }
 
-  async deleteDocument(indexName: string, documentId: string) {
-    return await this.client_.index(indexName).deleteDocument(documentId)
+  async deleteDocument(indexKey: string, documentId: string) {
+    return await this.client_.index(indexKey).deleteDocument(documentId)
   }
 
-  async deleteDocuments(indexName: string, documentIds: string[]) {
-    return await this.client_.index(indexName).deleteDocuments(documentIds)
+  async deleteDocuments(indexKey: string, documentIds: string[]) {
+    return await this.client_.index(indexKey).deleteDocuments(documentIds)
   }
 
-  async deleteAllDocuments(indexName: string) {
-    return await this.client_.index(indexName).deleteAllDocuments()
+  async deleteAllDocuments(indexKey: string) {
+    return await this.client_.index(indexKey).deleteAllDocuments()
   }
 
-  async search(indexName: string, query: string, options: Record<string, any>) {
+  async search(indexKey: string, query: string, options: Record<string, any>) {
     const { paginationOptions, filter, additionalOptions } = options
-
-    return await this.client_.index(indexName).search(query, { filter, ...paginationOptions, ...additionalOptions })
+    return await this.client_.index(indexKey).search(query, { filter, ...paginationOptions, ...additionalOptions })
   }
 
-  async updateSettings(indexName: string, settings: SearchTypes.IndexSettings & Settings) {
-    const indexSettings = settings.indexSettings ?? {}
-
-    await this.upsertIndex(indexName, settings)
-
-    return await this.client_.index(indexName).updateSettings(indexSettings)
+  async updateSettings(indexKey: string, settings: SearchTypes.IndexSettings & Settings) {
+    const indexConfig = this.config_.settings?.[indexKey]
+    if (indexConfig?.enabled === false) {
+      return
+    }
+    await this.upsertIndex(indexKey, settings)
+    return await this.client_.index(indexKey).updateSettings(settings.indexSettings ?? {})
   }
 
-  async upsertIndex(indexName: string, settings: SearchTypes.IndexSettings) {
+  async upsertIndex(indexKey: string, settings: SearchTypes.IndexSettings) {
+    const indexConfig = this.config_.settings?.[indexKey]
+    if (indexConfig?.enabled === false) {
+      return
+    }
     try {
-      await this.client_.getIndex(indexName)
+      await this.client_.getIndex(indexKey)
     } catch (error) {
       if (error.code === meilisearchErrorCodes.INDEX_NOT_FOUND) {
-        await this.createIndex(indexName, {
-          primaryKey: settings?.primaryKey ?? 'id',
+        await this.createIndex(indexKey, {
+          primaryKey: settings.primaryKey ?? 'id',
         })
       }
     }
@@ -97,14 +103,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       return []
     }
 
-    switch (type) {
-      case SearchUtils.indexTypes.PRODUCTS:
-        const productsTransformer =
-          this.config_.settings?.[SearchUtils.indexTypes.PRODUCTS]?.transformer ?? transformProduct
-
-        return documents.map(productsTransformer)
-      default:
-        return documents
-    }
+    const indexConfig = Object.entries(this.config_.settings || {}).find(([, config]) => config.type === type)?.[1]
+    return !indexConfig || type !== SearchUtils.indexTypes.PRODUCTS ? documents : documents.map(transformProduct)
   }
 }
