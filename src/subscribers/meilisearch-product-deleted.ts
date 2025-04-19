@@ -1,20 +1,15 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { SearchUtils } from '@medusajs/utils'
-import { MeiliSearchService } from '../modules/meilisearch'
+import productDeletedWorkflow from '../workflows/product-deleted'
 
 export default async function meilisearchProductDeletedHandler({
   event: { data },
   container,
 }: SubscriberArgs<{ id: string }>) {
-  const productId = data.id
-
-  const meilisearchService: MeiliSearchService = container.resolve('meilisearch')
-
-  // Get all enabled indexes with type "products"
-  const productIndexes = meilisearchService.getIndexesByType(SearchUtils.indexTypes.PRODUCTS)
-
-  // Delete document from all product indexes
-  await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, productId)))
+  await productDeletedWorkflow(container).run({
+    input: {
+      id: data.id,
+    },
+  })
 }
 
 export const config: SubscriberConfig = {
