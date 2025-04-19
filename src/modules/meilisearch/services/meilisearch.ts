@@ -32,6 +32,24 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     this.client_ = new MeiliSearch(options.config)
   }
 
+  async getFieldsForType(type: string) {
+    const fields = new Set<string>()
+
+    Object.values(this.config_.settings || {})
+      .filter((config) => config.type === type && config.enabled !== false)
+      .forEach((config) => {
+        if (Array.isArray(config.fields)) {
+          config.fields.forEach((field) => fields.add(field))
+        }
+      })
+
+    if (!fields.size) {
+      fields.add('*')
+    }
+
+    return Array.from(fields)
+  }
+
   async getIndexesByType(type: string) {
     return Object.entries(this.config_.settings || {})
       .filter(([, config]) => config.type === type && config.enabled !== false)
@@ -46,13 +64,13 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return this.client_.index(indexKey)
   }
 
-  async addDocuments(indexKey: string, documents: any, type: string) {
-    const transformedDocuments = this.getTransformedDocuments(type, documents)
+  async addDocuments(indexKey: string, documents: any) {
+    const transformedDocuments = this.getTransformedDocuments(indexKey, documents)
     return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
   }
 
-  async replaceDocuments(indexKey: string, documents: any, type: string) {
-    const transformedDocuments = this.getTransformedDocuments(type, documents)
+  async replaceDocuments(indexKey: string, documents: any) {
+    const transformedDocuments = this.getTransformedDocuments(indexKey, documents)
     return await this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
   }
 
@@ -98,12 +116,19 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
   }
 
-  getTransformedDocuments(type: string, documents: any[]) {
+  getTransformedDocuments(indexKey: string, documents: any[]) {
     if (!documents?.length) {
       return []
     }
 
-    const indexConfig = Object.entries(this.config_.settings || {}).find(([, config]) => config.type === type)?.[1]
-    return !indexConfig || type !== SearchUtils.indexTypes.PRODUCTS ? documents : documents.map(transformProduct)
+    const indexConfig = Object.entries(this.config_.settings || {})[indexKey]
+
+    switch (indexConfig?.type) {
+      case SearchUtils.indexTypes.PRODUCTS:
+        return documents.map(indexConfig.transformer ?? transformProduct)
+
+      default:
+        return documents
+    }
   }
 }

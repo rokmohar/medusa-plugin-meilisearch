@@ -5,8 +5,9 @@ type WorkflowInput = {
   id: string
 }
 
-const productDeletedWorkflow = createWorkflow('product-deleted', (input: WorkflowInput) => {
-  deleteProductStep({ id: input.id })
+const productDeletedWorkflow = createWorkflow('product-deleted', ({ id }: WorkflowInput) => {
+  deleteProductStep({ id })
+
   return new WorkflowResponse({})
 })
 

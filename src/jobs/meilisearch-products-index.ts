@@ -6,11 +6,13 @@ export default async function meilisearchProductsIndexJob(container: MedusaConta
   const logger = container.resolve('logger')
   logger.info('Starting product indexing...')
 
-  const { result } = await syncProductsWorkflow(container).run({
+  const {
+    result: { products },
+  } = await syncProductsWorkflow(container).run({
     input: {},
   })
 
-  logger.info(`Successfully indexed ${result.products.length} products`)
+  logger.info(`Successfully indexed ${products.length} products`)
 }
 
 export const config: CronJobConfig = {

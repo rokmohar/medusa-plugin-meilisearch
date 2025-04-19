@@ -59,6 +59,9 @@ module.exports = defineConfig({
             // - Index won't be included in searches
             // - All operations will be silently skipped
             enabled: true,
+            // Optional: Specify which fields to include in the index
+            // If not specified, all fields will be included
+            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
             indexSettings: {
               searchableAttributes: ['title', 'description', 'variant_sku'],
               displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],

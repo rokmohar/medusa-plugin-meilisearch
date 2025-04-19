@@ -1,57 +1,57 @@
-import { ProductDTO } from '@medusajs/types'
 import { createStep, StepResponse } from '@medusajs/workflows-sdk'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
 import { SearchUtils } from '@medusajs/utils'
 
-export type SyncProductsStepInput = {
-  products: ProductDTO[]
+export type StepInput = {
+  filters?: Record<string, unknown>
+  limit?: number
+  offset?: number
 }
 
 export const syncProductsStep = createStep(
   'sync-products',
-  async ({ products }: SyncProductsStepInput, { container }) => {
+  async ({ filters, limit, offset }: StepInput, { container }) => {
+    const queryService = container.resolve('query')
     const meilisearchService: MeiliSearchService = container.resolve(MEILISEARCH_MODULE)
+
+    const productFields = await meilisearchService.getFieldsForType(SearchUtils.indexTypes.PRODUCTS)
     const productIndexes = await meilisearchService.getIndexesByType(SearchUtils.indexTypes.PRODUCTS)
 
-    const existingProducts = (
-      await Promise.all(
-        productIndexes.map((index) =>
-          meilisearchService.search(index, '', { filter: `id IN [${products.map((p) => p.id).join(',')}]` }),
-        ),
-      )
-    )
-      .flatMap((result) => result.hits)
-      .filter(Boolean)
-
-    const newProducts = products.filter((product) => !existingProducts.some((p) => p.id === product.id))
-
-    await Promise.all(
-      productIndexes.map((index) => meilisearchService.addDocuments(index, products, SearchUtils.indexTypes.PRODUCTS)),
-    )
-
-    return new StepResponse(undefined, {
-      newProducts: newProducts.map((product) => product.id),
-      existingProducts,
+    const { data: products } = await queryService.graph({
+      entity: 'product',
+      fields: productFields,
+      pagination: {
+        take: limit,
+        skip: offset,
+      },
+      filters: {
+        status: 'published',
+        ...filters,
+      },
     })
-  },
-  async (input, { container }) => {
-    if (!input) {
-      return
-    }
 
-    const meilisearchService: MeiliSearchService = container.resolve(MEILISEARCH_MODULE)
-    const productIndexes = await meilisearchService.getIndexesByType(SearchUtils.indexTypes.PRODUCTS)
-
-    if (input.newProducts) {
-      await Promise.all(productIndexes.map((index) => meilisearchService.deleteDocuments(index, input.newProducts)))
-    }
-
-    if (input.existingProducts) {
-      await Promise.all(
-        productIndexes.map((index) =>
-          meilisearchService.addDocuments(index, input.existingProducts, SearchUtils.indexTypes.PRODUCTS),
-        ),
+    const existingProductIds = new Set(
+      (
+        await Promise.all(
+          productIndexes.map((index) =>
+            meilisearchService.search(index, '', {
+              filter: `id IN [${products.map((p) => p.id).join(',')}]`,
+              attributesToRetrieve: ['id'],
+            }),
+          ),
+        )
       )
-    }
+        .flatMap((result) => result.hits)
+        .map((hit) => hit.id),
+    )
+
+    const productsToDelete = Array.from(existingProductIds).filter((id) => !products.some((p) => p.id === id))
+
+    await Promise.all(productIndexes.map((index) => meilisearchService.addDocuments(index, products)))
+    await Promise.all(productIndexes.map((index) => meilisearchService.deleteDocuments(index, productsToDelete)))
+
+    return new StepResponse({
+      products,
+    })
   },
 )
