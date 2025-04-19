@@ -1,18 +1,24 @@
-import { createWorkflow, WorkflowResponse } from '@medusajs/framework/dist/workflows-sdk'
-import { retrieveProductStep } from './steps/retrieve-product'
-import { getProductIndexesStep } from './steps/get-product-indexes'
-import { addToIndexesStep } from './steps/add-to-indexes'
+import { createWorkflow, WorkflowResponse } from '@medusajs/workflows-sdk'
+import { useQueryGraphStep } from '@medusajs/core-flows'
+import { upsertProductsStep } from './steps/upsert-products'
 
 type WorkflowInput = {
   id: string
 }
 
 const productCreatedWorkflow = createWorkflow('product-created', (input: WorkflowInput) => {
-  const product = retrieveProductStep(input)
-  const indexes = getProductIndexesStep()
-  addToIndexesStep({ product, indexes })
+  const { data: products } = useQueryGraphStep({
+    entity: 'product',
+    fields: ['*', 'categories.*', 'tags.*', 'variants.*', 'variants.prices.*'],
+    filters: {
+      id: input.id,
+    },
+  })
+  upsertProductsStep({ products })
 
-  return new WorkflowResponse({})
+  return new WorkflowResponse({
+    products,
+  })
 })
 
 export default productCreatedWorkflow

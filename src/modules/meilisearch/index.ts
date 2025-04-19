@@ -5,7 +5,9 @@ import { MeiliSearchService } from './services'
 export * from './services'
 export * from './types'
 
-export default Module('meilisearch', {
+export const MEILISEARCH_MODULE = 'meilisearch'
+
+export default Module(MEILISEARCH_MODULE, {
   service: MeiliSearchService,
   loaders: [Loader],
 })

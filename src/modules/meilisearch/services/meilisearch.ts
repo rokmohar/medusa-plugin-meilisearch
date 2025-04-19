@@ -32,7 +32,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     this.client_ = new MeiliSearch(options.config)
   }
 
-  getIndexesByType(type: string): string[] {
+  async getIndexesByType(type: string) {
     return Object.entries(this.config_.settings || {})
       .filter(([, config]) => config.type === type && config.enabled !== false)
       .map(([key]) => key)

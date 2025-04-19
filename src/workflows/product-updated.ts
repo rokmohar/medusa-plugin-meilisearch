@@ -1,24 +1,24 @@
-import { createWorkflow, WorkflowResponse } from '@medusajs/framework/dist/workflows-sdk'
-import { retrieveProductStep } from './steps/retrieve-product'
-import { getProductIndexesStep } from './steps/get-product-indexes'
-import { addToIndexesStep } from './steps/add-to-indexes'
-import { deleteFromIndexesStep } from './steps/delete-from-indexes'
+import { createWorkflow, WorkflowResponse } from '@medusajs/workflows-sdk'
+import { upsertProductsStep } from './steps/upsert-products'
+import { useQueryGraphStep } from '@medusajs/core-flows'
 
 type WorkflowInput = {
   id: string
 }
 
 const productUpdatedWorkflow = createWorkflow('product-updated', (input: WorkflowInput) => {
-  const product = retrieveProductStep(input)
-  const indexes = getProductIndexesStep()
+  const { data: products } = useQueryGraphStep({
+    entity: 'product',
+    fields: ['*', 'categories.*', 'tags.*', 'variants.*', 'variants.prices.*'],
+    filters: {
+      id: input.id,
+    },
+  })
+  upsertProductsStep({ products })
 
-  if (product.status === 'published') {
-    addToIndexesStep({ product, indexes })
-  } else {
-    deleteFromIndexesStep({ id: product.id, indexes })
-  }
-
-  return new WorkflowResponse({})
+  return new WorkflowResponse({
+    products,
+  })
 })
 
 export default productUpdatedWorkflow

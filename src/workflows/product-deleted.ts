@@ -1,15 +1,12 @@
-import { createWorkflow, WorkflowResponse } from '@medusajs/framework/dist/workflows-sdk'
-import { getProductIndexesStep } from './steps/get-product-indexes'
-import { deleteFromIndexesStep } from './steps/delete-from-indexes'
+import { createWorkflow, WorkflowResponse } from '@medusajs/workflows-sdk'
+import { deleteProductStep } from './steps/delete-product'
 
 type WorkflowInput = {
   id: string
 }
 
 const productDeletedWorkflow = createWorkflow('product-deleted', (input: WorkflowInput) => {
-  const indexes = getProductIndexesStep()
-  deleteFromIndexesStep({ id: input.id, indexes })
-
+  deleteProductStep({ id: input.id })
   return new WorkflowResponse({})
 })
 
