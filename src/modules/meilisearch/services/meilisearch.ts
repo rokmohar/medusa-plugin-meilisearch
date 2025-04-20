@@ -121,7 +121,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       return []
     }
 
-    const indexConfig = Object.entries(this.config_.settings || {})[indexKey]
+    const indexConfig = (this.config_.settings || {})[indexKey]
 
     switch (indexConfig?.type) {
       case SearchUtils.indexTypes.PRODUCTS:
