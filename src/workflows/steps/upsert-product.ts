@@ -19,8 +19,6 @@ export const upsertProductStep = createStep('upsert-products', async ({ id }: St
     filters: { id },
   })
 
-  console.log('products', products)
-
   await Promise.all(
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
