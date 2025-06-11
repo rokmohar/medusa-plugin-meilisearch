@@ -1,4 +1,19 @@
-# Meilisearch plugin for Medusa V2
+# MedusaJS v2 MeiliSearch Plugin with i18n Support
+
+This plugin integrates MeiliSearch with your Medusa e-commerce store and adds support for internationalization (i18n) of your product catalog.
+
+## Features
+
+- Full-text search for your Medusa store
+- Real-time indexing
+- Typo-tolerance
+- Faceted search
+- Internationalization (i18n) support with multiple strategies:
+  1. Separate index per language
+  2. Language-specific fields with suffix
+- Flexible translation configuration
+- Custom field transformations
+- Automatic field detection
 
 ## Installation
 
@@ -75,10 +90,173 @@ module.exports = defineConfig({
             }),*/
           },
         },
+        i18n: {
+          // Choose one of the following strategies:
+
+          // 1. Separate index per language
+          // strategy: 'separate-index',
+          // languages: ['en', 'fr', 'de'],
+          // defaultLanguage: 'en',
+
+          // 2. Language-specific fields with suffix
+          strategy: 'field-suffix',
+          languages: ['en', 'fr', 'de'],
+          defaultLanguage: 'en',
+          translatableFields: ['title', 'description'],
+        },
       },
     },
   ],
 })
+```
+
+## i18n Configuration
+
+The plugin supports two main strategies for handling translations, with flexible configuration options for each.
+
+### Basic Configuration
+
+```typescript
+{
+  i18n: {
+    // Choose strategy: 'separate-index' or 'field-suffix'
+    strategy: 'field-suffix',
+    // List of supported languages
+    languages: ['en', 'fr', 'de'],
+    // Default language to fall back to
+    defaultLanguage: 'en',
+    // Optional: List of translatable fields
+    translatableFields: ['title', 'description', 'handle']
+  }
+}
+```
+
+### Advanced Field Configuration
+
+You can provide detailed configuration for each translatable field:
+
+```typescript
+{
+  i18n: {
+    strategy: 'field-suffix',
+    languages: ['en', 'fr', 'de'],
+    defaultLanguage: 'en',
+    translatableFields: [
+      // Simple field name
+      'title',
+
+      // Field with different target name
+      {
+        source: 'description',
+        target: 'content'  // Will be indexed as content_en, content_fr, etc.
+      },
+
+      // Field with transformation
+      {
+        source: 'handle',
+        transform: (value) => value.toLowerCase().replace(/\s+/g, '-')
+      }
+    ]
+  }
+}
+```
+
+### Custom Translation Transformer
+
+The plugin provides a flexible way to transform your products with custom translations. Instead of relying on specific storage formats, you can provide translations directly to the transformer:
+
+```typescript
+import { transformProduct } from 'medusa-plugin-meilisearch'
+
+// Your custom function to fetch translations from any source
+const getProductTranslations = async (productId: string) => {
+  // Example: fetch from your translation service/database
+  return {
+    title: [
+      { language_code: 'en', value: 'Blue T-Shirt' },
+      { language_code: 'fr', value: 'T-Shirt Bleu' },
+    ],
+    description: [
+      { language_code: 'en', value: 'A comfortable blue t-shirt' },
+      { language_code: 'fr', value: 'Un t-shirt bleu confortable' },
+    ],
+  }
+}
+
+// Example usage in your custom transformer
+const customTransformer = async (product, options) => {
+  const translations = await getProductTranslations(product.id)
+
+  return transformProduct(product, {
+    ...options,
+    translations,
+  })
+}
+```
+
+## i18n Strategies
+
+### 1. Separate Index per Language
+
+This strategy creates a separate MeiliSearch index for each language. For example, if your base index is named "products", it will create:
+
+- products_en
+- products_fr
+- products_de
+
+Benefits:
+
+- Better performance for language-specific searches
+- Language-specific settings and ranking rules
+- Cleaner index structure
+
+### 2. Language-specific Fields with Suffix
+
+This strategy adds language suffixes to translatable fields in the same index. For example:
+
+- title_en, title_fr, title_de
+- description_en, description_fr, description_de
+
+Benefits:
+
+- Single index to maintain
+- Ability to search across all languages at once
+- Smaller storage requirements
+
+## API Endpoints
+
+### Search Products
+
+```http
+GET /store/products/search
+```
+
+Query Parameters:
+
+- `query`: Search query string
+- `language`: (Optional) Language code to search in
+
+Examples:
+
+```http
+# Basic search in French
+GET /store/products/search?query=shirt&language=fr
+```
+
+## Auto-detection of Translatable Fields
+
+If no translatable fields are specified and using the field-suffix strategy, the plugin will automatically detect string fields as translatable. You can override this by explicitly specifying the fields:
+
+```typescript
+{
+  i18n: {
+    strategy: 'field-suffix',
+    languages: ['en', 'fr'],
+    defaultLanguage: 'en',
+    // Only these fields will be translatable
+    translatableFields: ['title', 'description']
+  }
+}
 ```
 
 ## ENV variables
@@ -125,3 +303,7 @@ services:
 ## Add search to Medusa NextJS starter
 
 You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.
+
+## Contributing
+
+Feel free to open issues and pull requests!
