@@ -1,17 +1,13 @@
-import { I18nConfig } from '../types'
-import {
-  TranslationMap,
-  TranslationOptions,
-  getTranslation,
-  normalizeFieldConfig,
-} from '../types/translation'
+import { DefaultProductTransformer, I18nConfig } from '../types'
+import { TranslationMap, TranslationOptions, getTranslation, normalizeFieldConfig } from '../types/translation'
+import { ProductDTO } from '@medusajs/types'
 
 export interface TransformOptions extends TranslationOptions {
   i18n?: I18nConfig
   translations?: TranslationMap
 }
 
-export const transformProduct = (product: any, options?: TransformOptions) => {
+export const transformProduct: DefaultProductTransformer = (product: ProductDTO, options?: TransformOptions) => {
   const {
     i18n,
     language,

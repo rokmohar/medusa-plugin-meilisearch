@@ -1,6 +1,6 @@
 import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
-import { MeiliSearch, Settings } from 'meilisearch'
+import { MeiliSearch } from 'meilisearch'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct, TransformOptions } from '../utils/transformer'
 
@@ -102,10 +102,10 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
     if (i18n?.strategy === 'separate-index') {
       const langIndexKey = this.getLanguageIndexKey(indexKey, language || i18n.defaultLanguage)
-      const transformedDocuments = this.getTransformedDocuments(indexKey, documents, i18nOptions)
+      const transformedDocuments = await this.getTransformedDocuments(indexKey, documents, i18nOptions)
       return this.client_.index(langIndexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
     } else {
-      const transformedDocuments = this.getTransformedDocuments(indexKey, documents, i18nOptions)
+      const transformedDocuments = await this.getTransformedDocuments(indexKey, documents, i18nOptions)
       return this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
     }
   }
@@ -135,7 +135,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return this.client_.index(actualIndexKey).search(query, { filter, ...paginationOptions, ...additionalOptions })
   }
 
-  async updateSettings(indexKey: string, settings: SearchTypes.IndexSettings & Settings) {
+  async updateSettings(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'indexSettings' | 'primaryKey'>) {
     const indexConfig = this.config_.settings?.[indexKey]
     if (indexConfig?.enabled === false) {
       return
@@ -158,7 +158,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
   }
 
-  async upsertIndex(indexKey: string, settings: SearchTypes.IndexSettings) {
+  async upsertIndex(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'primaryKey'>) {
     const indexConfig = this.config_.settings?.[indexKey]
     if (indexConfig?.enabled === false) {
       return
@@ -174,7 +174,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
   }
 
-  private getTransformedDocuments(indexKey: string, documents: any[], options?: TransformOptions) {
+  private async getTransformedDocuments(indexKey: string, documents: any[], options?: TransformOptions) {
     if (!documents?.length) {
       return []
     }
@@ -183,8 +183,10 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
     switch (indexConfig?.type) {
       case SearchUtils.indexTypes.PRODUCTS:
-        return documents.map(
-          (doc) => indexConfig.transformer?.(doc, transformProduct, { ...options }) ?? transformProduct(doc, options),
+        return Promise.all(
+          documents.map(
+            (doc) => indexConfig.transformer?.(doc, transformProduct, { ...options }) ?? transformProduct(doc, options),
+          ),
         )
 
       default:

@@ -1,5 +1,5 @@
-import { SearchTypes } from '@medusajs/types'
-import { Config } from 'meilisearch'
+import { ProductDTO, SearchTypes } from '@medusajs/types'
+import { Config, Settings } from 'meilisearch'
 import { TransformOptions } from '../utils/transformer'
 
 export const meilisearchErrorCodes = {
@@ -33,6 +33,19 @@ export interface I18nConfig {
   translatableFields?: string[]
 }
 
+export type TransformedProduct = Record<string, any>
+
+export type DefaultProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
+  document: ProductDTO,
+  options?: TransformOptions,
+) => Result
+
+export type ProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
+  document: ProductDTO,
+  defaultTransformer: DefaultProductTransformer,
+  options?: TransformOptions,
+) => Promise<Result>
+
 export interface MeilisearchPluginOptions {
   /**
    * Meilisearch client configuration
@@ -47,11 +60,8 @@ export interface MeilisearchPluginOptions {
       type: string
       enabled?: boolean
       fields?: string[]
-      transformer?: (
-        document: any,
-        defaultTransformer: (document: any) => any,
-        options?: TransformOptions,
-      ) => Record<string, unknown>
+      indexSettings: Settings
+      transformer?: ProductTransformer<Record<string, any>>
     }
   }
 

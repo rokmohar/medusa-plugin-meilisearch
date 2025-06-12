@@ -49,6 +49,7 @@ Add the plugin to your `medusa-config.ts` file:
 
 ```js
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { MeilisearchPluginOptions } from '@rokmohar/medusa-plugin-meilisearch'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -104,7 +105,7 @@ module.exports = defineConfig({
           defaultLanguage: 'en',
           translatableFields: ['title', 'description'],
         },
-      },
+      } satisfies MeilisearchPluginOptions,
     },
   ],
 })
@@ -166,9 +167,8 @@ You can provide detailed configuration for each translatable field:
 The plugin provides a flexible way to transform your products with custom translations. Instead of relying on specific storage formats, you can provide translations directly to the transformer:
 
 ```typescript
-import { transformProduct } from 'medusa-plugin-meilisearch'
+import { transformProduct } from '@rokmohar/medusa-plugin-meilisearch'
 
-// Your custom function to fetch translations from any source
 const getProductTranslations = async (productId: string) => {
   // Example: fetch from your translation service/database
   return {
