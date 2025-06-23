@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "1.2.1-beta.1",
+  "version": "1.2.1-beta.2",
   "description": "Meilisearch plugin for Medusa 2",
   "author": "Rok Mohar",
   "license": "MIT",
@@ -62,7 +62,7 @@
     "react-dom": "^18",
     "ts-node": "^10.9.2",
     "typescript": "^5",
-    "vite": "^5.2.11",
+    "vite": "^5.4.14",
     "yalc": "^1.0.0-pre.53"
   },
   "peerDependencies": {
@@ -78,12 +78,12 @@
     "@mikro-orm/knex": "6.4.3",
     "@mikro-orm/migrations": "6.4.3",
     "@mikro-orm/postgresql": "6.4.3",
-    "@tanstack/react-query": "^5.74.4",
+    "@tanstack/react-query": "5.64.2",
     "awilix": "^8.0.1",
     "pg": "^8.13.0"
   },
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@1.22.22"
 }
