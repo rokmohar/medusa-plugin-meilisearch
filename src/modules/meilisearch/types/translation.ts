@@ -34,12 +34,6 @@ export interface TranslatableField {
    * If not provided, uses the source name
    */
   target?: string
-
-  /**
-   * Optional transformer function to transform the value
-   * before storing it as a translation
-   */
-  transform?: (value: any) => string
 }
 
 /**

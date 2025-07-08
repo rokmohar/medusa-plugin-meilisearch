@@ -1,5 +1,11 @@
-import { DefaultProductTransformer, I18nConfig } from '../types'
-import { TranslationMap, TranslationOptions, getTranslation, normalizeFieldConfig } from '../types/translation'
+import {
+  DefaultProductTransformer,
+  I18nConfig,
+  TranslationMap,
+  TranslationOptions,
+  getTranslation,
+  normalizeFieldConfig,
+} from '../types'
 import { ProductDTO } from '@medusajs/types'
 
 export interface TransformOptions extends TranslationOptions {
@@ -13,7 +19,7 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
     language,
     fallbackLanguage,
     includeAllTranslations,
-    translatableFields: configFields,
+    translatableFields: customTranslatableFields,
     translations = {},
   } = options || {}
 
@@ -25,18 +31,18 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
   const currentLang = language || defaultLang
 
   // Determine translatable fields
-  let translatableFields = (configFields || []).map(normalizeFieldConfig)
-
-  // If no fields specified and using field-suffix strategy,
-  // auto-detect string fields as translatable
-  if (i18n.strategy === 'field-suffix' && !translatableFields.length) {
-    translatableFields = Object.entries(product)
-      .filter(([, value]) => typeof value === 'string')
-      .map(([key]) => ({ source: key }))
-  }
+  let translatableFields = (customTranslatableFields || i18n.translatableFields || []).map(normalizeFieldConfig)
 
   if (i18n.strategy === 'field-suffix') {
     const result: Record<string, unknown> = { ...product }
+
+    // If no fields specified and using field-suffix strategy,
+    // auto-detect string fields as translatable
+    if (!translatableFields.length) {
+      translatableFields = Object.entries(product)
+        .filter(([, value]) => typeof value === 'string')
+        .map(([key]) => ({ source: key }))
+    }
 
     // For each translatable field, create language-specific fields
     translatableFields.forEach((fieldConfig) => {
@@ -44,7 +50,7 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
       const targetField = fieldConfig.target || sourceField
 
       // Get translations for this field
-      const fieldTranslations = translations[targetField] || []
+      const fieldTranslations = translations[sourceField] || []
 
       if (includeAllTranslations) {
         // Include all translations with language suffixes

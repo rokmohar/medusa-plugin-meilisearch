@@ -1,6 +1,7 @@
 import { ProductDTO, SearchTypes } from '@medusajs/types'
 import { Config, Settings } from 'meilisearch'
 import { TransformOptions } from '../utils/transformer'
+import { TranslatableField } from './translation'
 
 export const meilisearchErrorCodes = {
   INDEX_NOT_FOUND: 'index_not_found',
@@ -30,7 +31,7 @@ export interface I18nConfig {
    * Fields that should be translated
    * Only used when the strategy is 'field-suffix'
    */
-  translatableFields?: string[]
+  translatableFields?: (string | TranslatableField)[]
 }
 
 export type TransformedProduct = Record<string, any>

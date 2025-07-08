@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "1.2.1-beta.3",
+  "version": "1.2.1",
   "description": "Meilisearch plugin for Medusa 2",
   "author": "Rok Mohar",
   "license": "MIT",
@@ -85,5 +85,5 @@
   "engines": {
     "node": ">=20"
   },
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@4.9.2"
 }

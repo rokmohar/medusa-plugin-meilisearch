@@ -57,17 +57,6 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       fields.add('*')
     }
 
-    const { i18n } = this.config_
-
-    if (i18n?.strategy === 'field-suffix' && i18n.translatableFields) {
-      const { languages, translatableFields } = i18n
-      for (const field of translatableFields) {
-        for (const lang of languages) {
-          fields.add(`${field}_${lang}`)
-        }
-      }
-    }
-
     return Array.from(fields)
   }
 
