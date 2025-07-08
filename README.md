@@ -225,22 +225,24 @@ Benefits:
 
 ## API Endpoints
 
-### Search Products
+### Search for Hits
 
 ```http
-GET /store/products/search
+GET /store/meilisearch/hits
 ```
 
 Query Parameters:
 
 - `query`: Search query string
-- `language`: (Optional) Language code to search in
+- `limit`: (Optional) Limit results from search
+- `offset`: (Optional) Offset results from search
+- `language`: (Optional) Language code
 
 Examples:
 
 ```http
 # Basic search in French
-GET /store/products/search?query=shirt&language=fr
+GET /store/meilisearch/hits?query=shirt&language=fr
 ```
 
 ## Auto-detection of Translatable Fields

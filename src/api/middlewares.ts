@@ -1,12 +1,12 @@
-import { defineMiddlewares, validateAndTransformBody } from '@medusajs/framework'
-import { SearchSchema } from './store/products/search/route'
+import { defineMiddlewares, validateAndTransformQuery } from '@medusajs/framework'
+import { StoreSearchProductsSchema } from './store/meilisearch/hits/route'
 
 export default defineMiddlewares({
   routes: [
     {
-      matcher: '/store/products/search',
-      method: ['POST'],
-      middlewares: [validateAndTransformBody(SearchSchema)],
+      methods: ['GET'],
+      matcher: '/store/meilisearch/hits',
+      middlewares: [validateAndTransformQuery(StoreSearchProductsSchema, {})],
     },
   ],
 })
