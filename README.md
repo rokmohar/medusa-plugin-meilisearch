@@ -45,20 +45,6 @@ If you are using MedusaJS v2.3.1 or older, please use the [older version of this
 
 ## Configuration
 
-### ⚠️ Worker Mode Considerations
-
-> **Important:** Product events and background tasks will **not work** if your Medusa instance is running in `server` mode, because the server instance does **not** process subscribers or background jobs.
-
-Depending on your setup:
-
-- **Monolithic architecture** (only one backend instance):  
-  Ensure you **do not set** the `MEDUSA_WORKER_MODE` or `WORKER_MODE` environment variable. By default, Medusa will use `shared` mode, which supports both background processing and serving HTTP requests from the same instance.
-
-- **Split architecture** (separate server and worker instances):  
-  Follow the [official Medusa documentation on worker mode](https://docs.medusajs.com/learn/production/worker-mode#content).  
-  In this case, you **must add this plugin in the worker instance**, as the server instance does not handle event subscribers or background tasks.
-
-
 Add the plugin to your `medusa-config.ts` file:
 
 ```js
@@ -124,6 +110,20 @@ module.exports = defineConfig({
   ],
 })
 ```
+
+### ⚠️ Worker Mode Considerations
+
+> **Important:** Product events and background tasks will **not work** if your Medusa instance is running in `server` mode, because the server instance does **not** process subscribers or background jobs.
+
+Depending on your setup:
+
+- **Monolithic architecture** (only one backend instance):  
+  Ensure you **do not set** the `MEDUSA_WORKER_MODE` or `WORKER_MODE` environment variable. By default, Medusa will use `shared` mode, which supports both background processing and serving HTTP requests from the same instance.
+
+- **Split architecture** (separate server and worker instances):  
+  Follow the [official Medusa documentation on worker mode](https://docs.medusajs.com/learn/production/worker-mode#content).  
+  In this case, you **must add this plugin in the worker instance**, as the server instance does not handle event subscribers or background tasks.
+
 
 ## i18n Configuration
 
