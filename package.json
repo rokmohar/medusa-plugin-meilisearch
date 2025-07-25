@@ -9,11 +9,12 @@
     "url": "git+https://github.com/rokmohar/medusa-plugin-meilisearch.git"
   },
   "keywords": [
-    "plugin",
     "medusa",
     "medusa-v2",
     "medusa-plugin",
-    "medusa-plugin-meilisearch"
+    "medusa-plugin-integration",
+    "medusa-plugin-meilisearch",
+    "medusa-plugin-search"
   ],
   "files": [
     ".medusa/server"
