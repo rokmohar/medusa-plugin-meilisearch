@@ -5,8 +5,8 @@ import z from 'zod'
 
 export const StoreSearchProductsSchema = z.object({
   query: z.string(),
-  limit: z.number().default(10),
-  offset: z.number().default(0),
+  limit: z.coerce.number().default(10),
+  offset: z.coerce.number().default(0),
   language: z.string().optional(),
 })
 
