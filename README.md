@@ -255,7 +255,6 @@ Query Parameters:
 Examples:
 
 ```http
-# Basic search in French
 GET /store/meilisearch/hits?query=shirt&language=fr
 ```
 
