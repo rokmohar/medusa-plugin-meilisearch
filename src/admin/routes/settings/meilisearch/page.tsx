@@ -54,6 +54,9 @@ const SyncPage = () => {
       
       const response = await fetch('/admin/meilisearch/hits', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           query: searchQuery.trim(),
           semanticSearch: semanticSearchEnabled,
