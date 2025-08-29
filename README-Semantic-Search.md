@@ -1,4 +1,4 @@
-# STEP 2: AI-Powered Semantic Search
+# AI-Powered Semantic Search
 
 The MeiliSearch plugin now supports AI-powered semantic search using vector embeddings. This enables more intelligent search results based on meaning rather than just keywords.
 
