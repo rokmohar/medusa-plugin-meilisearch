@@ -317,7 +317,7 @@ services:
 
 ## AI-Powered Semantic Search
 
-This plugin supports AI-powered semantic search using vector embeddings. See [README-Semantic-Search.md](README-Semantic-Search.md) for detailed configuration and usage instructions.
+This plugin supports AI-powered semantic search using vector embeddings. See [docs/semantic-search.md](docs/semantic-search.md) for detailed configuration and usage instructions.
 
 ## Add search to Medusa NextJS starter
 
