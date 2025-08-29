@@ -315,6 +315,10 @@ services:
       retries: 5
 ```
 
+## AI-Powered Semantic Search
+
+This plugin supports AI-powered semantic search using vector embeddings. See [README-Semantic-Search.md](README-Semantic-Search.md) for detailed configuration and usage instructions.
+
 ## Add search to Medusa NextJS starter
 
 You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.

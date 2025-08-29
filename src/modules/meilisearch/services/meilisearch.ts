@@ -3,6 +3,7 @@ import { SearchUtils } from '@medusajs/utils'
 import { MeiliSearch } from 'meilisearch'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct, TransformOptions } from '../utils/transformer'
+import { MeiliSearchEmbedderService } from './meilisearch-embedder'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   static identifier = 'index-meilisearch'
@@ -11,6 +12,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
   protected readonly config_: MeilisearchPluginOptions
   protected readonly client_: MeiliSearch
+  protected readonly embedderService_: MeiliSearchEmbedderService
 
   constructor(container: any, options: MeilisearchPluginOptions) {
     super(container, options)
@@ -30,6 +32,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
 
     this.client_ = new MeiliSearch(options.config)
+    this.embedderService_ = new MeiliSearchEmbedderService(options, this.client_)
   }
 
   protected getLanguageIndexKey(baseKey: string, language?: string): string {
@@ -118,10 +121,25 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return this.client_.index(actualIndexKey).deleteAllDocuments()
   }
 
-  async search(indexKey: string, query: string, options: Record<string, any> & { language?: string }) {
-    const { language, paginationOptions, filter, additionalOptions } = options
+  async search(indexKey: string, query: string, options: Record<string, any> & { language?: string; semanticSearch?: boolean; semanticRatio?: number }) {
+    const { language, paginationOptions, filter, additionalOptions, semanticSearch = false, semanticRatio = 0.5 } = options
     const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
-    return this.client_.index(actualIndexKey).search(query, { filter, ...paginationOptions, ...additionalOptions })
+
+    // Build base search options
+    let searchOptions: any = {
+      filter,
+      ...paginationOptions,
+      ...additionalOptions,
+    }
+
+    // Enhance with vector search if needed
+    searchOptions = this.embedderService_.enhanceSearchOptions(searchOptions, semanticSearch, semanticRatio)
+
+    // Perform search
+    const result = await this.client_.index(actualIndexKey).search(query, searchOptions)
+
+    // Enhance results with vector search metadata
+    return this.embedderService_.enhanceSearchResults(result, semanticSearch, semanticRatio)
   }
 
   async updateSettings(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'indexSettings' | 'primaryKey'>) {
@@ -138,13 +156,26 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
         languages.map(async (lang) => {
           const langIndexKey = this.getLanguageIndexKey(indexKey, lang)
           await this.upsertIndex(langIndexKey, settings)
-          return this.client_.index(langIndexKey).updateSettings(settings.indexSettings ?? {})
+          await this.updateIndexSettings(langIndexKey, settings.indexSettings ?? {})
+          // Configure embedders for vector search
+          if (this.embedderService_.isVectorSearchEnabled()) {
+            await this.embedderService_.configureEmbedders(langIndexKey)
+          }
         }),
       )
     } else {
       await this.upsertIndex(indexKey, settings)
-      return this.client_.index(indexKey).updateSettings(settings.indexSettings ?? {})
+      await this.updateIndexSettings(indexKey, settings.indexSettings ?? {})
+      // Configure embedders for vector search
+      if (this.embedderService_.isVectorSearchEnabled()) {
+        await this.embedderService_.configureEmbedders(indexKey)
+      }
+      return
     }
+  }
+
+  private async updateIndexSettings(indexKey: string, indexSettings: Record<string, any>) {
+    return this.client_.index(indexKey).updateSettings(indexSettings)
   }
 
   async upsertIndex(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'primaryKey'>) {
@@ -181,5 +212,20 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       default:
         return documents
     }
+  }
+
+  /**
+   * Get embedder configuration status for admin panel
+   * Delegates to the embedder service
+   */
+  async getVectorSearchStatus() {
+    return this.embedderService_.getVectorSearchStatus()
+  }
+
+  /**
+   * Access to embedder service for advanced vector search operations
+   */
+  get embedderService() {
+    return this.embedderService_
   }
 }
