@@ -31,6 +31,7 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --cache --cache-strategy content --log-level warn"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.64.2",
     "meilisearch": "^0.51.0"
   },
   "devDependencies": {

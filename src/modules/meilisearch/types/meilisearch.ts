@@ -35,6 +35,7 @@ export interface I18nConfig {
 }
 
 export type TransformedProduct = Record<string, any>
+export type TransformedCategory = Record<string, any>
 
 export type DefaultProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
   document: ProductDTO,
@@ -44,6 +45,17 @@ export type DefaultProductTransformer<Result extends TransformedProduct = Transf
 export type ProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
   document: ProductDTO,
   defaultTransformer: DefaultProductTransformer,
+  options?: TransformOptions,
+) => Promise<Result>
+
+export type DefaultCategoryTransformer<Result extends TransformedCategory = TransformedCategory> = (
+  document: any,
+  options?: TransformOptions,
+) => Result
+
+export type CategoryTransformer<Result extends TransformedCategory = TransformedCategory> = (
+  document: any,
+  defaultTransformer: DefaultCategoryTransformer,
   options?: TransformOptions,
 ) => Promise<Result>
 
@@ -134,7 +146,7 @@ export interface MeilisearchPluginOptions {
       enabled?: boolean
       fields?: string[]
       indexSettings: Settings
-      transformer?: ProductTransformer<Record<string, any>>
+      transformer?: ProductTransformer<Record<string, any>> | CategoryTransformer<Record<string, any>>
     }
   }
 
