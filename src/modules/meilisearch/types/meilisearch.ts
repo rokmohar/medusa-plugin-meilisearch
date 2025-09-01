@@ -47,6 +47,78 @@ export type ProductTransformer<Result extends TransformedProduct = TransformedPr
   options?: TransformOptions,
 ) => Promise<Result>
 
+/**
+ * Vector search embedding provider types
+ */
+export type EmbeddingProvider = 'ollama' | 'openai'
+
+export interface OllamaEmbeddingConfig {
+  provider: 'ollama'
+  /**
+   * Ollama server URL (e.g., 'http://localhost:11434')
+   */
+  baseUrl: string
+  /**
+   * Embedding model name (e.g., 'nomic-embed-text')
+   */
+  model: string
+  /**
+   * Optional Ngrok URL for tunneling local Ollama to simulate live version
+   */
+  ngrokUrl?: string
+}
+
+export interface OpenAIEmbeddingConfig {
+  provider: 'openai'
+  /**
+   * OpenAI API key
+   */
+  apiKey: string
+  /**
+   * OpenAI embedding model (e.g., 'text-embedding-3-small')
+   */
+  model: string
+  /**
+   * Optional OpenAI API base URL
+   */
+  baseUrl?: string
+}
+
+export type EmbeddingConfig = OllamaEmbeddingConfig | OpenAIEmbeddingConfig
+
+/**
+ * Vector search configuration
+ */
+export interface VectorSearchConfig {
+  /**
+   * Whether vector search is enabled
+   */
+  enabled: boolean
+  
+  /**
+   * Embedding provider configuration
+   */
+  embedding: EmbeddingConfig
+  
+  /**
+   * Fields to generate embeddings for
+   */
+  embeddingFields?: string[]
+  
+  /**
+   * Semantic search ratio (0.0 = pure keyword, 1.0 = pure semantic)
+   * Default: 0.5 for hybrid search
+   */
+  semanticRatio?: number
+  
+  /**
+   * Vector dimensions (depends on the embedding model)
+   * - nomic-embed-text: 768
+   * - text-embedding-3-small: 1536
+   */
+  dimensions?: number
+}
+
 export interface MeilisearchPluginOptions {
   /**
    * Meilisearch client configuration
@@ -70,4 +142,9 @@ export interface MeilisearchPluginOptions {
    * I18n configuration
    */
   i18n?: I18nConfig
+
+  /**
+   * Vector search configuration for AI-powered semantic search
+   */
+  vectorSearch?: VectorSearchConfig
 }
