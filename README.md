@@ -8,6 +8,7 @@ This plugin integrates MeiliSearch with your Medusa e-commerce store and adds su
 - Real-time indexing
 - Typo-tolerance
 - Faceted search
+- Support for both products and categories
 - Internationalization (i18n) support with multiple strategies:
   1. Separate index per language
   2. Language-specific fields with suffix
@@ -87,6 +88,27 @@ module.exports = defineConfig({
             // Create your own transformer
             /*transformer: (product) => ({
               id: product.id,
+              // other attributes...
+            }),*/
+          },
+          categories: {
+            // Required: Index type
+            type: 'categories',
+            // Optional: Whether the index is enabled
+            enabled: true,
+            // Optional: Specify which fields to include in the index
+            // If not specified, all fields will be included
+            fields: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
+            indexSettings: {
+              searchableAttributes: ['name', 'description'],
+              displayedAttributes: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
+              filterableAttributes: ['id', 'handle', 'is_active', 'parent_id'],
+            },
+            primaryKey: 'id',
+            // Create your own transformer
+            /*transformer: (category) => ({
+              id: category.id,
+              name: category.name,
               // other attributes...
             }),*/
           },
@@ -241,7 +263,7 @@ Benefits:
 ### Search for Hits
 
 ```http
-GET /store/meilisearch/hits
+GET /store/meilisearch/products-hits
 ```
 
 Query Parameters:
@@ -254,7 +276,7 @@ Query Parameters:
 Examples:
 
 ```http
-GET /store/meilisearch/hits?query=shirt&language=fr
+GET /store/meilisearch/products-hits?query=shirt&language=fr
 ```
 
 ## Auto-detection of Translatable Fields
@@ -290,6 +312,89 @@ If you want to use with the `docker-compose` from this README, use the following
 MEILISEARCH_HOST=http://127.0.0.1:7700
 MEILISEARCH_API_KEY=ms
 ```
+
+## Category Support
+
+This plugin provides full support for MedusaJS v2 categories, including:
+
+- Real-time indexing of category changes
+- i18n support for category names and descriptions
+- Hierarchical category structure support with parent-child relationships
+- Custom category field transformations
+
+### Category Configuration Example
+
+```typescript
+{
+  settings: {
+    categories: {
+      type: 'categories',
+      enabled: true,
+      fields: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
+      indexSettings: {
+        searchableAttributes: ['name', 'description'],
+        displayedAttributes: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
+        filterableAttributes: ['id', 'handle', 'is_active', 'parent_id'],
+      },
+      primaryKey: 'id',
+    },
+  },
+  i18n: {
+    strategy: 'field-suffix',
+    languages: ['en', 'fr', 'de'],
+    defaultLanguage: 'en',
+    translatableFields: ['name', 'description'], // Category-specific translatable fields
+  },
+}
+```
+
+### Category API Endpoints
+
+The plugin provides API endpoints for searching categories:
+
+**Admin API (POST):**
+
+```
+POST /admin/meilisearch/categories
+```
+
+**Store API (GET):**
+
+```
+GET /store/meilisearch/categories
+```
+
+**Query Parameters:**
+
+- `q` - Search query string
+- `index` - Index name (defaults to 'categories')
+- `filter` - Meilisearch filter expression
+- `language` - Language code for i18n searches
+- `semanticSearch` - Enable AI-powered semantic search (boolean)
+- `semanticRatio` - Semantic vs keyword search ratio (0-1)
+- `limit` - Number of results to return
+- `offset` - Number of results to skip
+
+**Example Usage:**
+
+```typescript
+// Search active categories containing "electronics"
+GET /store/meilisearch/categories?q=electronics&filter=is_active=true
+
+// Search categories with semantic search
+GET /store/meilisearch/categories?q=tech gadgets&semanticSearch=true&semanticRatio=0.8
+
+// Search categories in French
+GET /store/meilisearch/categories?q=électronique&language=fr
+```
+
+### Category Events
+
+The plugin automatically handles the following category events:
+
+- `product_category.created` - Adds category to search index
+- `product_category.updated` - Updates category in search index
+- `product_category.deleted` - Removes category from search index
 
 ## docker-compose
 

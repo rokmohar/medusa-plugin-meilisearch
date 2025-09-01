@@ -45,7 +45,7 @@ const SyncPage = () => {
     onSuccess: () => {
       toast.success('Successfully triggered data sync to Meilisearch')
     },
-    onError: (err) => {
+    onError: (err: any) => {
       console.error(err)
       toast.error('Failed to sync data to Meilisearch')
     },
@@ -57,7 +57,7 @@ const SyncPage = () => {
         throw new Error('Search query cannot be empty')
       }
 
-      const response = await fetch('/admin/meilisearch/hits', {
+      const response = await fetch('/admin/meilisearch/categories-hits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const SyncPage = () => {
 
       return response.json()
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
       toast.success(`Search test successful! Found ${data.hits.length} results${hybridInfo}`)
     },
