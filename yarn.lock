@@ -6463,6 +6463,7 @@ __metadata:
     "@mikro-orm/migrations": "npm:6.4.3"
     "@mikro-orm/postgresql": "npm:6.4.3"
     "@swc/core": "npm:1.5.7"
+    "@tanstack/react-query": "npm:5.64.2"
     "@types/node": "npm:^20"
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"

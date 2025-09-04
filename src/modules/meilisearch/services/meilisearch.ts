@@ -2,7 +2,7 @@ import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
 import { MeiliSearch } from 'meilisearch'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
-import { transformProduct, TransformOptions } from '../utils/transformer'
+import { transformProduct, transformCategory, TransformOptions } from '../utils/transformer'
 import { MeiliSearchEmbedderService } from './meilisearch-embedder'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
@@ -217,6 +217,14 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
         return Promise.all(
           documents.map(
             (doc) => indexConfig.transformer?.(doc, transformProduct, { ...options }) ?? transformProduct(doc, options),
+          ),
+        )
+
+      case 'categories':
+        return Promise.all(
+          documents.map(
+            (doc) =>
+              indexConfig.transformer?.(doc, transformCategory, { ...options }) ?? transformCategory(doc, options),
           ),
         )
 
