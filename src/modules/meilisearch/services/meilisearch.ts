@@ -121,8 +121,19 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return this.client_.index(actualIndexKey).deleteAllDocuments()
   }
 
-  async search(indexKey: string, query: string, options: Record<string, any> & { language?: string; semanticSearch?: boolean; semanticRatio?: number }) {
-    const { language, paginationOptions, filter, additionalOptions, semanticSearch = false, semanticRatio = 0.5 } = options
+  async search(
+    indexKey: string,
+    query: string,
+    options: Record<string, any> & { language?: string; semanticSearch?: boolean; semanticRatio?: number },
+  ) {
+    const {
+      language,
+      paginationOptions,
+      filter,
+      additionalOptions,
+      semanticSearch = false,
+      semanticRatio = 0.5,
+    } = options
     const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
 
     // Build base search options

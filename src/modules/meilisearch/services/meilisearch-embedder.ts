@@ -18,10 +18,7 @@ export class MeiliSearchEmbedderService {
    * Check if vector search is enabled and properly configured
    */
   isVectorSearchEnabled(): boolean {
-    return !!(
-      this.config_.vectorSearch?.enabled &&
-      this.config_.vectorSearch.embedding
-    )
+    return !!(this.config_.vectorSearch?.enabled && this.config_.vectorSearch.embedding)
   }
 
   /**
@@ -41,7 +38,7 @@ export class MeiliSearchEmbedderService {
 
       await this.client_.index(indexKey).updateEmbedders(embedders)
       // Successfully configured embedders
-    } catch (error) {
+    } catch {
       // Failed to configure embedders - continue without vector search
       // Don't throw - let the system continue without vector search
     }
@@ -64,7 +61,7 @@ export class MeiliSearchEmbedderService {
       case 'ollama':
         return {
           source: 'ollama',
-          url: embeddingConfig.ngrokUrl 
+          url: embeddingConfig.ngrokUrl
             ? `${embeddingConfig.ngrokUrl}/api/embeddings`
             : `${embeddingConfig.baseUrl}/api/embeddings`,
           model: embeddingConfig.model,
@@ -77,7 +74,7 @@ export class MeiliSearchEmbedderService {
           source: 'openAi',
           apiKey: embeddingConfig.apiKey,
           model: embeddingConfig.model,
-          url: embeddingConfig.baseUrl 
+          url: embeddingConfig.baseUrl
             ? `${embeddingConfig.baseUrl}/embeddings`
             : 'https://api.openai.com/v1/embeddings',
           documentTemplate: this.createDocumentTemplate(),
@@ -106,9 +103,9 @@ export class MeiliSearchEmbedderService {
    */
   private createDocumentTemplate(): string {
     const { embeddingFields = ['title', 'description'] } = this.config_.vectorSearch || {}
-    
+
     // Create a template that combines the specified fields
-    const fieldTemplates = embeddingFields.map(field => `{{doc.${field}}}`)
+    const fieldTemplates = embeddingFields.map((field) => `{{doc.${field}}}`)
     return fieldTemplates.join(' ')
   }
 
@@ -127,7 +124,7 @@ export class MeiliSearchEmbedderService {
         hybrid: {
           embedder: 'default',
           semanticRatio: 1.0,
-        }
+        },
       }
     } else if (semanticRatio > 0.0) {
       // Hybrid search
@@ -136,7 +133,7 @@ export class MeiliSearchEmbedderService {
         hybrid: {
           embedder: 'default',
           semanticRatio,
-        }
+        },
       }
     }
 
@@ -164,7 +161,7 @@ export class MeiliSearchEmbedderService {
    */
   getVectorSearchStatus() {
     const { vectorSearch } = this.config_
-    
+
     if (!vectorSearch?.enabled) {
       return {
         enabled: false,
@@ -189,7 +186,7 @@ export class MeiliSearchEmbedderService {
   async resetEmbedders(indexKey: string): Promise<void> {
     try {
       await this.client_.index(indexKey).resetEmbedders()
-    } catch (error) {
+    } catch {
       // Silently fail if embedders couldn't be reset
     }
   }
@@ -200,7 +197,7 @@ export class MeiliSearchEmbedderService {
   async getEmbedders(indexKey: string): Promise<Embedders> {
     try {
       return await this.client_.index(indexKey).getEmbedders()
-    } catch (error) {
+    } catch {
       return {}
     }
   }

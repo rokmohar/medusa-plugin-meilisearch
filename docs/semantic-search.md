@@ -140,6 +140,7 @@ module.exports = defineConfig({
 ## Required Environment Variables
 
 ### For Use Case 1 & 2 (Ollama):
+
 ```env
 # Standard MeiliSearch
 MEILISEARCH_HOST=http://127.0.0.1:7700
@@ -150,6 +151,7 @@ OLLAMA_NGROK_URL=https://your-ngrok-url.ngrok.io
 ```
 
 ### For Use Case 3 (OpenAI):
+
 ```env
 # Standard MeiliSearch
 MEILISEARCH_HOST=http://127.0.0.1:7700
@@ -164,20 +166,23 @@ OPENAI_API_KEY=sk-your-openai-api-key
 1. **Install Ollama**: Follow instructions at [ollama.com](https://ollama.com)
 
 2. **Pull the embedding model**:
+
    ```bash
    ollama pull nomic-embed-text
    ```
 
 3. **Start Ollama server** (usually runs on `http://localhost:11434`):
+
    ```bash
    ollama serve
    ```
 
 4. **For Use Case 2 - Setup Ngrok** (optional):
+
    ```bash
    # Install ngrok and expose Ollama
    ngrok http 11434
-   
+
    # Use the provided HTTPS URL in your configuration
    ```
 
@@ -193,16 +198,19 @@ The `/store/meilisearch/hits` endpoint now supports these additional parameters:
 ### Examples
 
 **Pure keyword search** (traditional):
+
 ```http
 GET /store/meilisearch/hits?query=blue shirt&semanticSearch=false
 ```
 
 **Balanced hybrid search**:
+
 ```http
 GET /store/meilisearch/hits?query=blue shirt&semanticSearch=true&semanticRatio=0.5
 ```
 
 **Pure semantic search**:
+
 ```http
 GET /store/meilisearch/hits?query=comfortable clothing&semanticSearch=true&semanticRatio=1.0
 ```
@@ -211,13 +219,16 @@ GET /store/meilisearch/hits?query=comfortable clothing&semanticSearch=true&seman
 
 ```javascript
 // Fetch with semantic search
-const response = await fetch('/store/meilisearch/hits?' + new URLSearchParams({
-  query: 'comfortable summer clothing',
-  semanticSearch: 'true',
-  semanticRatio: '0.7',
-  language: 'en',
-  limit: '10'
-}))
+const response = await fetch(
+  '/store/meilisearch/hits?' +
+    new URLSearchParams({
+      query: 'comfortable summer clothing',
+      semanticSearch: 'true',
+      semanticRatio: '0.7',
+      language: 'en',
+      limit: '10',
+    }),
+)
 
 const results = await response.json()
 console.log('Found:', results.hits.length, 'products')
@@ -253,7 +264,7 @@ This implementation leverages MeiliSearch's **native embedder functionality** ra
 ## Performance Considerations
 
 - **Ollama (Local)**: Faster for development, no API costs, requires local compute resources
-- **OpenAI (Cloud)**: Faster embedding generation, API costs apply, better for production  
+- **OpenAI (Cloud)**: Faster embedding generation, API costs apply, better for production
 - **MeiliSearch Version**: Requires MeiliSearch v1.5+ for full vector search support
 - **Embedding Generation**: Happens automatically when documents are indexed
 - **Search Performance**: Native hybrid search is optimized and faster than manual implementations
@@ -337,7 +348,7 @@ settings: {
     transformer: async (product, defaultTransformer, options) => {
       // Use default transformer first
       const transformed = await defaultTransformer(product, options)
-      
+
       // Add custom fields for embedding
       return {
         ...transformed,
@@ -386,12 +397,12 @@ When using semantic search, the response includes additional metadata:
 interface SearchResponse {
   hits: Array<{
     // ... product data
-    _combinedScore?: number  // Hybrid search score
-    _keywordScore?: number   // Keyword search score
-    _vectorScore?: number    // Vector similarity score
+    _combinedScore?: number // Hybrid search score
+    _keywordScore?: number // Keyword search score
+    _vectorScore?: number // Vector similarity score
   }>
-  hybridSearch?: boolean     // True if hybrid search was used
-  semanticRatio?: number     // The semantic ratio used
+  hybridSearch?: boolean // True if hybrid search was used
+  semanticRatio?: number // The semantic ratio used
   // ... other standard MeiliSearch response fields
 }
 ```

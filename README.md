@@ -124,7 +124,6 @@ Depending on your setup:
   Follow the [official Medusa documentation on worker mode](https://docs.medusajs.com/learn/production/worker-mode#content).  
   In this case, you **must add this plugin in the worker instance**, as the server instance does not handle event subscribers or background tasks.
 
-
 ## i18n Configuration
 
 The plugin supports two main strategies for handling translations, with flexible configuration options for each.

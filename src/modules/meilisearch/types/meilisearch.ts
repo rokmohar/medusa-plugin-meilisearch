@@ -94,23 +94,23 @@ export interface VectorSearchConfig {
    * Whether vector search is enabled
    */
   enabled: boolean
-  
+
   /**
    * Embedding provider configuration
    */
   embedding: EmbeddingConfig
-  
+
   /**
    * Fields to generate embeddings for
    */
   embeddingFields?: string[]
-  
+
   /**
    * Semantic search ratio (0.0 = pure keyword, 1.0 = pure semantic)
    * Default: 0.5 for hybrid search
    */
   semanticRatio?: number
-  
+
   /**
    * Vector dimensions (depends on the embedding model)
    * - nomic-embed-text: 768

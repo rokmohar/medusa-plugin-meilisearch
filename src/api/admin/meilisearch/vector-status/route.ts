@@ -12,9 +12,9 @@ interface VectorSearchStatus {
 
 export async function GET(req: MedusaRequest, res: MedusaResponse<VectorSearchStatus>) {
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
-  
+
   // Use the new method to get vector search status
   const status = await meilisearchService.getVectorSearchStatus()
-  
+
   res.json(status)
 }

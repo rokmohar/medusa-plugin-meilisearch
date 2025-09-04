@@ -19,7 +19,12 @@ const SyncPage = () => {
   const [searchQuery, setSearchQuery] = useState('test product')
 
   // Query to get vector search status
-  const { data: vectorStatus, isLoading: statusLoading, error: statusError, refetch: refetchStatus } = useQuery<VectorSearchStatus>({
+  const {
+    data: vectorStatus,
+    isLoading: statusLoading,
+    error: statusError,
+    refetch: refetchStatus,
+  } = useQuery<VectorSearchStatus>({
     queryKey: ['meilisearch-vector-status'],
     queryFn: async () => {
       const response = await fetch('/admin/meilisearch/vector-status')
@@ -51,7 +56,7 @@ const SyncPage = () => {
       if (!searchQuery.trim()) {
         throw new Error('Search query cannot be empty')
       }
-      
+
       const response = await fetch('/admin/meilisearch/hits', {
         method: 'POST',
         headers: {
@@ -65,12 +70,12 @@ const SyncPage = () => {
           offset: 0,
         }),
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(`Search test failed: ${errorData.message || response.statusText}`)
       }
-      
+
       return response.json()
     },
     onSuccess: (data) => {
@@ -116,21 +121,14 @@ const SyncPage = () => {
                 <Badge color="grey">Disabled</Badge>
               )}
             </div>
-            <Button 
-              variant="secondary" 
-              size="small" 
-              onClick={() => refetchStatus()}
-              isLoading={statusLoading}
-            >
+            <Button variant="secondary" size="small" onClick={() => refetchStatus()} isLoading={statusLoading}>
               Refresh Status
             </Button>
           </div>
 
           {statusError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <Text className="text-red-800 text-sm">
-                Failed to load vector search status: {statusError.message}
-              </Text>
+              <Text className="text-red-800 text-sm">Failed to load vector search status: {statusError.message}</Text>
             </div>
           )}
 
@@ -164,10 +162,7 @@ const SyncPage = () => {
                   <Text className="font-medium">Enable Semantic Search in Tests</Text>
                   <Text className="text-sm text-gray-500">Use AI-powered semantic search for better results</Text>
                 </div>
-                <Switch
-                  checked={semanticSearchEnabled}
-                  onCheckedChange={setSemanticSearchEnabled}
-                />
+                <Switch checked={semanticSearchEnabled} onCheckedChange={setSemanticSearchEnabled} />
               </div>
 
               {semanticSearchEnabled && (
@@ -200,7 +195,8 @@ const SyncPage = () => {
 
           {!vectorStatus?.enabled && (
             <Text className="text-gray-500">
-              Vector search is not configured. Add vectorSearch configuration to your plugin options to enable AI-powered semantic search.
+              Vector search is not configured. Add vectorSearch configuration to your plugin options to enable
+              AI-powered semantic search.
             </Text>
           )}
         </div>
@@ -211,7 +207,7 @@ const SyncPage = () => {
             <Heading level="h2">Data Synchronization</Heading>
           </div>
           <Text className="text-gray-500 mb-4">
-            Manually trigger synchronization of your product catalog with Meilisearch. 
+            Manually trigger synchronization of your product catalog with Meilisearch.
             {vectorStatus?.enabled && ' This will also generate embeddings for semantic search.'}
           </Text>
           <Button onClick={handleSync} isLoading={syncPending} variant="primary">
@@ -225,10 +221,10 @@ const SyncPage = () => {
             <Heading level="h2">Search Testing</Heading>
           </div>
           <Text className="text-gray-500 mb-4">
-            Test your search configuration with a custom query. 
+            Test your search configuration with a custom query.
             {vectorStatus?.enabled && ' You can test both traditional keyword search and AI-powered semantic search.'}
           </Text>
-          
+
           <div className="space-y-4">
             <div>
               <Text className="text-sm font-medium text-gray-700 mb-2">Search Query</Text>
@@ -244,23 +240,22 @@ const SyncPage = () => {
                 Enter a search term to test the search functionality
               </div>
             </div>
-            
+
             <div className="flex gap-3">
-              <Button 
-                onClick={handleTestSearch} 
-                isLoading={testPending} 
+              <Button
+                onClick={handleTestSearch}
+                isLoading={testPending}
                 variant="secondary"
                 disabled={!searchQuery.trim()}
               >
                 Test Search
               </Button>
-              
+
               {vectorStatus?.enabled && (
                 <Text className="text-sm text-gray-500 self-center">
-                  {semanticSearchEnabled 
+                  {semanticSearchEnabled
                     ? `Using hybrid search (${Math.round(semanticRatio * 100)}% semantic)`
-                    : 'Using keyword search only'
-                  }
+                    : 'Using keyword search only'}
                 </Text>
               )}
             </div>
