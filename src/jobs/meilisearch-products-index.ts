@@ -1,18 +1,20 @@
 import { MedusaContainer } from '@medusajs/framework'
-import { syncProductsWorkflow } from '../workflows/sync-products'
 import { CronJobConfig } from '../models/CronJobConfig'
+import { indexProducts } from '../utils/product-indexer'
 
 export default async function meilisearchProductsIndexJob(container: MedusaContainer) {
   const logger = container.resolve('logger')
-  logger.info('Starting product indexing...')
 
-  const {
-    result: { products },
-  } = await syncProductsWorkflow(container).run({
-    input: {},
-  })
+  try {
+    const result = await indexProducts(container, { continueOnError: true })
 
-  logger.info(`Successfully indexed ${products.length} products`)
+    if (result.errors.length > 0) {
+      logger.warn(`Product indexing completed with ${result.errors.length} errors`)
+    }
+  } catch (error) {
+    logger.error(`Product indexing failed: ${error.message}`)
+    throw error
+  }
 }
 
 export const config: CronJobConfig = {

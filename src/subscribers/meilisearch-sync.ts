@@ -1,18 +1,19 @@
 import { SubscriberArgs, type SubscriberConfig } from '@medusajs/framework'
-import { syncProductsWorkflow } from '../workflows/sync-products'
+import { indexProducts } from '../utils/product-indexer'
 
 export default async function meilisearchSyncHandler({ container }: SubscriberArgs) {
   const logger = container.resolve('logger')
 
-  logger.info('Starting product indexing...')
+  try {
+    const result = await indexProducts(container, { continueOnError: true })
 
-  const {
-    result: { products },
-  } = await syncProductsWorkflow(container).run({
-    input: {},
-  })
-
-  logger.info(`Successfully indexed ${products.length} products`)
+    if (result.errors.length > 0) {
+      logger.warn(`Product indexing completed with ${result.errors.length} errors`)
+    }
+  } catch (error) {
+    logger.error(`Product indexing failed: ${error.message}`)
+    throw error
+  }
 }
 
 export const config: SubscriberConfig = {

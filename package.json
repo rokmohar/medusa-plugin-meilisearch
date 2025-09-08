@@ -1,12 +1,15 @@
 {
-  "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "1.2.2",
+  "name": "@hicity/medusa-plugin-meilisearch",
+  "version": "1.2.3",
   "description": "Meilisearch plugin for Medusa 2",
-  "author": "Rok Mohar",
+  "author": "Allen Cao",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rokmohar/medusa-plugin-meilisearch.git"
+    "url": "git+https://github.com/cao0109/medusa-plugin-meilisearch.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "plugin",

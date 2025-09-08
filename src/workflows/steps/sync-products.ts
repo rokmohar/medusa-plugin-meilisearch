@@ -1,6 +1,6 @@
+import { ProductStatus, SearchUtils } from '@medusajs/utils'
 import { createStep, StepResponse } from '@medusajs/workflows-sdk'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
-import { SearchUtils } from '@medusajs/utils'
 
 export type StepInput = {
   filters?: Record<string, unknown>
@@ -25,7 +25,7 @@ export const syncProductsStep = createStep(
         skip: offset,
       },
       filters: {
-        status: 'published',
+        status: ProductStatus.PUBLISHED,
         ...filters,
       },
     })

@@ -2,12 +2,21 @@
 
 This plugin integrates MeiliSearch with your Medusa e-commerce store and adds support for internationalization (i18n) of your product catalog.
 
+> **Note**: This project is based on and extends the excellent work from [rokmohar/medusa-plugin-meilisearch](https://github.com/rokmohar/medusa-plugin-meilisearch). We've added enhanced product indexing capabilities, improved error handling, and additional features while maintaining compatibility with the original plugin.
+
 ## Features
 
 - Full-text search for your Medusa store
 - Real-time indexing
 - Typo-tolerance
 - Faceted search
+- **Advanced Product Indexing**:
+  - Batch processing with configurable page sizes
+  - Robust error handling and recovery
+  - Progress monitoring and detailed logging
+  - Manual sync via API endpoints
+  - Automated cron job scheduling
+  - Event-driven synchronization
 - Internationalization (i18n) support with multiple strategies:
   1. Separate index per language
   2. Language-specific fields with suffix
@@ -20,13 +29,13 @@ This plugin integrates MeiliSearch with your Medusa e-commerce store and adds su
 Run the following command to install the plugin with **npm**:
 
 ```bash
-npm install --save @rokmohar/medusa-plugin-meilisearch
+npm install --save @hicity/medusa-plugin-meilisearch
 ```
 
 Or with **yarn**:
 
 ```bash
-yarn add @rokmohar/medusa-plugin-meilisearch
+yarn add @hicity/medusa-plugin-meilisearch
 ```
 
 ### Upgrade to v1.0
@@ -49,7 +58,7 @@ Add the plugin to your `medusa-config.ts` file:
 
 ```js
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
-import { MeilisearchPluginOptions } from '@rokmohar/medusa-plugin-meilisearch'
+import { MeilisearchPluginOptions } from '@hicity/medusa-plugin-meilisearch'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
@@ -58,7 +67,7 @@ module.exports = defineConfig({
   plugins: [
     // ... other plugins
     {
-      resolve: '@rokmohar/medusa-plugin-meilisearch',
+      resolve: '@hicity/medusa-plugin-meilisearch',
       options: {
         config: {
           host: process.env.MEILISEARCH_HOST ?? '',
@@ -181,7 +190,7 @@ You can provide detailed configuration for each translatable field:
 The plugin provides a flexible way to transform your products with custom translations. Instead of relying on specific storage formats, you can provide translations directly to the transformer:
 
 ```typescript
-import { transformProduct } from '@rokmohar/medusa-plugin-meilisearch'
+import { transformProduct } from '@hicity/medusa-plugin-meilisearch'
 
 const getProductTranslations = async (productId: string) => {
   // Example: fetch from your translation service/database
@@ -237,6 +246,76 @@ Benefits:
 - Ability to search across all languages at once
 - Smaller storage requirements
 
+## Product Indexing
+
+The plugin provides powerful product indexing capabilities with batch processing and error handling.
+
+### Automatic Indexing
+
+Products are automatically indexed when:
+- A product is created, updated, or deleted
+- The sync event is triggered manually
+
+### Manual Indexing
+
+You can manually trigger product indexing through:
+
+#### 1. Admin API Endpoint
+
+```http
+POST /admin/meilisearch/sync
+```
+
+This endpoint triggers a full product reindexing process.
+
+#### 2. Cron Job
+
+The plugin includes a built-in cron job that runs product indexing:
+
+```typescript
+// Configuration in src/jobs/meilisearch-products-index.ts
+export const config: CronJobConfig = {
+  name: 'meilisearch-products-index',
+  schedule: '* * * * *', // Run every minute (adjust as needed)
+  numberOfExecutions: 1,
+}
+```
+
+#### 3. Event Subscriber
+
+The plugin includes a subscriber that responds to sync events:
+
+```typescript
+// Configuration in src/subscribers/meilisearch-sync.ts
+export const config: SubscriberConfig = {
+  event: 'meilisearch.sync',
+}
+```
+
+### Indexing Features
+
+- **Batch Processing**: Products are indexed in batches of 100 (configurable)
+- **Error Handling**: Continues processing even if individual batches fail
+- **Progress Logging**: Detailed logs for monitoring indexing progress
+- **Validation**: Checks for expected product counts per batch
+- **Performance Metrics**: Tracks total products, pages, and execution time
+
+### Custom Indexing Options
+
+You can customize the indexing behavior by using the shared `indexProducts` utility:
+
+```typescript
+import { indexProducts } from '@hicity/medusa-plugin-meilisearch/utils/product-indexer'
+
+const result = await indexProducts(container, {
+  pageSize: 50,           // Custom batch size
+  continueOnError: false  // Stop on first error
+})
+
+console.log(`Indexed ${result.totalProducts} products in ${result.duration}s`)
+console.log(`Errors: ${result.errors.length}`)
+```
+
 ## API Endpoints
 
 ### Search for Hits
@@ -258,6 +337,14 @@ Examples:
 # Basic search in French
 GET /store/meilisearch/hits?query=shirt&language=fr
 ```
+
+### Manual Sync
+
+```http
+POST /admin/meilisearch/sync
+```
+
+Triggers a full product reindexing process. Returns success/failure status.
 
 ## Auto-detection of Translatable Fields
 
@@ -319,6 +406,20 @@ services:
 ## Add search to Medusa NextJS starter
 
 You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.
+
+## Acknowledgments
+
+This project builds upon the excellent foundation provided by [rokmohar/medusa-plugin-meilisearch](https://github.com/rokmohar/medusa-plugin-meilisearch). We extend our gratitude to the original author for creating such a robust and well-designed plugin.
+
+### Enhancements in This Fork
+
+This fork includes the following improvements over the original:
+
+- **Enhanced Product Indexing**: Added batch processing with configurable page sizes and robust error handling
+- **Improved Monitoring**: Detailed progress logging and performance metrics
+- **Flexible Configuration**: Customizable indexing options and error handling strategies
+- **Code Refactoring**: Extracted common logic into reusable utilities to reduce code duplication
+- **Better Documentation**: Comprehensive documentation for all new features
 
 ## Contributing
 
