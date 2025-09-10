@@ -2,7 +2,7 @@ import { createStep, StepResponse } from '@medusajs/workflows-sdk'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
 
 export type StepInput = {
-  filters?: Record<string, unknown>
+  filters?: Record<string, any>
   limit?: number
   offset?: number
 }

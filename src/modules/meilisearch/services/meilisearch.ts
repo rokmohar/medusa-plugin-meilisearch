@@ -77,7 +77,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return baseIndexes
   }
 
-  async createIndex(indexKey: string, options: Record<string, unknown> = { primaryKey: 'id' }) {
+  async createIndex(indexKey: string, options: Record<string, any> = { primaryKey: 'id' }) {
     return this.client_.createIndex(indexKey, options)
   }
 

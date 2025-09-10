@@ -25,7 +25,7 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
   } = options || {}
 
   if (!i18n) {
-    return { ...product } as Record<string, unknown>
+    return { ...product }
   }
 
   const defaultLang = i18n.defaultLanguage
@@ -35,7 +35,7 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
   let translatableFields = (customTranslatableFields || i18n.translatableFields || []).map(normalizeFieldConfig)
 
   if (i18n.strategy === 'field-suffix') {
-    const result: Record<string, unknown> = { ...product }
+    const result: Record<string, any> = { ...product }
 
     // If no fields specified and using field-suffix strategy,
     // auto-detect string fields as translatable
@@ -76,7 +76,7 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
   }
 
   // For separate-index strategy, return the product with translations for current language
-  const result: Record<string, unknown> = { ...product }
+  const result: Record<string, any> = { ...product }
 
   translatableFields.forEach((fieldConfig) => {
     const sourceField = fieldConfig.source
@@ -104,7 +104,7 @@ export const transformCategory: DefaultCategoryTransformer = (category: any, opt
   } = options || {}
 
   if (!i18n) {
-    return { ...category } as Record<string, unknown>
+    return { ...category }
   }
 
   const defaultLang = i18n.defaultLanguage
@@ -114,7 +114,7 @@ export const transformCategory: DefaultCategoryTransformer = (category: any, opt
   let translatableFields = (customTranslatableFields || i18n.translatableFields || []).map(normalizeFieldConfig)
 
   if (i18n.strategy === 'field-suffix') {
-    const result: Record<string, unknown> = { ...category }
+    const result: Record<string, any> = { ...category }
 
     // If no fields specified and using field-suffix strategy,
     // auto-detect string fields as translatable
@@ -155,7 +155,7 @@ export const transformCategory: DefaultCategoryTransformer = (category: any, opt
   }
 
   // For separate-index strategy, return the category with translations for current language
-  const result: Record<string, unknown> = { ...category }
+  const result: Record<string, any> = { ...category }
 
   translatableFields.forEach((fieldConfig) => {
     const sourceField = fieldConfig.source

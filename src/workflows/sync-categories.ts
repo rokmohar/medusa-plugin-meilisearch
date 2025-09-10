@@ -2,7 +2,7 @@ import { createWorkflow, WorkflowResponse } from '@medusajs/workflows-sdk'
 import { syncCategoriesStep } from './steps/sync-categories'
 
 export type SyncCategoriesWorkflowInput = {
-  filters?: Record<string, unknown>
+  filters?: Record<string, any>
   limit?: number
   offset?: number
 }

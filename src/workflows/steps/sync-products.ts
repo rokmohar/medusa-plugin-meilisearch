@@ -3,7 +3,7 @@ import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearc
 import { SearchUtils } from '@medusajs/utils'
 
 export type StepInput = {
-  filters?: Record<string, unknown>
+  filters?: Record<string, any>
   limit?: number
   offset?: number
 }
