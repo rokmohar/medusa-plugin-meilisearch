@@ -229,6 +229,82 @@ const customTransformer = async (product, options) => {
 }
 ```
 
+### Integration with Tolgee
+
+For production environments, you'll often want to integrate with external translation management platforms. Here's an example of integrating with [Tolgee](https://tolgee.io/), a popular translations management platform:
+
+```typescript
+import { default as axios } from 'axios'
+import { logger } from '@medusajs/framework'
+import { TranslationMap } from '@rokmohar/medusa-plugin-meilisearch'
+
+type TranslationsHttpResponse = {
+  [lang: string]: {
+    [id: string]: Record<string, string>
+  }
+}
+
+const options = {
+  apiKey: process.env.TOLGEE_API_KEY ?? '',
+  baseURL: process.env.TOLGEE_API_URL ?? '',
+  projectId: process.env.TOLGEE_PROJECT_ID ?? '',
+}
+
+const httpClient = axios.create({
+  baseURL: `${options.baseURL}/v2/projects/${options.projectId}`,
+  headers: {
+    Accept: 'application/json',
+    'X-API-Key': options.apiKey,
+  },
+  maxBodyLength: Infinity,
+})
+
+export const getTranslations = async (id: string, langs: string[]) => {
+  const translations: TranslationMap = {}
+
+  try {
+    const response = await httpClient.get<TranslationsHttpResponse>(
+      `/translations/${langs.join(',')}?ns=${id}`
+    )
+    Object.entries(response.data).forEach(([language_code, { [id]: values }]) => {
+      Object.entries(values).forEach(([key, value]) => {
+        if (!(key in translations)) {
+          translations[key] = []
+        }
+        translations[key].push({ language_code, value })
+      })
+    })
+  } catch (e) {
+    logger.error(e)
+  }
+
+  return translations
+}
+```
+
+Usage in your transformer configuration:
+
+```typescript
+{
+  settings: {
+    products: {
+      type: 'products',
+      // ... other config
+      transformer: async (product, defaultTransformer, options) => {
+        const translations = await getTranslations(product.id, ['sl', 'en'])
+        return defaultTransformer(product, { 
+          ...options, 
+          translations, 
+          includeAllTranslations: true 
+        })
+      },
+    }
+  }
+}
+```
+
+This integration fetches translations from Tolgee's API and transforms them into the format expected by this plugin. For complete storefront translation management, consider using the [medusa-plugin-tolgee](https://github.com/SteelRazor47/medusa-plugin-tolgee) by SteelRazor47, which provides comprehensive translation management features including admin widgets.
+
 ## i18n Strategies
 
 ### 1. Separate Index per Language
@@ -258,28 +334,7 @@ Benefits:
 - Ability to search across all languages at once
 - Smaller storage requirements
 
-## API Endpoints
-
-### Search for Hits
-
-```http
-GET /store/meilisearch/products-hits
-```
-
-Query Parameters:
-
-- `query`: Search query string
-- `limit`: (Optional) Limit results from search
-- `offset`: (Optional) Offset results from search
-- `language`: (Optional) Language code
-
-Examples:
-
-```http
-GET /store/meilisearch/products-hits?query=shirt&language=fr
-```
-
-## Auto-detection of Translatable Fields
+## Custom Translatable Fields
 
 If no translatable fields are specified and using the field-suffix strategy, the plugin will automatically detect string fields as translatable. You can override this by explicitly specifying the fields:
 
@@ -295,23 +350,40 @@ If no translatable fields are specified and using the field-suffix strategy, the
 }
 ```
 
-## ENV variables
+## Product API Endpoints
 
-Add the environment variables to your `.env` and `.env.template` file:
+### Search for Product Hits
 
-```env
-# ... others vars
-MEILISEARCH_HOST=
-MEILISEARCH_API_KEY=
+```http
+GET /store/meilisearch/products-hits
 ```
 
-If you want to use with the `docker-compose` from this README, use the following values:
+Query Parameters:
 
-```env
-# ... others vars
-MEILISEARCH_HOST=http://127.0.0.1:7700
-MEILISEARCH_API_KEY=ms
+- `query`: Search query string
+- `limit`: (Optional) Limit results from search
+- `offset`: (Optional) Offset results from search
+- `language`: (Optional) Language code
+- `semanticSearch` - Enable AI-powered semantic search (boolean)
+- `semanticRatio` - Semantic vs keyword search ratio (0-1)
+
+### Search for Products
+
+```http
+GET /store/meilisearch/products
 ```
+
+Query Parameters:
+
+- `fields` - MedusaJS fields expression
+- `limit`: (Optional) Limit results from search
+- `offset`: (Optional) Offset results from search
+- `region_id`: (Optional, but required for `calculated_price`) Current region ID
+- `currency_code`: (Optional, but required for `calculated_price`) Current currency code
+- `query`: Search query string
+- `language`: (Optional) Language code
+- `semanticSearch` - Enable AI-powered semantic search (boolean)
+- `semanticRatio` - Semantic vs keyword search ratio (0-1)
 
 ## Category Support
 
@@ -350,51 +422,58 @@ This plugin provides full support for MedusaJS v2 categories, including:
 
 ### Category API Endpoints
 
-The plugin provides API endpoints for searching categories:
+### Search for Category Hits
 
-**Admin API (POST):**
-
-```
-POST /admin/meilisearch/categories
+```http
+GET /store/meilisearch/categories-hits
 ```
 
-**Store API (GET):**
+Query Parameters:
 
-```
+- `query`: Search query string
+- `limit`: (Optional) Limit results from search
+- `offset`: (Optional) Offset results from search
+- `language`: (Optional) Language code
+- `semanticSearch` - Enable AI-powered semantic search (boolean)
+- `semanticRatio` - Semantic vs keyword search ratio (0-1)
+
+### Search for Categories
+
+```http
 GET /store/meilisearch/categories
 ```
 
-**Query Parameters:**
+Query Parameters:
 
-- `q` - Search query string
-- `index` - Index name (defaults to 'categories')
-- `filter` - Meilisearch filter expression
-- `language` - Language code for i18n searches
+- `fields` - MedusaJS fields expression
+- `limit`: (Optional) Limit results from search
+- `offset`: (Optional) Offset results from search
+- `query`: Search query string
+- `language`: (Optional) Language code
 - `semanticSearch` - Enable AI-powered semantic search (boolean)
 - `semanticRatio` - Semantic vs keyword search ratio (0-1)
-- `limit` - Number of results to return
-- `offset` - Number of results to skip
 
-**Example Usage:**
+## AI-Powered Semantic Search
 
-```typescript
-// Search active categories containing "electronics"
-GET /store/meilisearch/categories?q=electronics&filter=is_active=true
+This plugin supports AI-powered semantic search using vector embeddings. See [docs/semantic-search.md](docs/semantic-search.md) for detailed configuration and usage instructions.
 
-// Search categories with semantic search
-GET /store/meilisearch/categories?q=tech gadgets&semanticSearch=true&semanticRatio=0.8
+## ENV variables
 
-// Search categories in French
-GET /store/meilisearch/categories?q=électronique&language=fr
+Add the environment variables to your `.env` and `.env.template` file:
+
+```env
+# ... others vars
+MEILISEARCH_HOST=
+MEILISEARCH_API_KEY=
 ```
 
-### Category Events
+If you want to use with the `docker-compose` from this README, use the following values:
 
-The plugin automatically handles the following category events:
-
-- `product_category.created` - Adds category to search index
-- `product_category.updated` - Updates category in search index
-- `product_category.deleted` - Removes category from search index
+```env
+# ... others vars
+MEILISEARCH_HOST=http://127.0.0.1:7700
+MEILISEARCH_API_KEY=ms
+```
 
 ## docker-compose
 
@@ -419,13 +498,15 @@ services:
       retries: 5
 ```
 
-## AI-Powered Semantic Search
-
-This plugin supports AI-powered semantic search using vector embeddings. See [docs/semantic-search.md](docs/semantic-search.md) for detailed configuration and usage instructions.
-
 ## Add search to Medusa NextJS starter
 
 You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.
+
+## FAQ
+
+- [How do I include product categories and tags in my search index?](docs/faq-product-categories-and-tags.md)
+- [How do I include product variant prices (min_price, max_price) in my search index?](docs/faq-product-variant-prices.md)
+- [How do I include prices in the search response from the search endpoint?](docs/faq-product-search-prices.md)
 
 ## Contributing
 
