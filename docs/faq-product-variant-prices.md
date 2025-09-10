@@ -21,7 +21,7 @@ In your plugin configuration, specify the fields that should be loaded for produ
         fields: [
           'id',
           'title',
-          'description', 
+          'description',
           'handle',
           'thumbnail',
           'variants.prices.*', // Include variant prices
@@ -44,7 +44,7 @@ In your plugin configuration, specify the fields that should be loaded for produ
           // Calculate min_price from variant.prices array
           let min_price = null;
           let cheapest_variant_id = null;
-          
+
           if (Array.isArray(product.variants)) {
             for (const variant of product.variants) {
               if (Array.isArray(variant.prices)) {

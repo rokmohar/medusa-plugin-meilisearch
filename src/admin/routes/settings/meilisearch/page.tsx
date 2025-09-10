@@ -16,7 +16,7 @@ interface VectorSearchStatus {
 const SyncPage = () => {
   const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(false)
   const [semanticRatio, setSemanticRatio] = useState(0.5)
-  const [searchQuery, setSearchQuery] = useState('test product')
+  const [searchQuery, setSearchQuery] = useState('jeans')
 
   // Query to get vector search status
   const {
@@ -57,7 +57,7 @@ const SyncPage = () => {
         throw new Error('Search query cannot be empty')
       }
 
-      const response = await fetch('/admin/meilisearch/categories-hits', {
+      const response = await fetch('/admin/meilisearch/products-hits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ const SyncPage = () => {
             <Heading level="h2">Search Testing</Heading>
           </div>
           <Text className="text-gray-500 mb-4">
-            Test your search configuration with a custom query.
+            Test your products search configuration with a custom query.
             {vectorStatus?.enabled && ' You can test both traditional keyword search and AI-powered semantic search.'}
           </Text>
 

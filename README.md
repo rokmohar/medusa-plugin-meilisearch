@@ -263,9 +263,7 @@ export const getTranslations = async (id: string, langs: string[]) => {
   const translations: TranslationMap = {}
 
   try {
-    const response = await httpClient.get<TranslationsHttpResponse>(
-      `/translations/${langs.join(',')}?ns=${id}`
-    )
+    const response = await httpClient.get<TranslationsHttpResponse>(`/translations/${langs.join(',')}?ns=${id}`)
     Object.entries(response.data).forEach(([language_code, { [id]: values }]) => {
       Object.entries(values).forEach(([key, value]) => {
         if (!(key in translations)) {
@@ -292,10 +290,10 @@ Usage in your transformer configuration:
       // ... other config
       transformer: async (product, defaultTransformer, options) => {
         const translations = await getTranslations(product.id, ['sl', 'en'])
-        return defaultTransformer(product, { 
-          ...options, 
-          translations, 
-          includeAllTranslations: true 
+        return defaultTransformer(product, {
+          ...options,
+          translations,
+          includeAllTranslations: true
         })
       },
     }

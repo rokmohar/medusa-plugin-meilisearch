@@ -20,11 +20,11 @@ In your plugin configuration, specify the fields that should be loaded for produ
         enabled: true,
         // Include relations in the fields array
         fields: [
-          'id', 
-          'title', 
-          'description', 
-          'handle', 
-          'variant_sku', 
+          'id',
+          'title',
+          'description',
+          'handle',
+          'variant_sku',
           'thumbnail',
           'collection_id'
           'categories.*', // Include all category fields
@@ -40,7 +40,7 @@ In your plugin configuration, specify the fields that should be loaded for produ
         transformer: async (product) => {
           const cats = product.categories ?? [];
           const tags = product.tags ?? [];
-          
+
           return {
             id: product.id,
             title: product.title,

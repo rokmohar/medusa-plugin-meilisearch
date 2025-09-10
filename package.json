@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "1.3.1-beta.2",
+  "version": "1.3.1-beta.3",
   "description": "Meilisearch plugin for Medusa 2",
   "author": "Rok Mohar",
   "license": "MIT",
@@ -20,6 +20,17 @@
     ".medusa/server"
   ],
   "main": ".medusa/server/src/index.js",
+  "exports": {
+    "./package.json": "./package.json",
+    "./workflows": "./.medusa/server/src/workflows/index.js",
+    "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
+    ".": "./.medusa/server/src/modules/meilisearch/index.js",
+    "./admin": {
+      "import": "./.medusa/server/src/admin/index.mjs",
+      "require": "./.medusa/server/src/admin/index.js",
+      "default": "./.medusa/server/src/admin/index.js"
+    }
+  },
   "scripts": {
     "build": "medusa plugin:build",
     "dev": "medusa plugin:develop",
