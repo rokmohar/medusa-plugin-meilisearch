@@ -3,7 +3,7 @@ import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meil
 import { SearchResponse } from 'meilisearch'
 import z from 'zod'
 
-export const AdminSearchProductsSchema = z.object({
+export const StoreSearchCategoriesSchema = z.object({
   query: z.string(),
   limit: z.coerce.number().default(10),
   offset: z.coerce.number().default(0),
@@ -12,13 +12,13 @@ export const AdminSearchProductsSchema = z.object({
   semanticRatio: z.coerce.number().min(0).max(1).default(0.5),
 })
 
-export type AdminSearchProductsParams = z.infer<typeof AdminSearchProductsSchema>
+export type StoreSearchCategoriesParams = z.infer<typeof StoreSearchCategoriesSchema>
 
-export async function POST(req: MedusaRequest<any, AdminSearchProductsParams>, res: MedusaResponse<SearchResponse>) {
-  const { query, language, limit, offset, semanticSearch, semanticRatio } = req.validatedBody
+export async function GET(req: MedusaRequest<any, StoreSearchCategoriesParams>, res: MedusaResponse<SearchResponse>) {
+  const { query, language, limit, offset, semanticSearch, semanticRatio } = req.validatedQuery
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
-  const indexes = await meilisearchService.getIndexesByType('products')
+  const indexes = await meilisearchService.getIndexesByType('categories')
   const results = await Promise.all(
     indexes.map(async (indexKey) => {
       return await meilisearchService.search(indexKey, query, {
