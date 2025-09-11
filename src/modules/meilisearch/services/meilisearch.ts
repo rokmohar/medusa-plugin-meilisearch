@@ -1,9 +1,9 @@
+import { DocumentsDeletionQuery, DocumentsIds, MeiliSearch } from 'meilisearch'
 import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
-import { MeiliSearch } from 'meilisearch'
+import { MeiliSearchEmbedderService } from './meilisearch-embedder'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { transformProduct, transformCategory, TransformOptions } from '../utils/transformer'
-import { MeiliSearchEmbedderService } from './meilisearch-embedder'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   static identifier = 'index-meilisearch'
@@ -106,14 +106,14 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     return this.addDocuments(indexKey, documents, language)
   }
 
-  async deleteDocument(indexKey: string, documentId: string, language?: string) {
+  async deleteDocument(indexKey: string, documentId: string | number, language?: string) {
     const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
     return this.client_.index(actualIndexKey).deleteDocument(documentId)
   }
 
-  async deleteDocuments(indexKey: string, documentIds: string[], language?: string) {
+  async deleteDocuments(indexKey: string, documents: DocumentsDeletionQuery | DocumentsIds, language?: string) {
     const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
-    return this.client_.index(actualIndexKey).deleteDocuments(documentIds)
+    return this.client_.index(actualIndexKey).deleteDocuments(documents)
   }
 
   async deleteAllDocuments(indexKey: string, language?: string) {
@@ -137,7 +137,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
 
     // Build base search options
-    let searchOptions: any = {
+    let searchOptions = {
       filter,
       ...paginationOptions,
       ...additionalOptions,
@@ -147,10 +147,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     searchOptions = this.embedderService_.enhanceSearchOptions(searchOptions, semanticSearch, semanticRatio)
 
     // Perform search
-    const result = await this.client_.index(actualIndexKey).search(query, searchOptions)
-
-    // Enhance results with vector search metadata
-    return this.embedderService_.enhanceSearchResults(result, semanticSearch, semanticRatio)
+    return this.client_.index(actualIndexKey).search(query, searchOptions)
   }
 
   async updateSettings(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'indexSettings' | 'primaryKey'>) {
@@ -239,12 +236,5 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
    */
   async getVectorSearchStatus() {
     return this.embedderService_.getVectorSearchStatus()
-  }
-
-  /**
-   * Access to embedder service for advanced vector search operations
-   */
-  get embedderService() {
-    return this.embedderService_
   }
 }

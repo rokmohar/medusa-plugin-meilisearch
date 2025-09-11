@@ -1,7 +1,7 @@
+import z from 'zod'
+import { SearchResponse } from 'meilisearch'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
-import { SearchResponse } from 'meilisearch'
-import z from 'zod'
 
 export const StoreSearchProductsSchema = z.object({
   query: z.string(),
@@ -42,9 +42,9 @@ export async function GET(req: MedusaRequest<any, StoreSearchProductsParams>, re
         processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
         query: result.query,
         // Include vector search metadata if available
-        ...(result.hybridSearch && {
+        ...(semanticSearch && {
           hybridSearch: true,
-          semanticRatio: result.semanticRatio,
+          semanticRatio,
         }),
       }
     },

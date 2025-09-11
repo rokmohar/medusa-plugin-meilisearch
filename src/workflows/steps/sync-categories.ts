@@ -1,56 +1,100 @@
 import { createStep, StepResponse } from '@medusajs/workflows-sdk'
+import { ProductCategoryDTO, RemoteQueryFilters } from '@medusajs/types'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
 
 export type StepInput = {
-  filters?: Record<string, any>
-  limit?: number
-  offset?: number
+  filters?: RemoteQueryFilters<'product_category'>
+  batchSize?: number
 }
 
 export const syncCategoriesStep = createStep(
   'sync-categories',
-  async ({ filters, limit, offset }: StepInput, { container }) => {
+  async ({ filters, batchSize = 1000 }: StepInput, { container }) => {
     const queryService = container.resolve('query')
     const meilisearchService: MeiliSearchService = container.resolve(MEILISEARCH_MODULE)
 
     const categoryFields = await meilisearchService.getFieldsForType('categories')
     const categoryIndexes = await meilisearchService.getIndexesByType('categories')
 
-    const { data: categories } = await queryService.graph({
-      entity: 'product_category',
-      fields: categoryFields,
-      pagination: {
-        take: limit,
-        skip: offset,
-      },
-      filters: {
-        is_active: true,
-        ...filters,
-      },
-    })
+    const allCategoryIds: ProductCategoryDTO[] = []
 
-    const existingCategoryIds = new Set(
-      (
-        await Promise.all(
-          categoryIndexes.map((index) =>
-            meilisearchService.search(index, '', {
-              filter: `id IN [${categories.map((c) => c.id).join(',')}]`,
-              attributesToRetrieve: ['id'],
-            }),
-          ),
-        )
-      )
-        .flatMap((result) => result.hits)
-        .map((hit) => hit.id),
-    )
+    let offset = 0
+    let hasMore = true
 
-    const categoriesToDelete = Array.from(existingCategoryIds).filter((id) => !categories.some((c) => c.id === id))
+    while (hasMore) {
+      const { data: categories } = await queryService.graph({
+        entity: 'product_category',
+        fields: categoryFields,
+        pagination: {
+          take: batchSize,
+          skip: offset,
+        },
+        filters: {
+          is_active: true,
+          ...filters,
+        },
+      })
 
-    await Promise.all(categoryIndexes.map((index) => meilisearchService.addDocuments(index, categories)))
-    await Promise.all(categoryIndexes.map((index) => meilisearchService.deleteDocuments(index, categoriesToDelete)))
+      if (categories.length === 0) {
+        hasMore = false
+        break
+      }
+
+      await Promise.all(categoryIndexes.map((index) => meilisearchService.addDocuments(index, categories)))
+
+      allCategoryIds.push(...categories.map((c) => c.id))
+      offset += batchSize
+
+      if (categories.length < batchSize) {
+        hasMore = false
+      }
+    }
+
+    const validCategoryIds = new Set(allCategoryIds)
+    const categoriesToDelete = new Set<string>()
+
+    for (const index of categoryIndexes) {
+      let indexOffset = 0
+      let hasMoreIndexed = true
+
+      while (hasMoreIndexed) {
+        const indexedResult = await meilisearchService.search(index, '', {
+          offset: indexOffset,
+          limit: batchSize,
+          attributesToRetrieve: ['id'],
+        })
+
+        if (indexedResult.hits.length === 0) {
+          hasMoreIndexed = false
+          break
+        }
+
+        indexedResult.hits.forEach((hit) => {
+          if (!validCategoryIds.has(hit.id)) {
+            categoriesToDelete.add(hit.id)
+          }
+        })
+
+        indexOffset += batchSize
+
+        if (indexedResult.hits.length < batchSize) {
+          hasMoreIndexed = false
+        }
+      }
+    }
+
+    if (categoriesToDelete.size > 0) {
+      const orphanedIds = Array.from(categoriesToDelete)
+
+      for (let i = 0; i < orphanedIds.length; i += batchSize) {
+        const batch = orphanedIds.slice(i, i + batchSize)
+        await Promise.all(categoryIndexes.map((index) => meilisearchService.deleteDocuments(index, batch)))
+      }
+    }
 
     return new StepResponse({
-      categories,
+      totalProcessed: allCategoryIds.length,
+      totalDeleted: categoriesToDelete.size,
     })
   },
 )

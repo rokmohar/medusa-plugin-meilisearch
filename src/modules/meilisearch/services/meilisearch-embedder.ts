@@ -1,4 +1,4 @@
-import { MeiliSearch, type Embedders } from 'meilisearch'
+import { Embedder, type Embedders, MeiliSearch } from 'meilisearch'
 import { MeilisearchPluginOptions } from '../types'
 
 /**
@@ -47,7 +47,7 @@ export class MeiliSearchEmbedderService {
   /**
    * Create embedder configuration based on provider settings
    */
-  private createEmbedderConfig(embeddingConfig: any): any {
+  private createEmbedderConfig(embeddingConfig: Record<string, any>): Embedder {
     const baseConfig = {
       dimensions: embeddingConfig.dimensions || this.getDefaultDimensions(embeddingConfig.model),
       distribution: {
@@ -112,7 +112,7 @@ export class MeiliSearchEmbedderService {
   /**
    * Enhance search options with vector search parameters
    */
-  enhanceSearchOptions(searchOptions: any, semanticSearch: boolean, semanticRatio: number): any {
+  enhanceSearchOptions(searchOptions: Record<string, any>, semanticSearch: boolean, semanticRatio: number) {
     if (!semanticSearch || !this.isVectorSearchEnabled()) {
       return searchOptions
     }
@@ -142,21 +142,6 @@ export class MeiliSearchEmbedderService {
   }
 
   /**
-   * Add vector search metadata to search results
-   */
-  enhanceSearchResults(result: any, semanticSearch: boolean, semanticRatio: number): any {
-    if (!semanticSearch || !this.isVectorSearchEnabled()) {
-      return result
-    }
-
-    return {
-      ...result,
-      hybridSearch: true,
-      semanticRatio,
-    }
-  }
-
-  /**
    * Get embedder configuration status for admin panel
    */
   getVectorSearchStatus() {
@@ -177,28 +162,6 @@ export class MeiliSearchEmbedderService {
       dimensions: vectorSearch.dimensions || this.getDefaultDimensions(vectorSearch.embedding.model),
       embeddingFields: vectorSearch.embeddingFields || ['title', 'description'],
       semanticRatio: vectorSearch.semanticRatio || 0.5,
-    }
-  }
-
-  /**
-   * Reset embedders for an index
-   */
-  async resetEmbedders(indexKey: string): Promise<void> {
-    try {
-      await this.client_.index(indexKey).resetEmbedders()
-    } catch {
-      // Silently fail if embedders couldn't be reset
-    }
-  }
-
-  /**
-   * Get current embedders configuration for an index
-   */
-  async getEmbedders(indexKey: string): Promise<Embedders> {
-    try {
-      return await this.client_.index(indexKey).getEmbedders()
-    } catch {
-      return {}
     }
   }
 }

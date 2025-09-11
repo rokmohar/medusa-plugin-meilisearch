@@ -45,7 +45,7 @@ const SyncPage = () => {
     onSuccess: () => {
       toast.success('Successfully triggered data sync to Meilisearch')
     },
-    onError: (err: any) => {
+    onError: (err) => {
       console.error(err)
       toast.error('Failed to sync data to Meilisearch')
     },
@@ -78,7 +78,7 @@ const SyncPage = () => {
 
       return response.json()
     },
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
       toast.success(`Search test successful! Found ${data.hits.length} results${hybridInfo}`)
     },

@@ -1,6 +1,7 @@
-import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 import z from 'zod'
+import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
+import { RemoteQueryFilters } from '@medusajs/types'
+import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
 // Schema that combines standard MedusaJS category query params with meilisearch params
 export const StoreCategoriesSchema = z.object({
@@ -41,7 +42,7 @@ export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: M
   const { limit, offset } = standardQuery
 
   // Build standard Medusa filters
-  const filters: Record<string, any> = {}
+  const filters: RemoteQueryFilters<'product_category'> = {}
 
   let categoryIds: string[] = []
   let totalCount = 0
@@ -76,8 +77,8 @@ export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: M
       { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: query || '' },
     )
 
-    categoryIds = mergedResults.hits.map((hit: any) => hit.id)
-    totalCount = mergedResults.estimatedTotalHits
+    categoryIds = mergedResults.hits.map((hit) => hit.id)
+    totalCount = mergedResults.estimatedTotalHits ?? 0
 
     // If we have meilisearch results, filter by those IDs
     if (categoryIds.length > 0) {

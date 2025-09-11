@@ -1,7 +1,7 @@
+import { asValue } from 'awilix'
 import { LoaderOptions } from '@medusajs/types'
 import { MeiliSearchService } from '../services'
 import { MeilisearchPluginOptions } from '../types'
-import { asValue } from 'awilix'
 
 export default async ({ container, options }: LoaderOptions<MeilisearchPluginOptions>): Promise<void> => {
   if (!options) {

@@ -1,6 +1,6 @@
 import { createStep, StepResponse } from '@medusajs/workflows-sdk'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
 import { SearchUtils } from '@medusajs/utils'
+import { MEILISEARCH_MODULE, MeiliSearchService } from '../../modules/meilisearch'
 
 type StepInput = {
   id: string

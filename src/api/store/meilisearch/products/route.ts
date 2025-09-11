@@ -1,7 +1,8 @@
-import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 import z from 'zod'
+import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
 import { QueryContext } from '@medusajs/utils'
+import { RemoteQueryFilters, QueryContextType } from '@medusajs/types'
+import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
 // Schema that combines standard MedusaJS product query params with meilisearch params
 export const StoreProductsSchema = z.object({
@@ -44,7 +45,7 @@ export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: Med
   const { limit, offset, region_id, currency_code } = standardQuery
 
   // Build standard Medusa filters
-  const filters: Record<string, any> = {}
+  const filters: RemoteQueryFilters<'product'> = {}
 
   let productIds: string[] = []
   let totalCount = 0
@@ -79,8 +80,8 @@ export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: Med
       { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: query || '' },
     )
 
-    productIds = mergedResults.hits.map((hit: any) => hit.id)
-    totalCount = mergedResults.estimatedTotalHits
+    productIds = mergedResults.hits.map((hit) => hit.id)
+    totalCount = mergedResults.estimatedTotalHits ?? 0
 
     // If we have meilisearch results, filter by those IDs
     if (productIds.length > 0) {
@@ -98,7 +99,7 @@ export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: Med
   }
 
   // Build context for region and currency - always include currency_code for price calculations
-  const context: Record<string, any> = {
+  const context: QueryContextType = {
     variants: {
       calculated_price: QueryContext({
         region_id,

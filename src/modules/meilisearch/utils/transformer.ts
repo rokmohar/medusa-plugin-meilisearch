@@ -1,3 +1,4 @@
+import { ProductCategoryDTO, ProductDTO } from '@medusajs/types'
 import {
   DefaultProductTransformer,
   DefaultCategoryTransformer,
@@ -7,7 +8,6 @@ import {
   getTranslation,
   normalizeFieldConfig,
 } from '../types'
-import { ProductDTO } from '@medusajs/types'
 
 export interface TransformOptions extends TranslationOptions {
   i18n?: I18nConfig
@@ -93,7 +93,10 @@ export const transformProduct: DefaultProductTransformer = (product: ProductDTO,
   return result
 }
 
-export const transformCategory: DefaultCategoryTransformer = (category: any, options?: TransformOptions) => {
+export const transformCategory: DefaultCategoryTransformer = (
+  category: ProductCategoryDTO,
+  options?: TransformOptions,
+) => {
   const {
     i18n,
     language,
