@@ -9,7 +9,7 @@ These are instructions on how to add search to a [Medusa NextJS starter](https:/
 
 ### Required packages:
 
-- MeiliSearch: `@meilisearch/instant-meilisearch@meilisearch/instant-meilisearch@^0.24.0`
+- MeiliSearch: `@meilisearch/instant-meilisearch@^0.24.0`
 - React InstantSearch: `react-instantsearch@^7.15.3`
 
 ### Environment variables:
