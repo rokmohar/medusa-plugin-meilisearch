@@ -60,9 +60,11 @@ export const syncProductsStep = createStep(
 
       while (hasMoreIndexed) {
         const indexedResult = await meilisearchService.search(index, '', {
-          offset: indexOffset,
-          limit: batchSize,
           attributesToRetrieve: ['id'],
+          paginationOptions: {
+            offset: indexOffset,
+            limit: batchSize,
+          },
         })
 
         if (indexedResult.hits.length === 0) {
