@@ -5,7 +5,7 @@ import { MeilisearchPluginOptions } from '../types'
  * MeiliSearch Embedder Service for AI-powered semantic search
  * Handles vector search configuration and embedding management
  */
-export class MeiliSearchEmbedderService {
+export class MeiliSearchEmbedder {
   protected readonly config_: MeilisearchPluginOptions
   protected readonly client_: MeiliSearch
 

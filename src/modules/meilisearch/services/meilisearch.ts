@@ -1,18 +1,18 @@
 import { DocumentsDeletionQuery, DocumentsIds, MeiliSearch } from 'meilisearch'
 import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
-import { MeiliSearchEmbedderService } from './meilisearch-embedder'
 import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
+import { MeiliSearchEmbedder } from '../utils/embedder'
 import { transformProduct, transformCategory, TransformOptions } from '../utils/transformer'
 
 export class MeiliSearchService extends SearchUtils.AbstractSearchService {
-  static identifier = 'index-meilisearch'
+  public static identifier = 'index-meilisearch'
 
-  isDefault = false
+  public isDefault = false
 
   protected readonly config_: MeilisearchPluginOptions
   protected readonly client_: MeiliSearch
-  protected readonly embedderService_: MeiliSearchEmbedderService
+  protected readonly embedder_: MeiliSearchEmbedder
 
   constructor(container: any, options: MeilisearchPluginOptions) {
     super(container, options)
@@ -32,7 +32,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
 
     this.client_ = new MeiliSearch(options.config)
-    this.embedderService_ = new MeiliSearchEmbedderService(options, this.client_)
+    this.embedder_ = new MeiliSearchEmbedder(options, this.client_)
   }
 
   protected getLanguageIndexKey(baseKey: string, language?: string): string {
@@ -144,7 +144,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     }
 
     // Enhance with vector search if needed
-    searchOptions = this.embedderService_.enhanceSearchOptions(searchOptions, semanticSearch, semanticRatio)
+    searchOptions = this.embedder_.enhanceSearchOptions(searchOptions, semanticSearch, semanticRatio)
 
     // Perform search
     return this.client_.index(actualIndexKey).search(query, searchOptions)
@@ -166,8 +166,8 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
           await this.upsertIndex(langIndexKey, settings)
           await this.updateIndexSettings(langIndexKey, settings.indexSettings ?? {})
           // Configure embedders for vector search
-          if (this.embedderService_.isVectorSearchEnabled()) {
-            await this.embedderService_.configureEmbedders(langIndexKey)
+          if (this.embedder_.isVectorSearchEnabled()) {
+            await this.embedder_.configureEmbedders(langIndexKey)
           }
         }),
       )
@@ -175,8 +175,8 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       await this.upsertIndex(indexKey, settings)
       await this.updateIndexSettings(indexKey, settings.indexSettings ?? {})
       // Configure embedders for vector search
-      if (this.embedderService_.isVectorSearchEnabled()) {
-        await this.embedderService_.configureEmbedders(indexKey)
+      if (this.embedder_.isVectorSearchEnabled()) {
+        await this.embedder_.configureEmbedders(indexKey)
       }
       return
     }
@@ -235,6 +235,6 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
    * Delegates to the embedder service
    */
   async getVectorSearchStatus() {
-    return this.embedderService_.getVectorSearchStatus()
+    return this.embedder_.getVectorSearchStatus()
   }
 }
