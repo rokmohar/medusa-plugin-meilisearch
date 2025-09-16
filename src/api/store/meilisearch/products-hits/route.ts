@@ -14,7 +14,12 @@ export const StoreSearchProductsSchema = z.object({
 
 export type StoreSearchProductsParams = z.infer<typeof StoreSearchProductsSchema>
 
-export async function GET(req: MedusaRequest<any, StoreSearchProductsParams>, res: MedusaResponse<SearchResponse>) {
+export type ProductsHitsResponse = SearchResponse & { hybridSearch?: boolean; semanticRatio?: number }
+
+export async function GET(
+  req: MedusaRequest<any, StoreSearchProductsParams>,
+  res: MedusaResponse<ProductsHitsResponse>,
+) {
   const { query, language, limit, offset, semanticSearch, semanticRatio } = req.validatedQuery
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 

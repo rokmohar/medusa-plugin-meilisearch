@@ -14,7 +14,12 @@ export const AdminSearchProductsSchema = z.object({
 
 export type AdminSearchProductsParams = z.infer<typeof AdminSearchProductsSchema>
 
-export async function POST(req: MedusaRequest<any, AdminSearchProductsParams>, res: MedusaResponse<SearchResponse>) {
+export type AdminProductsHitsResponse = SearchResponse & { hybridSearch?: boolean; semanticRatio?: number }
+
+export async function POST(
+  req: MedusaRequest<any, AdminSearchProductsParams>,
+  res: MedusaResponse<AdminProductsHitsResponse>,
+) {
   const { query, language, limit, offset, semanticSearch, semanticRatio } = req.validatedBody
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 

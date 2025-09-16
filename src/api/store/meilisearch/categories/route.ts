@@ -1,6 +1,6 @@
 import z from 'zod'
 import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
-import { RemoteQueryFilters } from '@medusajs/types'
+import { ProductCategoryDTO, RemoteQueryFilters } from '@medusajs/types'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
 // Schema that combines standard MedusaJS category query params with meilisearch params
@@ -18,7 +18,14 @@ export const StoreCategoriesSchema = z.object({
 
 export type StoreCategoriesParams = z.infer<typeof StoreCategoriesSchema>
 
-export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: MedusaResponse) {
+export interface CategoriesResponse {
+  categories: ProductCategoryDTO[]
+  count: number
+  limit?: number
+  offset?: number
+}
+
+export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: MedusaResponse<CategoriesResponse>) {
   const {
     // Meilisearch params
     query,
@@ -86,7 +93,7 @@ export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: M
     } else {
       // No results from meilisearch, return empty response
       res.json({
-        product_categories: [],
+        categories: [],
         count: 0,
         limit,
         offset,
@@ -115,7 +122,7 @@ export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: M
   }
 
   res.json({
-    product_categories: orderedCategories,
+    categories: orderedCategories,
     count: query || semanticSearch ? totalCount : metadata?.count || categories.length,
     offset,
     limit,

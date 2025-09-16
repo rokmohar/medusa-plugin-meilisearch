@@ -1,7 +1,7 @@
 import z from 'zod'
 import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
 import { QueryContext } from '@medusajs/utils'
-import { RemoteQueryFilters, QueryContextType } from '@medusajs/types'
+import { RemoteQueryFilters, QueryContextType, ProductDTO } from '@medusajs/types'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
 // Schema that combines standard MedusaJS product query params with meilisearch params
@@ -21,7 +21,14 @@ export const StoreProductsSchema = z.object({
 
 export type StoreProductsParams = z.infer<typeof StoreProductsSchema>
 
-export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: MedusaResponse) {
+export interface ProductsResponse {
+  products: ProductDTO[]
+  count: number
+  limit?: number
+  offset?: number
+}
+
+export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: MedusaResponse<ProductsResponse>) {
   const {
     // Meilisearch params
     query,

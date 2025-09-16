@@ -1,17 +1,13 @@
-import { Button, Container, Heading, Badge, Text, Switch, Input } from '@medusajs/ui'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { toast } from '@medusajs/ui'
-import { defineRouteConfig } from '@medusajs/admin-sdk'
 import { useState } from 'react'
+import { Button, Container, Heading, Badge, Text, Switch, Input, toast } from '@medusajs/ui'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { defineRouteConfig } from '@medusajs/admin-sdk'
+import { sdk } from '../../../lib/sdk'
 
-interface VectorSearchStatus {
-  enabled: boolean
-  provider?: string
-  model?: string
-  dimensions?: number
-  embeddingFields: string[]
-  semanticRatio: number
-}
+import { AdminCategoriesHitsResponse } from '../../../../api/admin/meilisearch/categories-hits/route.ts'
+import { AdminProductsHitsResponse } from '../../../../api/admin/meilisearch/products-hits/route'
+import { AdminSyncResponse } from '../../../../api/admin/meilisearch/sync/route.ts'
+import { AdminVectorStatusResponse } from '../../../../api/admin/meilisearch/vector-status/route.ts'
 
 const SyncPage = () => {
   const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(false)
@@ -24,22 +20,16 @@ const SyncPage = () => {
     isLoading: statusLoading,
     error: statusError,
     refetch: refetchStatus,
-  } = useQuery<VectorSearchStatus>({
+  } = useQuery<AdminVectorStatusResponse>({
     queryKey: ['meilisearch-vector-status'],
-    queryFn: async () => {
-      const response = await fetch('/admin/meilisearch/vector-status')
-      if (!response.ok) {
-        throw new Error(`Failed to fetch vector search status: ${response.status}`)
-      }
-      return response.json()
-    },
+    queryFn: async () => sdk.client.fetch<AdminVectorStatusResponse>('/admin/meilisearch/vector-status'),
     retry: 2,
     staleTime: 30000, // Consider data stale after 30 seconds
   })
 
   const { mutate: syncData, isPending: syncPending } = useMutation({
     mutationFn: () =>
-      fetch('/admin/meilisearch/sync', {
+      sdk.client.fetch<AdminSyncResponse>('/admin/meilisearch/sync', {
         method: 'POST',
       }),
     onSuccess: () => {
@@ -51,40 +41,55 @@ const SyncPage = () => {
     },
   })
 
-  const { mutate: testSearch, isPending: testPending } = useMutation({
+  const { mutate: searchProducts, isPending: searchProductsPending } = useMutation({
     mutationFn: async () => {
       if (!searchQuery.trim()) {
         throw new Error('Search query cannot be empty')
       }
-
-      const response = await fetch('/admin/meilisearch/products-hits', {
+      return sdk.client.fetch<AdminProductsHitsResponse>('/admin/meilisearch/products-hits', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           query: searchQuery.trim(),
           semanticSearch: semanticSearchEnabled,
           semanticRatio: semanticRatio,
           limit: 5,
           offset: 0,
-        }),
+        },
       })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(`Search test failed: ${errorData.message || response.statusText}`)
-      }
-
-      return response.json()
     },
     onSuccess: (data) => {
       const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
-      toast.success(`Search test successful! Found ${data.hits.length} results${hybridInfo}`)
+      toast.success(`Search successful. Found ${data.hits.length} products${hybridInfo}`)
     },
     onError: (err: Error) => {
-      console.error('Search test error:', err)
-      toast.error(err.message || 'Search test failed')
+      console.error('Search error:', err)
+      toast.error(err.message || 'Search failed')
+    },
+  })
+
+  const { mutate: searchCategories, isPending: searchCategoriesPending } = useMutation({
+    mutationFn: async () => {
+      if (!searchQuery.trim()) {
+        throw new Error('Search query cannot be empty')
+      }
+      return sdk.client.fetch<AdminCategoriesHitsResponse>('/admin/meilisearch/categories-hits', {
+        method: 'POST',
+        body: {
+          query: searchQuery.trim(),
+          semanticSearch: semanticSearchEnabled,
+          semanticRatio: semanticRatio,
+          limit: 5,
+          offset: 0,
+        },
+      })
+    },
+    onSuccess: (data) => {
+      const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
+      toast.success(`Search successful. Found ${data.hits.length} categories${hybridInfo}`)
+    },
+    onError: (err: Error) => {
+      console.error('Search error:', err)
+      toast.error(err.message || 'Search failed')
     },
   })
 
@@ -92,8 +97,12 @@ const SyncPage = () => {
     syncData()
   }
 
-  const handleTestSearch = () => {
-    testSearch()
+  const handleSearchProducts = () => {
+    searchProducts()
+  }
+
+  const handleSearchCategories = () => {
+    searchCategories()
   }
 
   return (
@@ -243,12 +252,21 @@ const SyncPage = () => {
 
             <div className="flex gap-3">
               <Button
-                onClick={handleTestSearch}
-                isLoading={testPending}
+                onClick={handleSearchProducts}
+                isLoading={searchProductsPending}
                 variant="secondary"
                 disabled={!searchQuery.trim()}
               >
-                Test Search
+                Search Products
+              </Button>
+
+              <Button
+                onClick={handleSearchCategories}
+                isLoading={searchCategoriesPending}
+                variant="secondary"
+                disabled={!searchQuery.trim()}
+              >
+                Search Categories
               </Button>
 
               {vectorStatus?.enabled && (

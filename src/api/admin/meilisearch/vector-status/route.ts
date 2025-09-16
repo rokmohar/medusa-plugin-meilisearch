@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
-interface VectorSearchStatus {
+export interface AdminVectorStatusResponse {
   enabled: boolean
   provider?: string
   model?: string
@@ -10,7 +10,7 @@ interface VectorSearchStatus {
   semanticRatio: number
 }
 
-export async function GET(req: MedusaRequest, res: MedusaResponse<VectorSearchStatus>) {
+export async function GET(req: MedusaRequest, res: MedusaResponse<AdminVectorStatusResponse>) {
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
   // Use the new method to get vector search status
