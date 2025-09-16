@@ -20,5 +20,15 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["."]
+  "ts-node": {
+    "swc": true
+  },
+  "include": ["**/*", ".medusa/types/*"],
+  "exclude": [
+    ".cache",
+    ".medusa/admin",
+    ".medusa/server",
+    "src/admin",
+    "node_modules",
+  ]
 }
