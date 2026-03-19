@@ -62,8 +62,8 @@ export class MeiliSearchEmbedder {
         return {
           source: 'ollama',
           url: embeddingConfig.ngrokUrl
-            ? `${embeddingConfig.ngrokUrl}/api/embeddings`
-            : `${embeddingConfig.baseUrl}/api/embeddings`,
+            ? `${embeddingConfig.ngrokUrl}/api/embed`
+            : `${embeddingConfig.baseUrl}/api/embed`,
           model: embeddingConfig.model,
           documentTemplate: this.createDocumentTemplate(),
           ...baseConfig,
