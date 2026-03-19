@@ -18,6 +18,7 @@ export const upsertProductStep = createStep('upsert-products', async ({ productI
     fields: productFields,
     filters: { id: productId },
   })
+  console.log('--- UPSERT PRODUCT')
 
   await Promise.all(
     products.map(async (product) => {

@@ -105,8 +105,8 @@ export async function GET(req: MedusaRequest<any, StoreCategoriesParams>, res: M
 
   // Fetch categories using the standard Medusa query service with prepareListQuery config
   const { data: categories, metadata } = await queryService.graph({
-    entity: 'product_category',
     ...queryConfig.remoteQueryConfig,
+    entity: 'product_category',
     filters,
   })
 
