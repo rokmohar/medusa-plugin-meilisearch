@@ -57,7 +57,11 @@ export const deleteVariantStep = createStep('delete-variant', async ({ variantId
   await Promise.all(
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.addDocuments(indexKey, [product])))
+        await Promise.all(
+          productIndexes.map((indexKey) =>
+            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
+          ),
+        )
       } else {
         await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
       }

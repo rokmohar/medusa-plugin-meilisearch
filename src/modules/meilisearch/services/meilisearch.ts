@@ -1,7 +1,7 @@
-import { DocumentsDeletionQuery, DocumentsIds, MeiliSearch } from 'meilisearch'
+import { DocumentsDeletionQuery, DocumentsIds, Meilisearch } from 'meilisearch'
 import { SearchTypes } from '@medusajs/types'
 import { SearchUtils } from '@medusajs/utils'
-import { meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
+import { AddDocumentsOptions, meilisearchErrorCodes, MeilisearchPluginOptions } from '../types'
 import { MeiliSearchEmbedder } from '../utils/embedder'
 import { transformProduct, transformCategory, TransformOptions } from '../utils/transformer'
 
@@ -11,11 +11,13 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
   public isDefault = false
 
   protected readonly config_: MeilisearchPluginOptions
-  protected readonly client_: MeiliSearch
+  protected readonly client_: Meilisearch
   protected readonly embedder_: MeiliSearchEmbedder
 
-  constructor(container: any, options: MeilisearchPluginOptions) {
-    super(container, options)
+  // First arg is the awilix cradle for this module's local container, not a MedusaContainer.
+  // Calls like `.resolve()` on it fail. Callers must supply the real container via AddDocumentsOptions.
+  constructor(cradle: unknown, options: MeilisearchPluginOptions) {
+    super(cradle, options)
 
     this.config_ = options
 
@@ -31,11 +33,11 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       )
     }
 
-    this.client_ = new MeiliSearch(options.config)
+    this.client_ = new Meilisearch(options.config)
     this.embedder_ = new MeiliSearchEmbedder(options, this.client_)
   }
 
-  protected getLanguageIndexKey(baseKey: string, language?: string): string {
+  protected getLanguageIndexName(baseKey: string, language?: string): string {
     const { i18n } = this.config_
 
     if (!i18n || i18n.strategy !== 'separate-index' || !language) {
@@ -71,58 +73,60 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
 
     if (i18n?.strategy === 'separate-index') {
       const { languages } = i18n
-      return baseIndexes.flatMap((baseIndex) => languages.map((lang) => this.getLanguageIndexKey(baseIndex, lang)))
+      return baseIndexes.flatMap((baseIndex) => languages.map((lang) => this.getLanguageIndexName(baseIndex, lang)))
     }
 
     return baseIndexes
   }
 
-  async createIndex(indexKey: string, options: Record<string, any> = { primaryKey: 'id' }) {
-    return this.client_.createIndex(indexKey, options)
+  async createIndex(indexName: string, options: Record<string, any> = { primaryKey: 'id' }) {
+    return this.client_.createIndex(indexName, options)
   }
 
-  getIndex(indexKey: string) {
-    return this.client_.index(indexKey)
+  getIndex(indexName: string) {
+    return this.client_.index(indexName)
   }
 
-  async addDocuments(indexKey: string, documents: any[], language?: string) {
+  async addDocuments(indexName: string, documents: any[], _type: string, options?: AddDocumentsOptions) {
+    const { language, container } = options ?? {}
     const { i18n } = this.config_
-    const i18nOptions = {
+    const i18nOptions: TransformOptions = {
       i18n,
       language,
+      container,
     }
 
     if (i18n?.strategy === 'separate-index') {
-      const langIndexKey = this.getLanguageIndexKey(indexKey, language || i18n.defaultLanguage)
-      const transformedDocuments = await this.getTransformedDocuments(indexKey, documents, i18nOptions)
-      return this.client_.index(langIndexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
+      const langIndexName = this.getLanguageIndexName(indexName, language || i18n.defaultLanguage)
+      const transformedDocuments = await this.getTransformedDocuments(indexName, documents, i18nOptions)
+      return this.client_.index(langIndexName).addDocuments(transformedDocuments, { primaryKey: 'id' })
     } else {
-      const transformedDocuments = await this.getTransformedDocuments(indexKey, documents, i18nOptions)
-      return this.client_.index(indexKey).addDocuments(transformedDocuments, { primaryKey: 'id' })
+      const transformedDocuments = await this.getTransformedDocuments(indexName, documents, i18nOptions)
+      return this.client_.index(indexName).addDocuments(transformedDocuments, { primaryKey: 'id' })
     }
   }
 
-  async replaceDocuments(indexKey: string, documents: any[], language?: string) {
-    return this.addDocuments(indexKey, documents, language)
+  async replaceDocuments(indexName: string, documents: any[], type: string, options?: AddDocumentsOptions) {
+    return this.addDocuments(indexName, documents, type, options)
   }
 
-  async deleteDocument(indexKey: string, documentId: string | number, language?: string) {
-    const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
-    return this.client_.index(actualIndexKey).deleteDocument(documentId)
+  async deleteDocument(indexName: string, documentId: string | number, language?: string) {
+    const actualIndexName = this.getLanguageIndexName(indexName, language)
+    return this.client_.index(actualIndexName).deleteDocument(documentId)
   }
 
-  async deleteDocuments(indexKey: string, documents: DocumentsDeletionQuery | DocumentsIds, language?: string) {
-    const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
-    return this.client_.index(actualIndexKey).deleteDocuments(documents)
+  async deleteDocuments(indexName: string, documents: DocumentsDeletionQuery | DocumentsIds, language?: string) {
+    const actualIndexName = this.getLanguageIndexName(indexName, language)
+    return this.client_.index(actualIndexName).deleteDocuments(documents)
   }
 
-  async deleteAllDocuments(indexKey: string, language?: string) {
-    const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
-    return this.client_.index(actualIndexKey).deleteAllDocuments()
+  async deleteAllDocuments(indexName: string, language?: string) {
+    const actualIndexName = this.getLanguageIndexName(indexName, language)
+    return this.client_.index(actualIndexName).deleteAllDocuments()
   }
 
   async search(
-    indexKey: string,
+    indexName: string,
     query: string,
     options: Record<string, any> & { language?: string; semanticSearch?: boolean; semanticRatio?: number },
   ) {
@@ -134,7 +138,7 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       semanticSearch = false,
       semanticRatio = 0.5,
     } = options
-    const actualIndexKey = this.getLanguageIndexKey(indexKey, language)
+    const actualIndexName = this.getLanguageIndexName(indexName, language)
 
     // Build base search options
     let searchOptions = {
@@ -147,11 +151,11 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     searchOptions = this.embedder_.enhanceSearchOptions(searchOptions, semanticSearch, semanticRatio)
 
     // Perform search
-    return this.client_.index(actualIndexKey).search(query, searchOptions)
+    return this.client_.index(actualIndexName).search(query, searchOptions)
   }
 
-  async updateSettings(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'indexSettings' | 'primaryKey'>) {
-    const indexConfig = this.config_.settings?.[indexKey]
+  async updateSettings(indexName: string, settings: Pick<SearchTypes.IndexSettings, 'indexSettings' | 'primaryKey'>) {
+    const indexConfig = this.config_.settings?.[indexName]
     if (indexConfig?.enabled === false) {
       return
     }
@@ -162,52 +166,52 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
       const { languages } = i18n
       return Promise.all(
         languages.map(async (lang) => {
-          const langIndexKey = this.getLanguageIndexKey(indexKey, lang)
-          await this.upsertIndex(langIndexKey, settings)
-          await this.updateIndexSettings(langIndexKey, settings.indexSettings ?? {})
+          const langIndexName = this.getLanguageIndexName(indexName, lang)
+          await this.upsertIndex(langIndexName, settings)
+          await this.updateIndexSettings(langIndexName, settings.indexSettings ?? {})
           // Configure embedders for vector search
           if (this.embedder_.isVectorSearchEnabled()) {
-            await this.embedder_.configureEmbedders(langIndexKey)
+            await this.embedder_.configureEmbedders(langIndexName)
           }
         }),
       )
     } else {
-      await this.upsertIndex(indexKey, settings)
-      await this.updateIndexSettings(indexKey, settings.indexSettings ?? {})
+      await this.upsertIndex(indexName, settings)
+      await this.updateIndexSettings(indexName, settings.indexSettings ?? {})
       // Configure embedders for vector search
       if (this.embedder_.isVectorSearchEnabled()) {
-        await this.embedder_.configureEmbedders(indexKey)
+        await this.embedder_.configureEmbedders(indexName)
       }
       return
     }
   }
 
-  private async updateIndexSettings(indexKey: string, indexSettings: Record<string, any>) {
-    return this.client_.index(indexKey).updateSettings(indexSettings)
+  private async updateIndexSettings(indexName: string, indexSettings: Record<string, any>) {
+    return this.client_.index(indexName).updateSettings(indexSettings)
   }
 
-  async upsertIndex(indexKey: string, settings: Pick<SearchTypes.IndexSettings, 'primaryKey'>) {
-    const indexConfig = this.config_.settings?.[indexKey]
+  async upsertIndex(indexName: string, settings: Pick<SearchTypes.IndexSettings, 'primaryKey'>) {
+    const indexConfig = this.config_.settings?.[indexName]
     if (indexConfig?.enabled === false) {
       return
     }
     try {
-      await this.client_.getIndex(indexKey)
+      await this.client_.getIndex(indexName)
     } catch (error) {
       if (error.code === meilisearchErrorCodes.INDEX_NOT_FOUND) {
-        await this.createIndex(indexKey, {
+        await this.createIndex(indexName, {
           primaryKey: settings.primaryKey ?? 'id',
         })
       }
     }
   }
 
-  private async getTransformedDocuments(indexKey: string, documents: any[], options?: TransformOptions) {
+  private async getTransformedDocuments(indexName: string, documents: any[], options?: TransformOptions) {
     if (!documents?.length) {
       return []
     }
 
-    const indexConfig = (this.config_.settings || {})[indexKey]
+    const indexConfig = (this.config_.settings || {})[indexName]
 
     switch (indexConfig?.type) {
       case SearchUtils.indexTypes.PRODUCTS:

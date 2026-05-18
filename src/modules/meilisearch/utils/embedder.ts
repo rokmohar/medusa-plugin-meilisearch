@@ -1,4 +1,4 @@
-import { Embedder, type Embedders, MeiliSearch } from 'meilisearch'
+import { Embedder, type Embedders, Meilisearch } from 'meilisearch'
 import { MeilisearchPluginOptions } from '../types'
 
 /**
@@ -7,9 +7,9 @@ import { MeilisearchPluginOptions } from '../types'
  */
 export class MeiliSearchEmbedder {
   protected readonly config_: MeilisearchPluginOptions
-  protected readonly client_: MeiliSearch
+  protected readonly client_: Meilisearch
 
-  constructor(config: MeilisearchPluginOptions, client: MeiliSearch) {
+  constructor(config: MeilisearchPluginOptions, client: Meilisearch) {
     this.config_ = config
     this.client_ = client
   }

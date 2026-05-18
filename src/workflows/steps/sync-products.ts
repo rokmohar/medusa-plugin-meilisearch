@@ -41,7 +41,11 @@ export const syncProductsStep = createStep(
         break
       }
 
-      await Promise.all(productIndexes.map((index) => meilisearchService.addDocuments(index, products)))
+      await Promise.all(
+        productIndexes.map((index) =>
+          meilisearchService.addDocuments(index, products, SearchUtils.indexTypes.PRODUCTS, { container }),
+        ),
+      )
 
       allProductIds.push(...products.map((p) => p.id))
       offset += batchSize

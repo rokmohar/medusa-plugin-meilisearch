@@ -38,10 +38,11 @@ _This step is required only if you are upgrading from previous version to v1.0._
 - Subscribers are included in the plugin.
 - You don't need custom subscribers anymore, you can remove them.
 
-## Compatibility
+## Minimum Compatibility
 
 | Plugin version | Medusa version |
 | -------------- | -------------- |
+| `^1.4.1`       | `^2.15.2`      |
 | `^1.3.7`       | `^2.13.4`      |
 | `^1.0.0`       | `^2.4.0`       |
 
@@ -202,88 +203,7 @@ You can provide detailed configuration for each translatable field:
 
 ### Custom Translation Transformer
 
-The plugin provides a flexible way to transform your products with custom translations. Instead of relying on specific storage formats, you can provide translations directly to the transformer:
-
-```typescript
-import { transformProduct } from '@rokmohar/medusa-plugin-meilisearch'
-
-const getProductTranslations = async (productId: string) => {
-  // Example: fetch from your translation service/database
-  return {
-    title: [
-      { language_code: 'en', value: 'Blue T-Shirt' },
-      { language_code: 'fr', value: 'T-Shirt Bleu' },
-    ],
-    description: [
-      { language_code: 'en', value: 'A comfortable blue t-shirt' },
-      { language_code: 'fr', value: 'Un t-shirt bleu confortable' },
-    ],
-  }
-}
-
-// Example usage in your custom transformer
-const customTransformer = async (product, options) => {
-  const translations = await getProductTranslations(product.id)
-
-  return transformProduct(product, {
-    ...options,
-    translations,
-  })
-}
-```
-
-### Integration with Tolgee
-
-For production environments, you'll often want to integrate with external translation management platforms. Here's an example of integrating with [Tolgee](https://tolgee.io/), a popular translations management platform:
-
-```typescript
-import { default as axios } from 'axios'
-import { logger } from '@medusajs/framework'
-import { TranslationMap } from '@rokmohar/medusa-plugin-meilisearch'
-
-type TranslationsHttpResponse = {
-  [lang: string]: {
-    [id: string]: Record<string, string>
-  }
-}
-
-const options = {
-  apiKey: process.env.TOLGEE_API_KEY ?? '',
-  baseURL: process.env.TOLGEE_API_URL ?? '',
-  projectId: process.env.TOLGEE_PROJECT_ID ?? '',
-}
-
-const httpClient = axios.create({
-  baseURL: `${options.baseURL}/v2/projects/${options.projectId}`,
-  headers: {
-    Accept: 'application/json',
-    'X-API-Key': options.apiKey,
-  },
-  maxBodyLength: Infinity,
-})
-
-export const getTranslations = async (id: string, langs: string[]) => {
-  const translations: TranslationMap = {}
-
-  try {
-    const response = await httpClient.get<TranslationsHttpResponse>(`/translations/${langs.join(',')}?ns=${id}`)
-    Object.entries(response.data).forEach(([language_code, { [id]: values }]) => {
-      Object.entries(values).forEach(([key, value]) => {
-        if (!(key in translations)) {
-          translations[key] = []
-        }
-        translations[key].push({ language_code, value })
-      })
-    })
-  } catch (e) {
-    logger.error(e)
-  }
-
-  return translations
-}
-```
-
-Usage in your transformer configuration:
+The plugin provides a flexible way to transform your products with custom translations. Translations are passed directly to the default transformer via `TransformOptions`:
 
 ```typescript
 {
@@ -292,11 +212,21 @@ Usage in your transformer configuration:
       type: 'products',
       // ... other config
       transformer: async (product, defaultTransformer, options) => {
-        const translations = await getTranslations(product.id, ['sl', 'en'])
+        const translations = {
+          title: [
+            { language_code: 'en', value: 'Blue T-Shirt' },
+            { language_code: 'fr', value: 'T-Shirt Bleu' },
+          ],
+          description: [
+            { language_code: 'en', value: 'A comfortable blue t-shirt' },
+            { language_code: 'fr', value: 'Un t-shirt bleu confortable' },
+          ],
+        }
+
         return defaultTransformer(product, {
           ...options,
           translations,
-          includeAllTranslations: true
+          includeAllTranslations: true,
         })
       },
     }
@@ -304,7 +234,120 @@ Usage in your transformer configuration:
 }
 ```
 
-This integration fetches translations from Tolgee's API and transforms them into the format expected by this plugin. For complete storefront translation management, consider using the [medusa-plugin-tolgee](https://github.com/SteelRazor47/medusa-plugin-tolgee) by SteelRazor47, which provides comprehensive translation management features including admin widgets.
+Pass `includeAllTranslations: true` to emit all language suffixes (e.g. `title_en`, `title_fr`). Without it only the current language suffix is written.
+
+### Integration with Medusa Native Translations
+
+The recommended approach for production is to use the [Medusa Translation module](https://docs.medusajs.com/resources/commerce-modules/product/translations), which is built into Medusa v2.
+
+**1. Enable the translation feature flag and module in `medusa-config.ts`:**
+
+```typescript
+module.exports = defineConfig({
+  featureFlags: {
+    translation: true,
+  },
+  // ... other config
+  modules: [
+    // ... other modules
+    {
+      resolve: '@medusajs/medusa/translation',
+    },
+  ],
+})
+```
+
+**2. Create a translations utility (`src/utils/translations.ts`):**
+
+```typescript
+import { ContainerRegistrationKeys } from '@medusajs/utils'
+import type { MedusaContainer } from '@medusajs/framework'
+import { TranslationMap } from '@rokmohar/medusa-plugin-meilisearch'
+
+// Maps Medusa locale codes (e.g. 'sl-SI') to index field suffixes (e.g. 'sl')
+export const LOCALE_MAP: Record<string, string> = {
+  'sl-SI': 'sl',
+  'en-US': 'en',
+  // add more as needed
+}
+
+export const getTranslations = async (
+  id: string,
+  langs: string[],
+  container: MedusaContainer,
+): Promise<TranslationMap> => {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+
+  const { data: rows } = await query.graph({
+    entity: 'translation',
+    fields: ['reference_id', 'locale_code', 'translations'],
+    filters: { reference_id: id, locale_code: langs },
+  })
+
+  const result: TranslationMap = {}
+
+  for (const row of rows) {
+    const langCode = LOCALE_MAP[row.locale_code] ?? row.locale_code
+
+    for (const [field, value] of Object.entries(row.translations as Record<string, string>)) {
+      if (!result[field]) {
+        result[field] = []
+      }
+      result[field].push({ language_code: langCode, value })
+    }
+  }
+
+  return result
+}
+```
+
+**3. Use in your transformer:**
+
+The transformer receives `options.container` — the real `MedusaContainer` forwarded by workflow steps. It is `undefined` when no container is available (e.g. during a manual index rebuild without a workflow context), so always guard with a fallback:
+
+```typescript
+import { getTranslations, LOCALE_MAP } from './src/utils/translations'
+
+{
+  settings: {
+    products: {
+      type: 'products',
+      indexSettings: {
+        searchableAttributes: ['title', 'title_sl', 'title_en'],
+        displayedAttributes: ['id', 'handle', 'title', 'title_sl', 'title_en', 'thumbnail'],
+        filterableAttributes: ['id'],
+      },
+      transformer: async (product, defaultTransformer, options) => {
+        if (!options?.container) {
+          // No container available — index without translations
+          return defaultTransformer(product, options)
+        }
+
+        const raw = await getTranslations(product.id, ['sl-SI', 'en-US'], options.container)
+
+        // Remap locale codes to match index field suffixes
+        const translations = Object.fromEntries(
+          Object.entries(raw).map(([field, values]) => [
+            field,
+            values.map((t) => ({
+              language_code: LOCALE_MAP[t.language_code] ?? t.language_code,
+              value: t.value,
+            })),
+          ]),
+        )
+
+        return defaultTransformer(product, {
+          ...options,
+          translations,
+          includeAllTranslations: true,
+        })
+      },
+    }
+  }
+}
+```
+
+> **How `container` reaches the transformer:** Medusa plugin modules receive the awilix cradle proxy at construction time, not the real `MedusaContainer` — so the service cannot self-supply it. Workflow steps (triggered by product/category events) have the real container from their `createStep` context and forward it via `addDocuments(indexName, documents, type, { container })`. The transformer then resolves services (e.g. `QUERY`) from it.
 
 ## i18n Strategies
 

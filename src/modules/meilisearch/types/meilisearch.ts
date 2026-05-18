@@ -1,10 +1,23 @@
 import { ProductCategoryDTO, ProductDTO, SearchTypes } from '@medusajs/types'
+import type { MedusaContainer } from '@medusajs/framework'
 import { Config, Settings } from 'meilisearch'
 import { TranslatableField } from './translation'
 import { TransformOptions } from '../utils/transformer'
 
 export const meilisearchErrorCodes = {
   INDEX_NOT_FOUND: 'index_not_found',
+}
+
+/**
+ * Custom plugin modules can't access the shared MedusaContainer from the service
+ * constructor in Medusa 2.x — the framework only injects the awilix cradle proxy
+   * and only built-in modules opt into `__passSharedContainer`. Callers (workflow
+ * steps, API routes) have the real container in their context and must forward
+ * it here when a transformer needs to resolve framework services.
+ */
+export interface AddDocumentsOptions {
+  language?: string
+  container?: MedusaContainer
 }
 
 export type I18nStrategy = 'separate-index' | 'field-suffix'

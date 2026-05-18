@@ -1,4 +1,5 @@
 import { ProductCategoryDTO, ProductDTO } from '@medusajs/types'
+import type { MedusaContainer } from '@medusajs/framework'
 import {
   DefaultProductTransformer,
   DefaultCategoryTransformer,
@@ -12,6 +13,7 @@ import {
 export interface TransformOptions extends TranslationOptions {
   i18n?: I18nConfig
   translations?: TranslationMap
+  container?: MedusaContainer
 }
 
 export const transformProduct: DefaultProductTransformer = (product: ProductDTO, options?: TransformOptions) => {

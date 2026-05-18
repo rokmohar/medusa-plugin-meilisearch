@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 8
+  version: 9
   cacheKey: 10c0
 
 "@alloc/quick-lru@npm:^5.2.0":
@@ -2481,6 +2481,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@inquirer/confirm@npm:^2.0.17":
+  version: 2.0.17
+  resolution: "@inquirer/confirm@npm:2.0.17"
+  dependencies:
+    "@inquirer/core": "npm:^6.0.0"
+    "@inquirer/type": "npm:^1.1.6"
+    chalk: "npm:^4.1.2"
+  checksum: 10c0/c5e3835f38f5d2f7f442a0dddf454b569e3b25bef5da4f17d4dde6e9cf89b6aa6019cc1f8c0dcfe5d48e8f3e4c35b5fba9a9a8fcd4fa40b3845c01465d0e2d64
+  languageName: node
+  linkType: hard
+
+"@inquirer/core@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@inquirer/core@npm:6.0.0"
+  dependencies:
+    "@inquirer/type": "npm:^1.1.6"
+    "@types/mute-stream": "npm:^0.0.4"
+    "@types/node": "npm:^20.10.7"
+    "@types/wrap-ansi": "npm:^3.0.0"
+    ansi-escapes: "npm:^4.3.2"
+    chalk: "npm:^4.1.2"
+    cli-spinners: "npm:^2.9.2"
+    cli-width: "npm:^4.1.0"
+    figures: "npm:^3.2.0"
+    mute-stream: "npm:^1.0.0"
+    run-async: "npm:^3.0.0"
+    signal-exit: "npm:^4.1.0"
+    strip-ansi: "npm:^6.0.1"
+    wrap-ansi: "npm:^6.2.0"
+  checksum: 10c0/0663330936c9baea58d8a10e93de6c3446ab84ed909c41d7b3f6762842473b8f88e10d776326d89a278abfb3c4083240d0f5876293908eb1005d0026aa2cfb7d
+  languageName: node
+  linkType: hard
+
 "@inquirer/core@npm:^9.1.0":
   version: 9.2.1
   resolution: "@inquirer/core@npm:9.2.1"
@@ -2518,7 +2551,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@inquirer/type@npm:^1.5.3":
+"@inquirer/type@npm:^1.1.6, @inquirer/type@npm:^1.5.3":
   version: 1.5.5
   resolution: "@inquirer/type@npm:1.5.5"
   dependencies:
@@ -2577,22 +2610,6 @@ __metadata:
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
   checksum: 10c0/a5d3c29dd84d8a28b7c67a441ac1715cbd7337a7b88649c0f17c345d89aa218578d2b360760017c48149ef8a70f44b051af9ac0921a0622c2b479614c4f65b36
-  languageName: node
-  linkType: hard
-
-"@isaacs/balanced-match@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "@isaacs/balanced-match@npm:4.0.1"
-  checksum: 10c0/7da011805b259ec5c955f01cee903da72ad97c5e6f01ca96197267d3f33103d5b2f8a1af192140f3aa64526c593c8d098ae366c2b11f7f17645d12387c2fd420
-  languageName: node
-  linkType: hard
-
-"@isaacs/brace-expansion@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "@isaacs/brace-expansion@npm:5.0.0"
-  dependencies:
-    "@isaacs/balanced-match": "npm:^4.0.1"
-  checksum: 10c0/b4d4812f4be53afc2c5b6c545001ff7a4659af68d4484804e9d514e183d20269bb81def8682c01a22b17c4d6aed14292c8494f7d2ac664e547101c1a905aa977
   languageName: node
   linkType: hard
 
@@ -2689,52 +2706,52 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@medusajs/admin-bundler@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/admin-bundler@npm:2.13.4"
+"@medusajs/admin-bundler@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/admin-bundler@npm:2.15.2"
   dependencies:
-    "@medusajs/admin-shared": "npm:2.13.4"
-    "@medusajs/admin-vite-plugin": "npm:2.13.4"
-    "@medusajs/dashboard": "npm:2.13.4"
+    "@medusajs/admin-shared": "npm:2.15.2"
+    "@medusajs/admin-vite-plugin": "npm:2.15.2"
+    "@medusajs/dashboard": "npm:2.15.2"
     "@vitejs/plugin-react": "npm:^4.2.1"
     autoprefixer: "npm:^10.4.19"
     compression: "npm:^1.8.0"
     express: "npm:^4.21.0"
     get-port: "npm:^5.1.1"
-    glob: "npm:11.1.0"
+    glob: "npm:13.0.6"
     outdent: "npm:^0.8.0"
     postcss: "npm:^8.4.38"
     tailwindcss: "npm:^3.4.3"
     vite: "npm:^5.4.21"
-  checksum: 10c0/3c16c4b7c777348116467608c49963cedde32f58cc04e7facfa90db4b673b1c871bffdf724a7e8c603ce39836a6c5fe9bd36da743d3c2cba35cb7906fad4cc9b
+  checksum: 10c0/5cccb21058def393049a0a000b0aad36429275fe22a3415fbcd9e6ec4d743af7ccf4d51c02c66fa7a99388f1f34d8ff5ce5383c346c4eecb47274d7afc64898f
   languageName: node
   linkType: hard
 
-"@medusajs/admin-sdk@npm:^2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/admin-sdk@npm:2.13.4"
+"@medusajs/admin-sdk@npm:^2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/admin-sdk@npm:2.15.2"
   dependencies:
-    "@medusajs/admin-shared": "npm:2.13.4"
-    zod: "npm:3.25.76"
-  checksum: 10c0/62b0d92456eaba2badaaa38f1f5fc85dbc2aa899ceb7c2c9f847ffa8bb8f26101971cb268801375b5e87331f8a87a735019166bc9049b901608b0b42ebe739e2
+    "@medusajs/admin-shared": "npm:2.15.2"
+    zod: "npm:4.2.0"
+  checksum: 10c0/3b35ffa7ced21f2ac390074eed40fb3b632ed723c825bbd9b5b6e951c0061cd50012d4c123afcee1d9369962a9e8cbd0a088f816c7bc4d5aba9999caad8e8506
   languageName: node
   linkType: hard
 
-"@medusajs/admin-shared@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/admin-shared@npm:2.13.4"
-  checksum: 10c0/125a43682f33e1fb1153e89278c33601a1b82d0d16f994bc03fdb506e4c724163b8ccf2e28cef750b003f797b5fd3a7546a6898791c812480291e3192eec909f
+"@medusajs/admin-shared@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/admin-shared@npm:2.15.2"
+  checksum: 10c0/fbaa1e8f506984eed5c9018d074925f2e135658a66a1154d6aee6969622cb614b1546292a2ed55c24367f097d38f63b17c8ad969feaa8b8cc5e5cf8e4cf66cb8
   languageName: node
   linkType: hard
 
-"@medusajs/admin-vite-plugin@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/admin-vite-plugin@npm:2.13.4"
+"@medusajs/admin-vite-plugin@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/admin-vite-plugin@npm:2.15.2"
   dependencies:
     "@babel/parser": "npm:7.25.6"
     "@babel/traverse": "npm:7.25.6"
     "@babel/types": "npm:7.25.6"
-    "@medusajs/admin-shared": "npm:2.13.4"
+    "@medusajs/admin-shared": "npm:2.15.2"
     chokidar: "npm:^3.5.3"
     fdir: "npm:6.1.1"
     magic-string: "npm:0.30.5"
@@ -2742,149 +2759,149 @@ __metadata:
     picocolors: "npm:^1.1.0"
   peerDependencies:
     vite: ^5.4.21
-  checksum: 10c0/9280408ecc0b64e2745666cfbb7f17af1ccd698b1dcb876d4b346531f4d54b7100178c5df99ab644698f92948fb756d169c526482000a34b8f97e3d35db9d395
+  checksum: 10c0/86245607a8f81ee454502648be1c0b718fb2a134e9fca5dd575dd122f574f9f8b2dc802f4a62a0652587d2466f2df0a318717f41c7e111b5560bcdc1a881906b
   languageName: node
   linkType: hard
 
-"@medusajs/analytics-local@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/analytics-local@npm:2.13.4"
+"@medusajs/analytics-local@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/analytics-local@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/17e15a88f4d8da1ae29f3945bf392227b6fabb17e0c08fdb2faf15da0de0d7f7be3c1d2820bda36d59881b57c27e6c1ba6477e6d420adeb623fd8b5be6d2fc3f
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/262579497733c14140803b07a45985dd693f1e50d9453b8c060b38a1ec7bf15afc7f33dc6223b0fa349c57a9550a7ee7e6a88e57958fe84899aaa7aab918c313
   languageName: node
   linkType: hard
 
-"@medusajs/analytics-posthog@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/analytics-posthog@npm:2.13.4"
+"@medusajs/analytics-posthog@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/analytics-posthog@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
+    "@medusajs/framework": 2.15.2
     posthog-node: ^5.11.0
-  checksum: 10c0/f96d46d338ebf93c2d923ac9622d50ed6ffe2c0f2c7a25a0463c7b5fcb2995be61a54b65ce68dec63629f488f74fff0310987248707e4289648ca60bcd7d8483
+  checksum: 10c0/196c0798263cc092e35179863773ecbac7376e97833d295481e421c75b696b837db7a5b82155d1d0f9a6eba5ec268ef8b4e3700e4ee0a792e9aa5d02d709a917
   languageName: node
   linkType: hard
 
-"@medusajs/analytics@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/analytics@npm:2.13.4"
+"@medusajs/analytics@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/analytics@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/6734dcf051646480fec410f23a9fbebe9822f6d61e068822e20a7474ccb16000f4a51e618a4014821c4677e7b741d9b79f5798f7ce19b263ee93a6c45d45c720
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/1b5cc1a9f0d4d492434bb42bb0293e342fb67ad5d43f9a25a53ddf904e6619f19b00a3fd6a6829454ba0068d2a10851f5569443eb3032a053a938e1167333635
   languageName: node
   linkType: hard
 
-"@medusajs/api-key@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/api-key@npm:2.13.4"
+"@medusajs/api-key@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/api-key@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/8aa55efaec5586900c8911488b5c5aaeb9c105e19b1f16f3552adfc4eeddcb055235cd8271990950f0044c52d87a1d4dc74e78c4fe13df96ade80ce959e32bcd
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/e230a7602dfd822b6de09c98d07005f36eb8bec06b137543a0fa8560948a658d55f80a4e1fd044a099012fc55ba29d275b4eb61c9dd42a2a21cc1c6aeace5a78
   languageName: node
   linkType: hard
 
-"@medusajs/auth-emailpass@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/auth-emailpass@npm:2.13.4"
+"@medusajs/auth-emailpass@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/auth-emailpass@npm:2.15.2"
   dependencies:
     scrypt-kdf: "npm:^2.0.1"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/98d5ff4dba85c1b56b4d9e112dedc6f36ff2be5cf173293e908670c3ee9587361e3164a825277d486d30435fc1751f92d37da5f778ada1c48117eb0c9ba54e72
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/e7af97a023436be86ccb7c7624e6f8ea658f363dda28585f8a62c8654a10cd67f318fc8f336a000bbaea35212ee997798c682708d85188e50ddf5e4c7253ee25
   languageName: node
   linkType: hard
 
-"@medusajs/auth-github@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/auth-github@npm:2.13.4"
+"@medusajs/auth-github@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/auth-github@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/ffcf1796cfe2f6cd978c4fa53fb203565c4cc560f7d8997fc4a3e5dac78ed979331469353dfa1c13c2790b5160e95d2e4c8026bca858fe7e436246656daef144
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/589f05e15cf1d6f67913d92a7c3b59474a267fad481881e275aa33511ca5659895f95cff0fd5d5fe477abb6fdee9478910f2db013ef8f20401ea24d07cca1742
   languageName: node
   linkType: hard
 
-"@medusajs/auth-google@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/auth-google@npm:2.13.4"
+"@medusajs/auth-google@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/auth-google@npm:2.15.2"
   dependencies:
     jsonwebtoken: "npm:^9.0.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/3707a610d327b09546b2973d00a583a8327e2717985e0cb34b971abf10fdab6c2edacd677fce5b99024b397739dd2ebd25807e32e8aca0f09a15ff7909aad9a2
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/1003b469123e88e2b5dd379301fa6f7c2d64fc4a6ab91752c09d1a0fe31dc494a88e4576c997aa933b4b3bd66fd5e51c5b7666dc7f7c2b847ca853b5f5d4bfba
   languageName: node
   linkType: hard
 
-"@medusajs/auth@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/auth@npm:2.13.4"
+"@medusajs/auth@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/auth@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/544b9abbdee532eed210d8c356b607d540c860d21e05a47cdafde75330a6141e2b08833a64d2b05d8e09eea7dc0f9600d75c044f57b458f5cbee085de03ba544
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/431a65e31e49dd200c16b0cd2dbb4565f73064867dbc892b78e162e952ce488123cb82a0af4f9e287476cab431eccf97ed0e589f6eb8e853984e81a2d98e17f0
   languageName: node
   linkType: hard
 
-"@medusajs/cache-inmemory@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/cache-inmemory@npm:2.13.4"
+"@medusajs/cache-inmemory@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/cache-inmemory@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/7db44143f6110871349d3827e4110d19b88e1a2e032b4a973e070f13fc862f95ef9b4348dfac684357ddaa9b07a68de9c9bc06784ef987db0fda2d48ffbd732e
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/d3f00ce89e625cf572bc8e0106298a2d06499f0b3b6079f463e28f032ac1bac9107ac0be65a5cf9947483fa236b7d94cc67c9e3f7b52a031093b6587007268b6
   languageName: node
   linkType: hard
 
-"@medusajs/cache-redis@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/cache-redis@npm:2.13.4"
+"@medusajs/cache-redis@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/cache-redis@npm:2.15.2"
   dependencies:
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/900dcc80ab9d9646f53085f042b595c192bd34b488ffc7f285632030b7b1f3654a9183634ef2d54129fc14a713f0b2f855badc1f663c81f25e950d75366e9f52
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/855506bfceed5dc507b9257e81be7464e9f691b58b05149f0b0ff9ac93d7c76340b01be191638a4c74eeaf304a2dbf97b3e09175ae116c469f066810bc399eca
   languageName: node
   linkType: hard
 
-"@medusajs/caching-redis@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/caching-redis@npm:2.13.4"
+"@medusajs/caching-redis@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/caching-redis@npm:2.15.2"
   dependencies:
     ioredis: "npm:^5.4.1"
     xxhash-wasm: "npm:^1.1.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/3aee3108cf3cf9bc15ffe20f78afdf8d662b17aba4b93cd32f7460aa4d7e8059f8c0d5d57826e645feb0e443e1ffc488c0951b10dad13f730b7501d63d3ada12
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/b90b8524f5f706c9fa4108b52a98e7fd25e7074f9908da07769b66c1474dd01ffb66c7eb86da85546e1efdf49b8793496df0d515cac4d47b83f2a9cd72ed28e1
   languageName: node
   linkType: hard
 
-"@medusajs/caching@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/caching@npm:2.13.4"
+"@medusajs/caching@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/caching@npm:2.15.2"
   dependencies:
     fast-json-stable-stringify: "npm:^2.1.0"
     node-cache: "npm:^5.1.2"
     xxhash-wasm: "npm:^1.1.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
+    "@medusajs/framework": 2.15.2
     awilix: ^8.0.1
-  checksum: 10c0/db1f65755a6d845d73c5e6defcc5eca0933b4671abf80f927415aff250836637ec51bc684375342605e895da4cb1b9fa481a3d84a2e9bf22e5ced62230f5c01e
+  checksum: 10c0/0117e6a5fc7e4daac2485b8631fc0703b977628eaf0ef8996fc2ac976532a2c83873e32d83390d74a50ee0e3e42482df8ebb96f6b5846817785ebbe2d54424a0
   languageName: node
   linkType: hard
 
-"@medusajs/cart@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/cart@npm:2.13.4"
+"@medusajs/cart@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/cart@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/82fff7b199b8b70e69172b8e48f6513a78cf1c5e6f4dd82132d9a3a33e792bae40e0bf1ada2c3b5457a8249484bba3f99238c5432b129a5580543cd495fd01ec
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/02ef44f27ff3fb878edde7f51ab8fd77d59a42f8d0b149a94a243b39542d2132b3f5b691104c57790baeaf605396688152844d71c45a04cc1fb090907593e78a
   languageName: node
   linkType: hard
 
-"@medusajs/cli@npm:^2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/cli@npm:2.13.4"
+"@medusajs/cli@npm:^2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/cli@npm:2.15.2"
   dependencies:
-    "@medusajs/deps": "npm:2.13.4"
-    "@medusajs/telemetry": "npm:2.13.4"
-    "@medusajs/utils": "npm:2.13.4"
+    "@medusajs/deps": "npm:2.15.2"
+    "@medusajs/telemetry": "npm:2.15.2"
+    "@medusajs/utils": "npm:2.15.2"
     "@types/express": "npm:^4.17.21"
     chalk: "npm:^4.1.2"
     configstore: "npm:^5.0.1"
@@ -2893,7 +2910,7 @@ __metadata:
     express: "npm:^4.21.0"
     fs-exists-cached: "npm:^1.0.0"
     fs-extra: "npm:^11.1.1"
-    glob: "npm:11.1.0"
+    glob: "npm:13.0.6"
     hosted-git-info: "npm:^4.0.2"
     inquirer: "npm:^8.0.0"
     is-valid-path: "npm:^0.1.1"
@@ -2908,43 +2925,43 @@ __metadata:
     yargs: "npm:^17.7.2"
   bin:
     medusa: cli.js
-  checksum: 10c0/1fe787bbeb6eeec0141a9ad97b527c1960db3721414c4c9ef67e3c800b9deee810c4d8cfeee123c273292983f47bc26301822919c18445d5b6b8ee6d538d2834
+  checksum: 10c0/05cd0f18c893f1264a9e0c098240dc6309054449f26ba99ab20f3a4d151975206e88356cd174333008af2fd8165b27d796856735575e1a034f3d4754ef98c426
   languageName: node
   linkType: hard
 
-"@medusajs/core-flows@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/core-flows@npm:2.13.4"
+"@medusajs/core-flows@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/core-flows@npm:2.15.2"
   dependencies:
     csv-parse: "npm:^5.6.0"
     json-2-csv: "npm:^5.5.4"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/3ab514a470a0e0070ca8111e39b2a30733d8673e6b1478ee97edb97498476ee3f37ce70b8b7c925c8695501a2c4b4a88b229251f69a1abede012f2a4b023e699
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/eb833a5672e0bbf2ebe20f1e963e5a04fb2acec9a3583647fb5afeceb254050aab87ad9fefa401d117791de1fc9dc753b77afe85c40f01c401c0df39097ed2aa
   languageName: node
   linkType: hard
 
-"@medusajs/currency@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/currency@npm:2.13.4"
+"@medusajs/currency@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/currency@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/9c7b790155abd12da0c105cb50b1bf29bbd161266bf3426f64870b1722e1daff61a2a2be97ad745c2c2ab847fd1914882cf42073bf92f081373f05cc8d795063
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/cf6ea6635f695f8c4f8152bda4b662c741589c08d9e3a24fbd5f000118d5de2cf954057fbce879bfc3f03f30728232f9523415eb54481b99faa1128403bde347
   languageName: node
   linkType: hard
 
-"@medusajs/customer@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/customer@npm:2.13.4"
+"@medusajs/customer@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/customer@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/df6622f0bdb7f3a5b1e26736a0cd8e5fba81f02b8dcaad7f832c71c93420d6f287c5ee2f4f49fd9dc0cb397614abc08f2d30e125db5d144ea1c63617e3f3cb83
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/9f9c20878c5b9bf804e1febfd49233e3f76777354b0d618e768d09b9449d486ed348fb983f7e9e95699d402d8baabc39daadfcaae9cd038490a71eb535085785
   languageName: node
   linkType: hard
 
-"@medusajs/dashboard@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/dashboard@npm:2.13.4"
+"@medusajs/dashboard@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/dashboard@npm:2.15.2"
   dependencies:
     "@ariakit/react": "npm:^0.4.15"
     "@babel/runtime": "npm:^7.26.10"
@@ -2953,10 +2970,10 @@ __metadata:
     "@dnd-kit/utilities": "npm:^3.2.2"
     "@hookform/error-message": "npm:^2.0.1"
     "@hookform/resolvers": "npm:3.4.2"
-    "@medusajs/admin-shared": "npm:2.13.4"
-    "@medusajs/icons": "npm:2.13.4"
-    "@medusajs/js-sdk": "npm:2.13.4"
-    "@medusajs/ui": "npm:4.1.4"
+    "@medusajs/admin-shared": "npm:2.15.2"
+    "@medusajs/icons": "npm:2.15.2"
+    "@medusajs/js-sdk": "npm:2.15.2"
+    "@medusajs/ui": "npm:4.1.12"
     "@radix-ui/react-dialog": "npm:1.1.4"
     "@radix-ui/react-dismissable-layer": "npm:1.1.4"
     "@tanstack/react-query": "npm:5.64.2"
@@ -2984,20 +3001,20 @@ __metadata:
     react-i18next: "npm:13.5.0"
     react-jwt: "npm:^1.2.0"
     react-router-dom: "npm:6.30.3"
-    zod: "npm:3.25.76"
-  checksum: 10c0/94834dd378c959062bc1d698e5deba71e96d73da67ea9648ee1c55a7d8a5bf841c5b842c15fa6202014506851f28a0211d9fddc66a65402f9305e68e39b1a155
+    zod: "npm:4.2.0"
+  checksum: 10c0/bb0f8d0ac0963c6bded599cf44c7b507d925077741c061b0db64565947c360f5ae800c7387620f61aa181c9640aa0e0cb7c5bde0d289e04a30044063c2145782
   languageName: node
   linkType: hard
 
-"@medusajs/deps@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/deps@npm:2.13.4"
+"@medusajs/deps@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/deps@npm:2.15.2"
   dependencies:
-    "@mikro-orm/cli": "npm:6.4.16"
-    "@mikro-orm/core": "npm:6.4.16"
-    "@mikro-orm/knex": "npm:6.4.16"
-    "@mikro-orm/migrations": "npm:6.4.16"
-    "@mikro-orm/postgresql": "npm:6.4.16"
+    "@mikro-orm/cli": "npm:6.6.12"
+    "@mikro-orm/core": "npm:6.6.12"
+    "@mikro-orm/knex": "npm:6.6.12"
+    "@mikro-orm/migrations": "npm:6.6.12"
+    "@mikro-orm/postgresql": "npm:6.6.12"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/instrumentation-pg": "npm:^0.52.0"
     "@opentelemetry/resources": "npm:^2.0.0"
@@ -3005,19 +3022,19 @@ __metadata:
     "@opentelemetry/sdk-trace-node": "npm:^2.0.0"
     awilix: "npm:^8.0.1"
     pg: "npm:^8.16.3"
-    zod: "npm:3.25.76"
-  checksum: 10c0/888a4f9927ae8cc660b4670a9ddb5b64ac9badfe843024db19c6f37e5343535d8c5f477f5bd20c100e6c9fa1c46bc51f470d522fd2b8f01aebb5d2c88b62458c
+    zod: "npm:4.2.0"
+  checksum: 10c0/f3a240651ad5e101d11bfe9b3ce4588eaa19f2cf598123284b2981fc4b9c8c7d9e19ba3605a1724d44d3cc4b9d57077a5bedcf754d04c1e8742ce2ce78016557
   languageName: node
   linkType: hard
 
-"@medusajs/draft-order@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/draft-order@npm:2.13.4"
+"@medusajs/draft-order@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/draft-order@npm:2.15.2"
   dependencies:
     "@ariakit/react": "npm:^0.4.15"
     "@babel/runtime": "npm:^7.26.10"
     "@hookform/resolvers": "npm:3.4.2"
-    "@medusajs/js-sdk": "npm:2.13.4"
+    "@medusajs/js-sdk": "npm:2.15.2"
     "@tanstack/react-query": "npm:5.64.2"
     "@uiw/react-json-view": "npm:^2.0.0-alpha.17"
     date-fns: "npm:^3.6.0"
@@ -3027,12 +3044,12 @@ __metadata:
     radix-ui: "npm:1.1.2"
     react-hook-form: "npm:7.49.1"
   peerDependencies:
-    "@medusajs/admin-sdk": 2.13.4
-    "@medusajs/cli": 2.13.4
-    "@medusajs/framework": 2.13.4
-    "@medusajs/icons": 2.13.4
-    "@medusajs/test-utils": 2.13.4
-    "@medusajs/ui": 4.1.4
+    "@medusajs/admin-sdk": 2.15.2
+    "@medusajs/cli": 2.15.2
+    "@medusajs/framework": 2.15.2
+    "@medusajs/icons": 2.15.2
+    "@medusajs/test-utils": 2.15.2
+    "@medusajs/ui": 4.1.12
     react: ^18.3.1
     react-dom: ^18.3.1
     react-router-dom: 6.30.3
@@ -3053,76 +3070,76 @@ __metadata:
       optional: true
     react-router-dom:
       optional: true
-  checksum: 10c0/3ee245f9bca64c461585af7ea7bbdf9e0d90503d57650713c1870244e3824e6bdf5dbbf8908b57c64ff4372d1ab420f10f55bd5e8603113f001328e36f78da63
+  checksum: 10c0/2c6e47a6e1cb41f6d7e5de0f8164976ba6cfb65d5d799a619fa34ea248831a7f0bfb365c1fa2c0715a458f0a60fa9c585f85601c2779c5b3ca427f2d3192279a
   languageName: node
   linkType: hard
 
-"@medusajs/event-bus-local@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/event-bus-local@npm:2.13.4"
+"@medusajs/event-bus-local@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/event-bus-local@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/4dbbb3f4c723b9413e01971a54b0ffa6d98e5ccd4701a4f166ace301fcd74e15d0cd2ac512f50f006025bbfc47bd1c83d852fd5a75887f060251342f1f0d3405
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/42eb6fc65af2ab827e2a621b042882171c083314ee0a49f04274f8b87ca894522e677bbbed25478f786ae78201d96982819556c531928182afcfd0d2ff8ff094
   languageName: node
   linkType: hard
 
-"@medusajs/event-bus-redis@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/event-bus-redis@npm:2.13.4"
+"@medusajs/event-bus-redis@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/event-bus-redis@npm:2.15.2"
   dependencies:
     bullmq: "npm:5.13.0"
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/cd7233b11f84255db0b42b1b4c72bbb690129cc85a6f9d1d2d66da195fc66119a1928d8f35e76f46942a38ccab089a8a1a1a743e102c7d13a2f2e02f54e9f50c
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/1e722890ff53fbd68de94afee46b12297ac67fc338364b8b2bb3898d49728866efc24db1163708c087e2132ba091b530116660d5595a5d9a8bf55a5c9065ae64
   languageName: node
   linkType: hard
 
-"@medusajs/file-local@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/file-local@npm:2.13.4"
+"@medusajs/file-local@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/file-local@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/6f568b50708de62b2abf959a9ad22b044c3c0bb00a70607657393087e6e80001d7929d87d445a628afed0871bff52eaf51a5513ba70ba9291c1f0705e2282b88
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/c46cbab407756050d716a70deb101e538be569a7b5058c4912abf4bf76502f9e7dff249b271031d17cbfc7959c47c704750040fe8259ee8160ca416dfa60ac51
   languageName: node
   linkType: hard
 
-"@medusajs/file-s3@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/file-s3@npm:2.13.4"
+"@medusajs/file-s3@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/file-s3@npm:2.15.2"
   dependencies:
     "@aws-sdk/client-s3": "npm:^3.556.0"
     "@aws-sdk/lib-storage": "npm:^3.556.0"
     "@aws-sdk/s3-request-presigner": "npm:^3.556.0"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/ab3fea27a46a028f243143ac3958918e34446168c7dca8bf4957c0e2146baf6b8e8f705484c9de828bf0e9ae095a5d4d9b6626d2a2e2ceb9decd006328ef29a0
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/6f358e4c0dd7bbe19614004bb8331fe8f5d2b558d0371c54d5678253e2a9736eb6224109cd8e2f46b022a39bff106d3e59ee032ae3c5e77a2cb830f3296c289a
   languageName: node
   linkType: hard
 
-"@medusajs/file@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/file@npm:2.13.4"
+"@medusajs/file@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/file@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/1738390e940cec3387ad9e136e839352c6b233c8b3149338a2506243311cbc118c0401d7521211376650c849da97d3f316faca224f76e7d41ca05183f91d726d
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/3822a9106343fd5b0beb0b1c03e2577c66e5b3a50fb1a88f2026de4e46358b0df25340b0361151bfe65b4890dc85c5aa25eea5cd2ae3de2644996739f9a94fbd
   languageName: node
   linkType: hard
 
-"@medusajs/framework@npm:^2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/framework@npm:2.13.4"
+"@medusajs/framework@npm:^2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/framework@npm:2.15.2"
   dependencies:
     "@aws-sdk/client-dynamodb": "npm:^3.218.0"
     "@jercle/yargonaut": "npm:^1.1.5"
-    "@medusajs/deps": "npm:2.13.4"
-    "@medusajs/modules-sdk": "npm:2.13.4"
-    "@medusajs/orchestration": "npm:2.13.4"
-    "@medusajs/telemetry": "npm:2.13.4"
-    "@medusajs/types": "npm:2.13.4"
-    "@medusajs/utils": "npm:2.13.4"
-    "@medusajs/workflows-sdk": "npm:2.13.4"
+    "@medusajs/deps": "npm:2.15.2"
+    "@medusajs/modules-sdk": "npm:2.15.2"
+    "@medusajs/orchestration": "npm:2.15.2"
+    "@medusajs/telemetry": "npm:2.15.2"
+    "@medusajs/types": "npm:2.15.2"
+    "@medusajs/utils": "npm:2.15.2"
+    "@medusajs/workflows-sdk": "npm:2.15.2"
     "@types/express": "npm:^4.17.21"
     chokidar: "npm:^4.0.3"
     compression: "npm:^1.8.1"
@@ -3132,15 +3149,15 @@ __metadata:
     cors: "npm:^2.8.5"
     express: "npm:^4.21.0"
     express-session: "npm:^1.17.3"
-    glob: "npm:11.1.0"
+    glob: "npm:13.0.6"
     jsonwebtoken: "npm:^9.0.2"
     lodash.memoize: "npm:^4.1.2"
     morgan: "npm:^1.9.1"
     path-to-regexp: "npm:^8.2.0"
     tsconfig-paths: "npm:^4.2.0"
-    zod-validation-error: "npm:3.5.1"
+    zod-validation-error: "npm:5.0.0"
   peerDependencies:
-    "@medusajs/cli": 2.13.4
+    "@medusajs/cli": 2.15.2
     ioredis: ^5.4.1
   peerDependenciesMeta:
     ioredis:
@@ -3149,161 +3166,162 @@ __metadata:
       optional: true
   bin:
     medusa-mikro-orm: dist/mikro-orm-cli/bin.js
-  checksum: 10c0/c3b465e6a478738cebed34024da8be55eb903c5eb3dd24addb83ff6c01c461764d9881875e63b4b8152d9fc165bc162a33076dec07948ebe1bb3c5dff1849958
+  checksum: 10c0/f711ca16840d2005eb177bec21563b337a6b4d2e35dc451649855ea79c80476f58ff6de86bc51ad51236d7e05238cfb1b1e68b825bdc6f3628273e271771d7bb
   languageName: node
   linkType: hard
 
-"@medusajs/fulfillment-manual@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/fulfillment-manual@npm:2.13.4"
+"@medusajs/fulfillment-manual@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/fulfillment-manual@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/7575b07ef8f402ca3db514e88f86d08b21a44c44df7da86a45f38531bac1003c014c76a41ae3571055b19a6307003b261fac07de49555bcdfc328182240f1f25
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/3569647a8c16bdbcf32c169b5be18db3204b8f784fe33af5054e9f5622595661feae294eed447f7ab772ca7aab27327888fd9c6a2d9defba809ba0e33be1824e
   languageName: node
   linkType: hard
 
-"@medusajs/fulfillment@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/fulfillment@npm:2.13.4"
+"@medusajs/fulfillment@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/fulfillment@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/3c3fd5983997acc5b3eef7d4e780c8a18f57474d38d3badc439672f710990c9fa3042f7de209ba8972a82e416249139531dea46f90fd53d91d9c3d767d935072
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/7bd97b80546fc14ff13076eb917f6e07229226074347eb6fe4626eb1ae8d1adb14d19af8f69f2176c444781c26ce7edb08ca96a7ef125754f91fb7ba05442304
   languageName: node
   linkType: hard
 
-"@medusajs/icons@npm:2.13.4, @medusajs/icons@npm:^2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/icons@npm:2.13.4"
+"@medusajs/icons@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/icons@npm:2.15.2"
   peerDependencies:
-    react: ^18.3.1
-  checksum: 10c0/ceff98f018a88aa9b78324d7ba9b0c58073c950d68cad715070068d06a220e670120eee3655e6d392fa5b7e49a16a9f08816a4e088fe4446a4e274e0b5e5d597
+    react: ^19.2.5
+  checksum: 10c0/246cd3e2ffc12291a91428e0a9a4bf79f119b7e7ebc91ef4bc6aa5d1ca37c491927e57ebc9b660af826eb023b141b329ea9f612f3f55730e34edec1d5dd901a3
   languageName: node
   linkType: hard
 
-"@medusajs/index@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/index@npm:2.13.4"
+"@medusajs/index@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/index@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/d22c437dd6eaed5a50bcad9dc727310cab4abf3390ccc78e65627168401d3a9e1cce452185e9ae77417764ac0211763d3d7ec68b2f8a0a534155b28ca7583657
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/f4001a278aff541855069e3082c61920b8b35b4689578dbc96a978062ef0aebca2982bc14982ed64e9dd7745f32a2a3fa93e2e8a8a3eb186323ee280e4c69a88
   languageName: node
   linkType: hard
 
-"@medusajs/inventory@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/inventory@npm:2.13.4"
+"@medusajs/inventory@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/inventory@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/0e86538bf43394aaa359261d09dbb06dd8ee8cd7d1bc6247939a3a9cdb168d91125a1177b6d2584bf445ba099ce0923dd988eb35e6f6517938ff8745a05b9e2b
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/8ea6468e5afcfc7b4752b181325b89471cd3438aa2c4ade1493fe51cbb7bf6ee85bbbd62ae2204149ea867db4e90b46ae930f2d9c78f6ebcc1dacdd0d8b4730e
   languageName: node
   linkType: hard
 
-"@medusajs/js-sdk@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/js-sdk@npm:2.13.4"
+"@medusajs/js-sdk@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/js-sdk@npm:2.15.2"
   dependencies:
     fetch-event-stream: "npm:^0.1.5"
     qs: "npm:^6.12.1"
-  checksum: 10c0/59f34a546fc50f6f84a1bdece11e6469c164a595f9b0986cf8ce2fd0aeb71ba766974638173130133d46e5632ef7fc43c3d065d1183b36ee06f22a3554d1571c
+  checksum: 10c0/271700902fabac2b31561f64d7c6a1775df244241d3f953a4cfea0ad0b8956bba99be790c14eff301352150bf4dd2fd7a43d324dc0ff9627f5b97e11a4b2c281
   languageName: node
   linkType: hard
 
-"@medusajs/link-modules@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/link-modules@npm:2.13.4"
+"@medusajs/link-modules@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/link-modules@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/0ae0df00317a6a7ddea97a8e9b961665c8e2499f32ecaf32d3f2714657662dc641d436ae211eebdc3094ecb1977dba3ee385495f09147c0755a6053374b1cd1e
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/71441523e66f2d70a601b58eab2196c198acbd18e590e8e47842b9f5f989a08f8bc65c0da0f8f614eed998f4350b2269627088645325503d4ef669961956ba47
   languageName: node
   linkType: hard
 
-"@medusajs/locking-postgres@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/locking-postgres@npm:2.13.4"
+"@medusajs/locking-postgres@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/locking-postgres@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/c2433f2225c4900898532a7d1827fbc56232754e517728ca75fa69ba273883d6bbe603c6cb0dba58d991d917d07309e8dc37ede49328bea391d3e3bb2a1566c8
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/c267a21c8e5c4a30cf91049031ef92c8ab7a3c11db035093352b73a46d4b2424b3d41fce51e7c86a0444338247fc988c563238a40584ce9d36e6366bb0c0cde7
   languageName: node
   linkType: hard
 
-"@medusajs/locking-redis@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/locking-redis@npm:2.13.4"
+"@medusajs/locking-redis@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/locking-redis@npm:2.15.2"
   dependencies:
     ioredis: "npm:^5.4.1"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/71f886a231562099264d33e52dc8cae46689d1eadf2c612688019de420f92c9ab9638be406ab9d01ab3214cd7745d60d17d05e9aebed815ba0dffb312918747a
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/bb712604e9ced48af84ce8d331e22980dac7502b8e4e99c3852dd0638a6a9485970f8395098adec2d1d34ac5c0fc808d8c1afc97551dc83cfb9c21c1f176b92c
   languageName: node
   linkType: hard
 
-"@medusajs/locking@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/locking@npm:2.13.4"
+"@medusajs/locking@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/locking@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/8f8f65afd9b73eb7efa290014fc73404eaca7f9ee655ca2aad94cbc5c9d7dcc7f8c45e124397eb8e22b17efa313195b7323658c1b569cc944e7b56a793c79b18
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/481ef9434a83827931c542fdc64fc707cbe1aebaab6b464571169279b58d04967c31ffd3b0f2155f7872559f92efb5d4c4daf722fe6ce2d4146b44a36291648e
   languageName: node
   linkType: hard
 
-"@medusajs/medusa@npm:^2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/medusa@npm:2.13.4"
+"@medusajs/medusa@npm:^2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/medusa@npm:2.15.2"
   dependencies:
     "@inquirer/checkbox": "npm:^2.3.11"
+    "@inquirer/confirm": "npm:^2.0.17"
     "@inquirer/input": "npm:^2.2.9"
-    "@medusajs/admin-bundler": "npm:2.13.4"
-    "@medusajs/analytics": "npm:2.13.4"
-    "@medusajs/analytics-local": "npm:2.13.4"
-    "@medusajs/analytics-posthog": "npm:2.13.4"
-    "@medusajs/api-key": "npm:2.13.4"
-    "@medusajs/auth": "npm:2.13.4"
-    "@medusajs/auth-emailpass": "npm:2.13.4"
-    "@medusajs/auth-github": "npm:2.13.4"
-    "@medusajs/auth-google": "npm:2.13.4"
-    "@medusajs/cache-inmemory": "npm:2.13.4"
-    "@medusajs/cache-redis": "npm:2.13.4"
-    "@medusajs/caching": "npm:2.13.4"
-    "@medusajs/caching-redis": "npm:2.13.4"
-    "@medusajs/cart": "npm:2.13.4"
-    "@medusajs/core-flows": "npm:2.13.4"
-    "@medusajs/currency": "npm:2.13.4"
-    "@medusajs/customer": "npm:2.13.4"
-    "@medusajs/draft-order": "npm:2.13.4"
-    "@medusajs/event-bus-local": "npm:2.13.4"
-    "@medusajs/event-bus-redis": "npm:2.13.4"
-    "@medusajs/file": "npm:2.13.4"
-    "@medusajs/file-local": "npm:2.13.4"
-    "@medusajs/file-s3": "npm:2.13.4"
-    "@medusajs/fulfillment": "npm:2.13.4"
-    "@medusajs/fulfillment-manual": "npm:2.13.4"
-    "@medusajs/index": "npm:2.13.4"
-    "@medusajs/inventory": "npm:2.13.4"
-    "@medusajs/link-modules": "npm:2.13.4"
-    "@medusajs/locking": "npm:2.13.4"
-    "@medusajs/locking-postgres": "npm:2.13.4"
-    "@medusajs/locking-redis": "npm:2.13.4"
-    "@medusajs/notification": "npm:2.13.4"
-    "@medusajs/notification-local": "npm:2.13.4"
-    "@medusajs/notification-sendgrid": "npm:2.13.4"
-    "@medusajs/order": "npm:2.13.4"
-    "@medusajs/payment": "npm:2.13.4"
-    "@medusajs/payment-stripe": "npm:2.13.4"
-    "@medusajs/pricing": "npm:2.13.4"
-    "@medusajs/product": "npm:2.13.4"
-    "@medusajs/promotion": "npm:2.13.4"
-    "@medusajs/rbac": "npm:2.13.4"
-    "@medusajs/region": "npm:2.13.4"
-    "@medusajs/sales-channel": "npm:2.13.4"
-    "@medusajs/settings": "npm:2.13.4"
-    "@medusajs/stock-location": "npm:2.13.4"
-    "@medusajs/store": "npm:2.13.4"
-    "@medusajs/tax": "npm:2.13.4"
-    "@medusajs/telemetry": "npm:2.13.4"
-    "@medusajs/translation": "npm:2.13.4"
-    "@medusajs/user": "npm:2.13.4"
-    "@medusajs/workflow-engine-inmemory": "npm:2.13.4"
-    "@medusajs/workflow-engine-redis": "npm:2.13.4"
+    "@medusajs/admin-bundler": "npm:2.15.2"
+    "@medusajs/analytics": "npm:2.15.2"
+    "@medusajs/analytics-local": "npm:2.15.2"
+    "@medusajs/analytics-posthog": "npm:2.15.2"
+    "@medusajs/api-key": "npm:2.15.2"
+    "@medusajs/auth": "npm:2.15.2"
+    "@medusajs/auth-emailpass": "npm:2.15.2"
+    "@medusajs/auth-github": "npm:2.15.2"
+    "@medusajs/auth-google": "npm:2.15.2"
+    "@medusajs/cache-inmemory": "npm:2.15.2"
+    "@medusajs/cache-redis": "npm:2.15.2"
+    "@medusajs/caching": "npm:2.15.2"
+    "@medusajs/caching-redis": "npm:2.15.2"
+    "@medusajs/cart": "npm:2.15.2"
+    "@medusajs/core-flows": "npm:2.15.2"
+    "@medusajs/currency": "npm:2.15.2"
+    "@medusajs/customer": "npm:2.15.2"
+    "@medusajs/draft-order": "npm:2.15.2"
+    "@medusajs/event-bus-local": "npm:2.15.2"
+    "@medusajs/event-bus-redis": "npm:2.15.2"
+    "@medusajs/file": "npm:2.15.2"
+    "@medusajs/file-local": "npm:2.15.2"
+    "@medusajs/file-s3": "npm:2.15.2"
+    "@medusajs/fulfillment": "npm:2.15.2"
+    "@medusajs/fulfillment-manual": "npm:2.15.2"
+    "@medusajs/index": "npm:2.15.2"
+    "@medusajs/inventory": "npm:2.15.2"
+    "@medusajs/link-modules": "npm:2.15.2"
+    "@medusajs/locking": "npm:2.15.2"
+    "@medusajs/locking-postgres": "npm:2.15.2"
+    "@medusajs/locking-redis": "npm:2.15.2"
+    "@medusajs/notification": "npm:2.15.2"
+    "@medusajs/notification-local": "npm:2.15.2"
+    "@medusajs/notification-sendgrid": "npm:2.15.2"
+    "@medusajs/order": "npm:2.15.2"
+    "@medusajs/payment": "npm:2.15.2"
+    "@medusajs/payment-stripe": "npm:2.15.2"
+    "@medusajs/pricing": "npm:2.15.2"
+    "@medusajs/product": "npm:2.15.2"
+    "@medusajs/promotion": "npm:2.15.2"
+    "@medusajs/rbac": "npm:2.15.2"
+    "@medusajs/region": "npm:2.15.2"
+    "@medusajs/sales-channel": "npm:2.15.2"
+    "@medusajs/settings": "npm:2.15.2"
+    "@medusajs/stock-location": "npm:2.15.2"
+    "@medusajs/store": "npm:2.15.2"
+    "@medusajs/tax": "npm:2.15.2"
+    "@medusajs/telemetry": "npm:2.15.2"
+    "@medusajs/translation": "npm:2.15.2"
+    "@medusajs/user": "npm:2.15.2"
+    "@medusajs/workflow-engine-inmemory": "npm:2.15.2"
+    "@medusajs/workflow-engine-redis": "npm:2.15.2"
     boxen: "npm:^5.0.1"
     chalk: "npm:^4.1.2"
     chokidar: "npm:^4.0.3"
@@ -3318,7 +3336,7 @@ __metadata:
     slugify: "npm:^1.6.6"
     uuid: "npm:^9.0.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
+    "@medusajs/framework": 2.15.2
     "@swc/core": ^1.7.28
     posthog-node: ^5.11.0
     react-dom: ^18.3.1
@@ -3332,185 +3350,185 @@ __metadata:
       optional: true
     yalc:
       optional: true
-  checksum: 10c0/11081a265c25e31e5f7d1b689f22bc8d8bd65f516f51cd7ee34f1c4ca4a9dbbb105ebaf48441fd3b853954e4d5318b2e5afaadc35dbd69efdb4e3f076cdcd775
+  checksum: 10c0/e959c6bdd851bd8cbcdee3173902fb8d3e948c84e4c1215004d1d4475539682c7103e0eb4f4a7a0c4d4f08455a5345fb62472b28142fa6acf655a58a62b97078
   languageName: node
   linkType: hard
 
-"@medusajs/modules-sdk@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/modules-sdk@npm:2.13.4"
+"@medusajs/modules-sdk@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/modules-sdk@npm:2.15.2"
   dependencies:
-    "@medusajs/deps": "npm:2.13.4"
-    "@medusajs/orchestration": "npm:2.13.4"
-    "@medusajs/utils": "npm:2.13.4"
-  checksum: 10c0/eff752748fc374013eebf6f3250278cde5c53fe41e2d3c1be9d9a7298731d3a86eb2b182a2f09599eb362f8bc77b484bd828502af77ef68b7d2791c455a8df28
+    "@medusajs/deps": "npm:2.15.2"
+    "@medusajs/orchestration": "npm:2.15.2"
+    "@medusajs/utils": "npm:2.15.2"
+  checksum: 10c0/5cc48e0789a9277eb0cb088552fa8ded87611ad8daf3ef49e5374e08e0550456365653d085d5175f8efbc71aeb6fd734cf10e1c8962edba6b4f8654f7c99ce69
   languageName: node
   linkType: hard
 
-"@medusajs/notification-local@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/notification-local@npm:2.13.4"
+"@medusajs/notification-local@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/notification-local@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/4fa1669f2932398d3ea59fa218a6d06fb30ddb2109455b75baa50a109bd2b30642c3acbf5757a598600dccd958019b1467e23ebd07aeddffaf280d53434d5738
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/76bc6fd1bdfc7c1ec53139a628380be8cb4e8226bad6e67c83aec8656ecb34342cc812195ab7e389c48ffad4e74a36e8821b5c99dcc57e477c749be277747412
   languageName: node
   linkType: hard
 
-"@medusajs/notification-sendgrid@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/notification-sendgrid@npm:2.13.4"
+"@medusajs/notification-sendgrid@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/notification-sendgrid@npm:2.15.2"
   dependencies:
     "@sendgrid/mail": "npm:^8.1.6"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/16469b9525898a43e3578e4ee22a9fddbd498cf7045a9c2b8961c1883158ad72c14bdb895c9008d064777b265e07e25e8fdfc53b5a3467a4fde69d3f4d67b517
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/f38748756fbeaca611af3b4c87543e4b0cc1e1608218cf33ba7981febf3d35c320390415197fff7d6de01f0bd013a4f30e99f573b5443bb8ef609b683dead63b
   languageName: node
   linkType: hard
 
-"@medusajs/notification@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/notification@npm:2.13.4"
+"@medusajs/notification@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/notification@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/524d4ca94413b69cd37be24ff75b969ca5830d7d346661861759ceb218e8ba72252a9e58534b56d6710b34544202201fa0a5e1eec87ca371b010e74efc9e2689
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/8cda6a57f05ad88efb315685d41270e5238a5982234225960820bcf3a458e137856188404bd7ccfb4180368998b90aad9d9cb0b0dd46716e8c332820d78f137f
   languageName: node
   linkType: hard
 
-"@medusajs/orchestration@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/orchestration@npm:2.13.4"
+"@medusajs/orchestration@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/orchestration@npm:2.15.2"
   dependencies:
-    "@medusajs/deps": "npm:2.13.4"
-    "@medusajs/utils": "npm:2.13.4"
+    "@medusajs/deps": "npm:2.15.2"
+    "@medusajs/utils": "npm:2.15.2"
     ulid: "npm:^2.3.0"
-  checksum: 10c0/7ae0e8712bd4af1f97a609908df234ece7f52c9ae3e7b1925fcac13b7e9e77f68276dd23487767ca76e7f269cd056e49c7006af7e4c3c391bffd500a18ab8bce
+  checksum: 10c0/241ca79c9bee7230557b3f1e1bb6ab89da7112a13c0c24be1d14e90221b50fe46d66ad29ffa14f41f4c495aedbcfab362ca34b6c33922045adc3777ccaef4b8e
   languageName: node
   linkType: hard
 
-"@medusajs/order@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/order@npm:2.13.4"
+"@medusajs/order@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/order@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/3eb42555559befe43c9a9e46bc67eed72938d615ed05091a5878b93dd32c6db98bb19e806d87902f19c089e55b37ce7fb79f53a29deadf681b6912a3b45b0026
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/494ea5379c14b1f66b507ea48990d40089e1f581e8308ab69f5f11aedab4c86b117776dc476828f515b23b86985914c9845ef6c973cbf13131ffb690e26a787d
   languageName: node
   linkType: hard
 
-"@medusajs/payment-stripe@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/payment-stripe@npm:2.13.4"
+"@medusajs/payment-stripe@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/payment-stripe@npm:2.15.2"
   dependencies:
     stripe: "npm:^15.5.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/5c9ac9b518e199ae7f659c9514616949964cf7faa0ffe90a21f8237a545a5e32288136dbd4701600fa98754aa3419092a9a447aaaa84a088c85970de25b5a53b
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/823dd96e78946dac4c430bbfdcb6314ced280e4f95c4293d8be9791e2e6208c099d585bf90bd92b76441256ab4e35abc9aee12f1a7ef7bebef239e1be43f8ee0
   languageName: node
   linkType: hard
 
-"@medusajs/payment@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/payment@npm:2.13.4"
+"@medusajs/payment@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/payment@npm:2.15.2"
   dependencies:
     stripe: "npm:19.1.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/6f233db78f368a9c1d0676c54c7d41de7b6ed7dbdaf7f742a185a4ad20d40959a7d9d9ffe0ecf5a3528a1117123216649c32b18192667b15179faffc1b996d1b
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/74e3d46516ab4cdb2e0b92cf74f3bcda87d22e6bab2df1cc2d91eb78a8790a1200b1184e4de3d14a99771caaef5bbaf025e2b166f45858e4ce776ce13a712806
   languageName: node
   linkType: hard
 
-"@medusajs/pricing@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/pricing@npm:2.13.4"
+"@medusajs/pricing@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/pricing@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/2965d2f7c2ed15696292cbb4cec373aa58e652a48b6e4f2c6c1c75ddca791a935025a9e28ff7f7cfa4fedf98c8e4b944581b386394a5482bb71875309f9a4d22
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/48619ff0cb4f030dccb79ab4506668c05e0400f64f3222991fb89967179c89a3e073a6acfc1e02dd34497caacc1622a52e68c8924c9bc0f2c41050f53d2cb137
   languageName: node
   linkType: hard
 
-"@medusajs/product@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/product@npm:2.13.4"
+"@medusajs/product@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/product@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/38e6a1ee807325d3377fd897f013b0bc09cc48e426dbdf32cbb6ed85f6ef063355ef477641ca2c8922e8d430dbc0344ba66fd3f211d3756d4dc0c03f97617227
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/fd9ae8b118d8f13073a98a0ce76eeb9f68d622587e528fb1b1aa9d23f95b44e01ec6ca7fe471a193a0e2e2a98c220586932b6e6fa6278a5d3308bd59085be3e3
   languageName: node
   linkType: hard
 
-"@medusajs/promotion@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/promotion@npm:2.13.4"
+"@medusajs/promotion@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/promotion@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/044837cee0462e854bd949bb082ad8f63175ac0a87141ad70ba47880999bf4794e5c86e733cb2b7ff1f324a79bd9f8f98137d6e2bb9747817e2983d659f5101d
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/cc54229a533b0a2f7957d326b26a9214bfd82727d0dec266bcc5f27c2bf9af98895f1cf18db4698b5de60c8493413f5b47df6710b37c8a34e11fbca1d1f055e9
   languageName: node
   linkType: hard
 
-"@medusajs/rbac@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/rbac@npm:2.13.4"
+"@medusajs/rbac@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/rbac@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/7c684de6b6f0b103d56df48dcd626b69120451af16a726fd916c6dfb90b48ca9353f07865d7709e1455c9074c3d8019071ab115c3074a6b2dd9345a8bfc47336
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/8452319692fedfe8f55e9f3a2cb44c756a6b84f3a5b520e2cdb64e3abd939d38cfb45e38e09b194dd9b42b97bdfade73eaf41124aece11fb8d8372f3c302d382
   languageName: node
   linkType: hard
 
-"@medusajs/region@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/region@npm:2.13.4"
+"@medusajs/region@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/region@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/df080932ce56880be3c0c3356bd87729d954b15d158eb237a99f4a427f7a697d3a8d0b88cc47d0f954b755c681b03425251b20a28753ecadf2f40659f52a5e40
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/010c52358eea755dda8fd07818a2ace63ed13a304dd6917cf61eac32bc45588b4e41f0257d866d8dd80eb30969ed765e31e82dbfc76372c3083f1354a42b5386
   languageName: node
   linkType: hard
 
-"@medusajs/sales-channel@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/sales-channel@npm:2.13.4"
+"@medusajs/sales-channel@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/sales-channel@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/92f47554d922a86d58fc0db4bf133ea09252b29373bb1741e1f15d8f843eedfbe624679e3c899a76cd6c9fdd10201367a7ccd067a848dff03763a483f90d5a0f
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/72d74112ac1a948712658b099a76917489d3bdcfdecb6767ef569f499d6d355fe0578b2142c0ca720f15317ee8ccd19fc55859c616819e61aeae4c07d5df6c50
   languageName: node
   linkType: hard
 
-"@medusajs/settings@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/settings@npm:2.13.4"
+"@medusajs/settings@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/settings@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/236321c57e2b28624816b52f740c09ab1c84304e6273e387841390d2ecaefa382b53a1da350bf313c34204f848dc102e0d255270da2c0e4d52f2fed16dee6437
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/36ab4b0e13b7e899d960830d45166c03672ca1127c2cded29c2f7f8d3f85b3456d8431571ec20bc793852c9a85d4a61c022f9e58a2bbe190d48b7f696498210c
   languageName: node
   linkType: hard
 
-"@medusajs/stock-location@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/stock-location@npm:2.13.4"
+"@medusajs/stock-location@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/stock-location@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/70f69785a7063f36fe2e6e54478ef45f1d54c34e5f2c5fe02c153eb563b8b4bf3070b2bbfaf5480a65e0dd660d021a521ac10ab22c252a2220ffdded318e505e
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/fa467ce09feae483cd1f3f2f452494574433854d2adf3ed0d6c0dece3423ef108f47ba4f8e018a1b3a8335b3c19da3e00268abba5d47b7f6572618b5fcc9cda3
   languageName: node
   linkType: hard
 
-"@medusajs/store@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/store@npm:2.13.4"
+"@medusajs/store@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/store@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/03fbf3a7a2debcd16ee35b32ae6dc7d20c6398e8d919da711899aa24a1daa7dfd5f5c31625445d09892142f6f9646976f8b0f170615dc9e6498d6fa25dd58d2d
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/12941e5fab275ed1159c3393f431408f53a27e8eba204980abf5c13cf7d162cb10530759e5dfdc2a817bf5afe11f1d6c739700dd08bb19d0b1ebc9ff8b4d4942
   languageName: node
   linkType: hard
 
-"@medusajs/tax@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/tax@npm:2.13.4"
+"@medusajs/tax@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/tax@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/f0c4011b514240e84234fa32260a39d46eb25ff4dc849886900b53aebdfa89191509d7b480e44be2e3026cee693fdb04a26762d3aa29331956e20b4534a7ed14
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/6af8ced4f776be4d9c9e19ad18c585357fc8b716593136f0ea7d5e645dd623fe0be7f5fa3dbc609a0fce03921c123f9f74a19b8fb34231004b81e38846ef69a9
   languageName: node
   linkType: hard
 
-"@medusajs/telemetry@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/telemetry@npm:2.13.4"
+"@medusajs/telemetry@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/telemetry@npm:2.15.2"
   dependencies:
     "@babel/runtime": "npm:^7.26.10"
     axios: "npm:^1.13.1"
@@ -3521,22 +3539,22 @@ __metadata:
     is-docker: "npm:^2.2.1"
     remove-trailing-slash: "npm:^0.1.1"
     uuid: "npm:^9.0.0"
-  checksum: 10c0/c63105ff708262b3d00d52ec7716dc041bb7a3583f4074e1ccc97d3c4a1ad35d0dbe3a8faa7001007fe72462664b35a4655d69b53c8d3d3438c4dcd7400e6ef1
+  checksum: 10c0/20c28babda8b6214f812ef79572143df71bf24b9892a264384c259cd3602c860db15a1b511a6cf082da0c477723c25ffdcb0a1ae526298519382adcfc8af99f0
   languageName: node
   linkType: hard
 
-"@medusajs/translation@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/translation@npm:2.13.4"
+"@medusajs/translation@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/translation@npm:2.15.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/f2732cbd3cef5101ec5e7f62ce8d7520016deed4e49a18ebe77ae9bff380df20e2d8c9927da1b5c7f6e4b215a016273ff92f377f7ff01ce1ac6089b1d5da7f42
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/277f1884537a246392e7dc67c2ad3a7389f0db79c8059fa4ec761a929643badc0772de87936cc98014d3977e117e528ec900bd230318ab6a810e353f6c853f5a
   languageName: node
   linkType: hard
 
-"@medusajs/types@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/types@npm:2.13.4"
+"@medusajs/types@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/types@npm:2.15.2"
   dependencies:
     bignumber.js: "npm:^9.1.2"
   peerDependencies:
@@ -3547,18 +3565,18 @@ __metadata:
       optional: true
     vite:
       optional: true
-  checksum: 10c0/a70ca8277e9d3b443d73ef2180f473834632ae6f2cc1c0812a0ffaca975b979750e3b0e0064ef233c9e8f7ddeb9f9f9c7246b6ec808ffb05c7dd5cd19db05b46
+  checksum: 10c0/5852bf89adbcb934677e7b25b20be42c476940e7d0b13dd8b7c71a6d95b7a39a6eb537abbe7636cae67cc0fe98fcd054af26aa762d0a5c9b5f9fb39adab5807d
   languageName: node
   linkType: hard
 
-"@medusajs/ui@npm:4.1.4, @medusajs/ui@npm:^4.1.4":
-  version: 4.1.4
-  resolution: "@medusajs/ui@npm:4.1.4"
+"@medusajs/ui@npm:4.1.12, @medusajs/ui@npm:^4.1.12":
+  version: 4.1.12
+  resolution: "@medusajs/ui@npm:4.1.12"
   dependencies:
     "@dnd-kit/core": "npm:^6.1.0"
     "@dnd-kit/sortable": "npm:^8.0.0"
     "@dnd-kit/utilities": "npm:^3.2.2"
-    "@medusajs/icons": "npm:2.13.4"
+    "@medusajs/icons": "npm:2.15.2"
     "@radix-ui/react-dialog": "npm:1.1.4"
     "@radix-ui/react-dismissable-layer": "npm:1.1.4"
     "@tanstack/react-table": "npm:8.20.5"
@@ -3577,30 +3595,30 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-dom: ^18.3.1
-  checksum: 10c0/c09c98c7832886e509063c348c0ca70677f85d76e0a9786bb60b8ead85c43ea48aefe617129df54e0d7dbc5faff3b6b4220dab224abbd392155ea77da198863e
+  checksum: 10c0/ef4fdea454bb9e34480f09abf71efef44811b64bb85f91b19d12688888a760a835c65c275a067fd6b4dd6b94b5a0c980c87508c81986001b551e8d19920b3d67
   languageName: node
   linkType: hard
 
-"@medusajs/user@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/user@npm:2.13.4"
+"@medusajs/user@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/user@npm:2.15.2"
   dependencies:
     jsonwebtoken: "npm:^9.0.2"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/6c18e261b3aa9ec688f58f4422b0a483cfe4ce4e35f3506a0e06728883aedba55d0f2e42c7084a6e9619e21862c9dd82f885f44fc28fbd3a03b6f574a6a2cef8
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/679bb6fc2c76fbd757766d48a32e047b335873e7ec064fbde41e66f338c3e3b73f5cc052193072260d05f8a793e9744483543c3285e0de5d43800a44212cba2d
   languageName: node
   linkType: hard
 
-"@medusajs/utils@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/utils@npm:2.13.4"
+"@medusajs/utils@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/utils@npm:2.15.2"
   dependencies:
     "@graphql-codegen/core": "npm:^4.0.2"
     "@graphql-codegen/typescript": "npm:^4.0.9"
     "@graphql-tools/merge": "npm:^9.0.7"
     "@graphql-tools/schema": "npm:^10.0.6"
-    "@medusajs/deps": "npm:2.13.4"
+    "@medusajs/deps": "npm:2.15.2"
     "@types/pluralize": "npm:^0.0.33"
     bignumber.js: "npm:^9.1.2"
     dotenv: "npm:^16.4.5"
@@ -3612,86 +3630,86 @@ __metadata:
     ulid: "npm:^2.3.0"
   peerDependencies:
     express: ^4.21.0
-  checksum: 10c0/a00957a805f5f8722e3770e5f4ea3c259463e09953212a7b3e21e3cbe503998cb3d8fe763f1264b6a1a89e4f065ec39bba32d48251be6a4320ba5d41c915895a
+  checksum: 10c0/0801de36300bb004c33f8bfda4fc36cda8bf66dc9802d0cbc1c25cf7f9331145758667ff927e007e2a0cc5a7f73c687af85c43ee78523bfcaeece70813f2710a
   languageName: node
   linkType: hard
 
-"@medusajs/workflow-engine-inmemory@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/workflow-engine-inmemory@npm:2.13.4"
+"@medusajs/workflow-engine-inmemory@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/workflow-engine-inmemory@npm:2.15.2"
   dependencies:
     cron-parser: "npm:^4.9.0"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/8a60971bbfbc95f83a1738436343cf02cea747d7809d8f8b50b162e4c3217b0aa45ecbe0f50972043bd57d619e0b2fe162e6795a4f61f929ffcf4571a8688ad1
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/7dc383091591ff58a456d94065b648b71e621a07812ef657a4fbe155b436889eb29c5a3b90100c4c6b2816b7861121f7a033045375f0c8e8e67fa988964cb791
   languageName: node
   linkType: hard
 
-"@medusajs/workflow-engine-redis@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/workflow-engine-redis@npm:2.13.4"
+"@medusajs/workflow-engine-redis@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/workflow-engine-redis@npm:2.15.2"
   dependencies:
     bullmq: "npm:5.13.0"
     ioredis: "npm:^5.4.1"
     ulid: "npm:^2.3.0"
   peerDependencies:
-    "@medusajs/framework": 2.13.4
-  checksum: 10c0/7d63512c64ad755b280a8607df2776fb1bd5fba3ca968c725de63ef4f4073206cd8eadb8a1729579ffbf8aad1984bdd50a252f14c0b73b9c8de92ebb46453d06
+    "@medusajs/framework": 2.15.2
+  checksum: 10c0/a0eacdc891cbbc40b7ab5e6c3fa74210838fbafcd50a728189fdf660bfc066bd0ee555750a714e67cd9dc184e97a455012f53e9ff9be2d818c6e7a6bcca51c90
   languageName: node
   linkType: hard
 
-"@medusajs/workflows-sdk@npm:2.13.4":
-  version: 2.13.4
-  resolution: "@medusajs/workflows-sdk@npm:2.13.4"
+"@medusajs/workflows-sdk@npm:2.15.2":
+  version: 2.15.2
+  resolution: "@medusajs/workflows-sdk@npm:2.15.2"
   dependencies:
-    "@medusajs/deps": "npm:2.13.4"
-    "@medusajs/modules-sdk": "npm:2.13.4"
-    "@medusajs/orchestration": "npm:2.13.4"
-    "@medusajs/utils": "npm:2.13.4"
+    "@medusajs/deps": "npm:2.15.2"
+    "@medusajs/modules-sdk": "npm:2.15.2"
+    "@medusajs/orchestration": "npm:2.15.2"
+    "@medusajs/utils": "npm:2.15.2"
     ulid: "npm:^2.3.0"
-  checksum: 10c0/377585685fca793db119545220690fffd31639e7751609702f84b2e96ce343897bd9098c3b2150ef48f01f868989e5a2c42f9ba619c79b5d73a2209b4125514c
+  checksum: 10c0/2c392b9efc1aedc6780dd7a8ba74c1039f81616b68c26f93be73e5cc1ebd5e4367403e102d3caa5fbbdaa860ade0675ef5dbb26f5742df467e5e2306981da45e
   languageName: node
   linkType: hard
 
-"@mikro-orm/cli@npm:6.4.16":
-  version: 6.4.16
-  resolution: "@mikro-orm/cli@npm:6.4.16"
+"@mikro-orm/cli@npm:6.6.12":
+  version: 6.6.12
+  resolution: "@mikro-orm/cli@npm:6.6.12"
   dependencies:
     "@jercle/yargonaut": "npm:1.1.5"
-    "@mikro-orm/core": "npm:6.4.16"
-    "@mikro-orm/knex": "npm:6.4.16"
-    fs-extra: "npm:11.3.0"
+    "@mikro-orm/core": "npm:6.6.12"
+    "@mikro-orm/knex": "npm:6.6.12"
+    fs-extra: "npm:11.3.3"
     tsconfig-paths: "npm:4.2.0"
     yargs: "npm:17.7.2"
   bin:
-    mikro-orm: ./cli
-    mikro-orm-esm: ./esm
-  checksum: 10c0/c58cfc6a89a4770671c58e3c40a60c8a38229a74e1722d1fb6c14a8d19a43303aa26557ec6a0000ac1d494270f3cfd98e32e38c69163f6b9cafb7c3ef6804b00
+    mikro-orm: cli
+    mikro-orm-esm: esm
+  checksum: 10c0/2ad744258d22a692fdce8af2fd21b0ff7a7a3adadea9e26725b6a377bc8c727592234272db973818bb0119530a998621bb173faa621aaff2da20fba7ecdf4a52
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:6.4.16":
-  version: 6.4.16
-  resolution: "@mikro-orm/core@npm:6.4.16"
+"@mikro-orm/core@npm:6.6.12":
+  version: 6.6.12
+  resolution: "@mikro-orm/core@npm:6.6.12"
   dependencies:
     dataloader: "npm:2.2.3"
-    dotenv: "npm:16.5.0"
+    dotenv: "npm:17.3.1"
     esprima: "npm:4.0.1"
-    fs-extra: "npm:11.3.0"
+    fs-extra: "npm:11.3.3"
     globby: "npm:11.1.0"
-    mikro-orm: "npm:6.4.16"
+    mikro-orm: "npm:6.6.12"
     reflect-metadata: "npm:0.2.2"
-  checksum: 10c0/beeb614134d908674916105326c4846fe80fb9a7adc1251a8b9bd70f4db1115256a1bdaa08107fab1577986bbca46dd24b0ff24d87753925f382d1ef216bea18
+  checksum: 10c0/899411e5bd6caab065d10a09dd0a67b5bfedc25e2fbebe16830e9a0b39564f28df94ddbd9ce759b7cf87c6a0c64d49e21b889d1d331f76ea8fc2673601479beb
   languageName: node
   linkType: hard
 
-"@mikro-orm/knex@npm:6.4.16":
-  version: 6.4.16
-  resolution: "@mikro-orm/knex@npm:6.4.16"
+"@mikro-orm/knex@npm:6.6.12":
+  version: 6.6.12
+  resolution: "@mikro-orm/knex@npm:6.6.12"
   dependencies:
-    fs-extra: "npm:11.3.0"
-    knex: "npm:3.1.0"
+    fs-extra: "npm:11.3.3"
+    knex: "npm:3.2.8"
     sqlstring: "npm:2.3.3"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
@@ -3705,35 +3723,35 @@ __metadata:
       optional: true
     mariadb:
       optional: true
-  checksum: 10c0/b0584fe3bd79b131512712ec9e31a1b76e272dcff519d5607daebfd5b3dd856116d9aae836c86baa006abc58e0331926aa3bd4ef4bba1a7ced4781d8c6fd3d21
+  checksum: 10c0/beb5c1ea222f50f36d0e88bf5313dc5a643d9646508e5da15eaaea3e9d71cca63db80976fc1dd2dc89e5e47c7b01ef73a0a635b14c64df19d2877c23bc13625e
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations@npm:6.4.16":
-  version: 6.4.16
-  resolution: "@mikro-orm/migrations@npm:6.4.16"
+"@mikro-orm/migrations@npm:6.6.12":
+  version: 6.6.12
+  resolution: "@mikro-orm/migrations@npm:6.6.12"
   dependencies:
-    "@mikro-orm/knex": "npm:6.4.16"
-    fs-extra: "npm:11.3.0"
+    "@mikro-orm/knex": "npm:6.6.12"
+    fs-extra: "npm:11.3.3"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-  checksum: 10c0/1d5beb2423c20879cffc9c51f035b2f24b963997bea4d69445f1686616686a3bd8d7b34c2081fcb421df24c0f14ee2c51b4ed01299b5c9dbf2af4fc4cbc22de5
+  checksum: 10c0/76bbb1417a8138835cc26b2af253007085ea3daf10bac1d12f633d354d658db19406113e10555dc9d48a1d1026be3dbfab6f2badbb0ceedf70b6363804f2b626
   languageName: node
   linkType: hard
 
-"@mikro-orm/postgresql@npm:6.4.16":
-  version: 6.4.16
-  resolution: "@mikro-orm/postgresql@npm:6.4.16"
+"@mikro-orm/postgresql@npm:6.6.12":
+  version: 6.6.12
+  resolution: "@mikro-orm/postgresql@npm:6.6.12"
   dependencies:
-    "@mikro-orm/knex": "npm:6.4.16"
-    pg: "npm:8.16.0"
+    "@mikro-orm/knex": "npm:6.6.12"
+    pg: "npm:8.20.0"
     postgres-array: "npm:3.0.4"
     postgres-date: "npm:2.1.0"
     postgres-interval: "npm:4.0.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-  checksum: 10c0/0d7b6dd04f9c476d445fd31b5544be88d38da9b3c5c3666c2c84c1fb35db55de27a98e23b62ba26528f9056bb28966cc8dc5673418bf4b2da6bf6bfeb6af0264
+  checksum: 10c0/20be101e19d39b8939a454819c1a1b73f6b5bde2605f089d5836ec7ac50a0472aeefc43de9b8cf3084af731c9067732dda07d6c5c57754e29e0cad6957d7913a
   languageName: node
   linkType: hard
 
@@ -7513,37 +7531,33 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@rokmohar/medusa-plugin-meilisearch@workspace:."
   dependencies:
-    "@medusajs/admin-sdk": "npm:^2.13.4"
-    "@medusajs/cli": "npm:^2.13.4"
-    "@medusajs/framework": "npm:^2.13.4"
-    "@medusajs/icons": "npm:^2.13.4"
-    "@medusajs/medusa": "npm:^2.13.4"
-    "@medusajs/ui": "npm:^4.1.4"
-    "@swc/core": "npm:^1.15.18"
+    "@medusajs/admin-sdk": "npm:^2.15.2"
+    "@medusajs/cli": "npm:^2.15.2"
+    "@medusajs/framework": "npm:^2.15.2"
+    "@medusajs/medusa": "npm:^2.15.2"
+    "@medusajs/ui": "npm:^4.1.12"
+    "@swc/core": "npm:^1.15.33"
     "@tanstack/react-query": "npm:5.64.2"
     "@types/node": "npm:^22"
     "@types/react": "npm:^18"
-    "@types/react-dom": "npm:^18"
     awilix: "npm:^8.0.1"
-    eslint: "npm:^9"
+    eslint: "npm:^9.39.4"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-prettier: "npm:^5.5.5"
     globals: "npm:^16"
     meilisearch: "npm:^0.56.0"
-    prettier: "npm:^3.8.1"
+    prettier: "npm:^3.8.3"
     react: "npm:^18"
     react-dom: "npm:^18"
     ts-node: "npm:^10.9.2"
-    typescript: "npm:^5"
-    typescript-eslint: "npm:^8.57.1"
-    vite: "npm:^5.4.21"
+    typescript: "npm:^5.9.3"
+    typescript-eslint: "npm:^8.59.3"
     yalc: "npm:^1.0.0-pre.53"
   peerDependencies:
-    "@medusajs/admin-sdk": ^2.13.4
-    "@medusajs/framework": ^2.13.4
-    "@medusajs/icons": ^2.13.4
-    "@medusajs/medusa": ^2.13.4
-    "@medusajs/ui": ^4.1.0
+    "@medusajs/admin-sdk": ^2.15.2
+    "@medusajs/framework": ^2.15.2
+    "@medusajs/medusa": ^2.15.2
+    "@medusajs/ui": ^4.1.12
     "@tanstack/react-query": 5.64.2
     awilix: ^8.0.1
     react: ^18
@@ -9130,92 +9144,108 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-arm64@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-darwin-arm64@npm:1.15.18"
+"@swc/core-darwin-arm64@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-darwin-arm64@npm:1.15.33"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-darwin-x64@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-darwin-x64@npm:1.15.18"
+"@swc/core-darwin-x64@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-darwin-x64@npm:1.15.33"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm-gnueabihf@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.15.18"
+"@swc/core-linux-arm-gnueabihf@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.15.33"
   conditions: os=linux & cpu=arm
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-gnu@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-linux-arm64-gnu@npm:1.15.18"
+"@swc/core-linux-arm64-gnu@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.15.33"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-arm64-musl@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-linux-arm64-musl@npm:1.15.18"
+"@swc/core-linux-arm64-musl@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-arm64-musl@npm:1.15.33"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-gnu@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-linux-x64-gnu@npm:1.15.18"
+"@swc/core-linux-ppc64-gnu@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-ppc64-gnu@npm:1.15.33"
+  conditions: os=linux & cpu=ppc64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-s390x-gnu@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-s390x-gnu@npm:1.15.33"
+  conditions: os=linux & cpu=s390x & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-x64-gnu@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-x64-gnu@npm:1.15.33"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@swc/core-linux-x64-musl@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-linux-x64-musl@npm:1.15.18"
+"@swc/core-linux-x64-musl@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-linux-x64-musl@npm:1.15.33"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@swc/core-win32-arm64-msvc@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-win32-arm64-msvc@npm:1.15.18"
+"@swc/core-win32-arm64-msvc@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.15.33"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@swc/core-win32-ia32-msvc@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-win32-ia32-msvc@npm:1.15.18"
+"@swc/core-win32-ia32-msvc@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.15.33"
   conditions: os=win32 & cpu=ia32
   languageName: node
   linkType: hard
 
-"@swc/core-win32-x64-msvc@npm:1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core-win32-x64-msvc@npm:1.15.18"
+"@swc/core-win32-x64-msvc@npm:1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core-win32-x64-msvc@npm:1.15.33"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@swc/core@npm:^1.15.18":
-  version: 1.15.18
-  resolution: "@swc/core@npm:1.15.18"
+"@swc/core@npm:^1.15.33":
+  version: 1.15.33
+  resolution: "@swc/core@npm:1.15.33"
   dependencies:
-    "@swc/core-darwin-arm64": "npm:1.15.18"
-    "@swc/core-darwin-x64": "npm:1.15.18"
-    "@swc/core-linux-arm-gnueabihf": "npm:1.15.18"
-    "@swc/core-linux-arm64-gnu": "npm:1.15.18"
-    "@swc/core-linux-arm64-musl": "npm:1.15.18"
-    "@swc/core-linux-x64-gnu": "npm:1.15.18"
-    "@swc/core-linux-x64-musl": "npm:1.15.18"
-    "@swc/core-win32-arm64-msvc": "npm:1.15.18"
-    "@swc/core-win32-ia32-msvc": "npm:1.15.18"
-    "@swc/core-win32-x64-msvc": "npm:1.15.18"
+    "@swc/core-darwin-arm64": "npm:1.15.33"
+    "@swc/core-darwin-x64": "npm:1.15.33"
+    "@swc/core-linux-arm-gnueabihf": "npm:1.15.33"
+    "@swc/core-linux-arm64-gnu": "npm:1.15.33"
+    "@swc/core-linux-arm64-musl": "npm:1.15.33"
+    "@swc/core-linux-ppc64-gnu": "npm:1.15.33"
+    "@swc/core-linux-s390x-gnu": "npm:1.15.33"
+    "@swc/core-linux-x64-gnu": "npm:1.15.33"
+    "@swc/core-linux-x64-musl": "npm:1.15.33"
+    "@swc/core-win32-arm64-msvc": "npm:1.15.33"
+    "@swc/core-win32-ia32-msvc": "npm:1.15.33"
+    "@swc/core-win32-x64-msvc": "npm:1.15.33"
     "@swc/counter": "npm:^0.1.3"
-    "@swc/types": "npm:^0.1.25"
+    "@swc/types": "npm:^0.1.26"
   peerDependencies:
     "@swc/helpers": ">=0.5.17"
   dependenciesMeta:
@@ -9228,6 +9258,10 @@ __metadata:
     "@swc/core-linux-arm64-gnu":
       optional: true
     "@swc/core-linux-arm64-musl":
+      optional: true
+    "@swc/core-linux-ppc64-gnu":
+      optional: true
+    "@swc/core-linux-s390x-gnu":
       optional: true
     "@swc/core-linux-x64-gnu":
       optional: true
@@ -9242,7 +9276,7 @@ __metadata:
   peerDependenciesMeta:
     "@swc/helpers":
       optional: true
-  checksum: 10c0/b52381eefaf88ba1b8ff603c58418fcc7ca661cd0fc8b68bfc17e523b356d027dfcc3bfd459ddc107a67021a943979a79cd0589338d20c6564bbb5cf8f35afb5
+  checksum: 10c0/7d6771fdf8f1e1d41665fb84b3e718feec05e72ed448b1fbc95d3f9f4c0e80ea495e66e778436201e8ab902478042f517da4bd3f6890127248788d8b985f9a52
   languageName: node
   linkType: hard
 
@@ -9262,12 +9296,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/types@npm:^0.1.25":
-  version: 0.1.25
-  resolution: "@swc/types@npm:0.1.25"
+"@swc/types@npm:^0.1.26":
+  version: 0.1.26
+  resolution: "@swc/types@npm:0.1.26"
   dependencies:
     "@swc/counter": "npm:^0.1.3"
-  checksum: 10c0/847a5b20b131281f89d640a7ed4887fb65724807d53d334b230e84b98c21097aa10cd28a074f9ed287a6ce109e443dd4bafbe7dcfb62333d7806c4ea3e7f8aca
+  checksum: 10c0/8449341e8bbff81c14e9918c25421143cf605dff20f70f048847e1f7cede396f8dd73903cbef331a809b4a8e15d0db374a5f6809003e7b440f93df1dd4934d28
   languageName: node
   linkType: hard
 
@@ -9508,6 +9542,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.10.7":
+  version: 20.19.41
+  resolution: "@types/node@npm:20.19.41"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/aa2a07317bbd700bea68d5784b403a738dbcebadbe2d8ef05649f7953065120d5d37f7edfdd7881df3a3bd15328c8a4dc46fdd69732ab540d552c505378c585b
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^22":
   version: 22.19.15
   resolution: "@types/node@npm:22.19.15"
@@ -9583,15 +9626,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^18":
-  version: 18.3.7
-  resolution: "@types/react-dom@npm:18.3.7"
-  peerDependencies:
-    "@types/react": ^18.0.0
-  checksum: 10c0/8bd309e2c3d1604a28a736a24f96cbadf6c05d5288cfef8883b74f4054c961b6b3a5e997fd5686e492be903c8f3380dba5ec017eff3906b1256529cd2d39603e
-  languageName: node
-  linkType: hard
-
 "@types/react@npm:^18":
   version: 18.3.24
   resolution: "@types/react@npm:18.3.24"
@@ -9654,138 +9688,138 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/eslint-plugin@npm:8.57.1"
+"@typescript-eslint/eslint-plugin@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/eslint-plugin@npm:8.59.3"
   dependencies:
     "@eslint-community/regexpp": "npm:^4.12.2"
-    "@typescript-eslint/scope-manager": "npm:8.57.1"
-    "@typescript-eslint/type-utils": "npm:8.57.1"
-    "@typescript-eslint/utils": "npm:8.57.1"
-    "@typescript-eslint/visitor-keys": "npm:8.57.1"
+    "@typescript-eslint/scope-manager": "npm:8.59.3"
+    "@typescript-eslint/type-utils": "npm:8.59.3"
+    "@typescript-eslint/utils": "npm:8.59.3"
+    "@typescript-eslint/visitor-keys": "npm:8.59.3"
     ignore: "npm:^7.0.5"
     natural-compare: "npm:^1.4.0"
-    ts-api-utils: "npm:^2.4.0"
+    ts-api-utils: "npm:^2.5.0"
   peerDependencies:
-    "@typescript-eslint/parser": ^8.57.1
+    "@typescript-eslint/parser": ^8.59.3
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/5bf9227f5d608d4313c9f898da3a2f6737eca985aa925df9e90b73499b9d552221781d3d09245543c6d09995ab262ea0d6773d2dae4b8bdf319765d46b22d0e1
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/c316ba4af95c7408c65279005099386c1547c184929b7027a1041a2450537d5ce7bd9276e0d6774ae384f9e4482e392dc3305686442d64777c448d76f39fd665
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/parser@npm:8.57.1"
+"@typescript-eslint/parser@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/parser@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/scope-manager": "npm:8.57.1"
-    "@typescript-eslint/types": "npm:8.57.1"
-    "@typescript-eslint/typescript-estree": "npm:8.57.1"
-    "@typescript-eslint/visitor-keys": "npm:8.57.1"
+    "@typescript-eslint/scope-manager": "npm:8.59.3"
+    "@typescript-eslint/types": "npm:8.59.3"
+    "@typescript-eslint/typescript-estree": "npm:8.59.3"
+    "@typescript-eslint/visitor-keys": "npm:8.59.3"
     debug: "npm:^4.4.3"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/ab624f5ad6f3585ee690d11be36597135779a373e7f07810ed921163de2e879000f6d3213db67413ee630bcf25d5cfaa24b089ee49596cd11b0456372bc17163
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/a5e16163e6fdeff411272e8fa2e26b48c28aae3003ff2a6b52e7c7727061170afde11261feefba0b578399774a6c9b26e5d58d593e66b25f88a4552e6012d9e2
   languageName: node
   linkType: hard
 
-"@typescript-eslint/project-service@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/project-service@npm:8.57.1"
+"@typescript-eslint/project-service@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/project-service@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/tsconfig-utils": "npm:^8.57.1"
-    "@typescript-eslint/types": "npm:^8.57.1"
+    "@typescript-eslint/tsconfig-utils": "npm:^8.59.3"
+    "@typescript-eslint/types": "npm:^8.59.3"
     debug: "npm:^4.4.3"
   peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/7830f61e35364ba77799f4badeaca8bd8914bbcda6afe37b788821f94f4b88b9c49817c50f4bdba497e8e542a705e9d921d36f5e67960ebf33f4f3d3111cdfee
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/14caf773ce7198e097e7cf1ba65b0dfd0553696b5ffc1842f0f5bbc877450d1aab599dd0209b1bca66e4a03ba176051dfa13e30005b8f0a96453d7a01e8d8ba6
   languageName: node
   linkType: hard
 
-"@typescript-eslint/scope-manager@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/scope-manager@npm:8.57.1"
+"@typescript-eslint/scope-manager@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/scope-manager@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/types": "npm:8.57.1"
-    "@typescript-eslint/visitor-keys": "npm:8.57.1"
-  checksum: 10c0/42b0b54981318bf21be6b107df82910718497b7b7b2b60df635aa06d78e313759e4b675830c0e542b6d87104d35b49df41b9fb7739b8ae326eaba2d6f7116166
+    "@typescript-eslint/types": "npm:8.59.3"
+    "@typescript-eslint/visitor-keys": "npm:8.59.3"
+  checksum: 10c0/716c342e3e4963431696f4a68c616e0afdb619a94fabf448d032a9a676d75d39d60926cd6b47ccd712c722f7cf549a2f623f97049017f36e953dd9b7b348e9bd
   languageName: node
   linkType: hard
 
-"@typescript-eslint/tsconfig-utils@npm:8.57.1, @typescript-eslint/tsconfig-utils@npm:^8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/tsconfig-utils@npm:8.57.1"
+"@typescript-eslint/tsconfig-utils@npm:8.59.3, @typescript-eslint/tsconfig-utils@npm:^8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/tsconfig-utils@npm:8.59.3"
   peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/3d3c8d80621507d31e4656c693534f28a1c04dfb047538cb79b0b6da874ef41875f5df5e814fa3a38812451cff6d5a7ae38d0bf77eb7fec7867f9c80af361b00
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/326c07ae30e04734b28830ff74fbc8478f58671f0111a540854064d5a1cd15ed22056453165200ce342de9758e4ce45c827068017701dfb8390ec1c6b3c990ab
   languageName: node
   linkType: hard
 
-"@typescript-eslint/type-utils@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/type-utils@npm:8.57.1"
+"@typescript-eslint/type-utils@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/type-utils@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/types": "npm:8.57.1"
-    "@typescript-eslint/typescript-estree": "npm:8.57.1"
-    "@typescript-eslint/utils": "npm:8.57.1"
+    "@typescript-eslint/types": "npm:8.59.3"
+    "@typescript-eslint/typescript-estree": "npm:8.59.3"
+    "@typescript-eslint/utils": "npm:8.59.3"
     debug: "npm:^4.4.3"
-    ts-api-utils: "npm:^2.4.0"
+    ts-api-utils: "npm:^2.5.0"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/e8eae4e3b9ca71ad065c307fd3cdefdcc6abc31bda2ef74f0e54b5c9ac0ee6bc0e2d69ec9097899f4d7a99d4a8a72391503b47f4317b3b6b9ba41cea24e6b9e9
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/ff0dfb47fafe6046c0cf08b1790db41dc8e0b93dfa5bdd69f78d1cb58880b85bfb7930079c417664498a203b894381b228141efc27f427d1969c6aecc25e63b9
   languageName: node
   linkType: hard
 
-"@typescript-eslint/types@npm:8.57.1, @typescript-eslint/types@npm:^8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/types@npm:8.57.1"
-  checksum: 10c0/f447015276a31871440b07e328c2bbcee8337d72dca90ae00ac91e87d09e28a8a9c2fe44726a5226fcaa7db9d5347aafa650d59f7577a074dc65ea1414d24da1
+"@typescript-eslint/types@npm:8.59.3, @typescript-eslint/types@npm:^8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/types@npm:8.59.3"
+  checksum: 10c0/3f7836ce108c3098935180221abce6d9dbf3583216b895525b0a1fc8d0207ebe1ba9e571dbb45eddacd14ef99563350b9b51df3091258211f8d267f02b9a80c1
   languageName: node
   linkType: hard
 
-"@typescript-eslint/typescript-estree@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/typescript-estree@npm:8.57.1"
+"@typescript-eslint/typescript-estree@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/typescript-estree@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/project-service": "npm:8.57.1"
-    "@typescript-eslint/tsconfig-utils": "npm:8.57.1"
-    "@typescript-eslint/types": "npm:8.57.1"
-    "@typescript-eslint/visitor-keys": "npm:8.57.1"
+    "@typescript-eslint/project-service": "npm:8.59.3"
+    "@typescript-eslint/tsconfig-utils": "npm:8.59.3"
+    "@typescript-eslint/types": "npm:8.59.3"
+    "@typescript-eslint/visitor-keys": "npm:8.59.3"
     debug: "npm:^4.4.3"
     minimatch: "npm:^10.2.2"
     semver: "npm:^7.7.3"
     tinyglobby: "npm:^0.2.15"
-    ts-api-utils: "npm:^2.4.0"
+    ts-api-utils: "npm:^2.5.0"
   peerDependencies:
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/a87e1d920a8fd2231b6a98b279dc7680d10ceac072001e85a72cd43adce288ed471afcaf8f171378f5a3221c500b3cf0ffc10a75fd521fb69fbd8b26d4626677
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/d23d4efa17ebfceaca741e0656f4cc69f6429fad0bba87fa79cf08b6b67e487282241fd4211ae69d1b9eae1e5746db849e2e29518a385ee981a55f297db58906
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/utils@npm:8.57.1"
+"@typescript-eslint/utils@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/utils@npm:8.59.3"
   dependencies:
     "@eslint-community/eslint-utils": "npm:^4.9.1"
-    "@typescript-eslint/scope-manager": "npm:8.57.1"
-    "@typescript-eslint/types": "npm:8.57.1"
-    "@typescript-eslint/typescript-estree": "npm:8.57.1"
+    "@typescript-eslint/scope-manager": "npm:8.59.3"
+    "@typescript-eslint/types": "npm:8.59.3"
+    "@typescript-eslint/typescript-estree": "npm:8.59.3"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/c85d6e7c618dbf902fda98cc795883388bc512bc2c34c7ac0481ea43acb6dd3cd38d60bdb571b586f392419a17998c89330fd7b0b9a344161f4a595637dd3f55
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/a8299781be03e43f9a0f4006e607cfaa1094e2d5b1a208e7f2b994841884f08b557ce51d97d128b892b335a99b1bffa151eb4c0173aafec5d012783656e222f0
   languageName: node
   linkType: hard
 
-"@typescript-eslint/visitor-keys@npm:8.57.1":
-  version: 8.57.1
-  resolution: "@typescript-eslint/visitor-keys@npm:8.57.1"
+"@typescript-eslint/visitor-keys@npm:8.59.3":
+  version: 8.59.3
+  resolution: "@typescript-eslint/visitor-keys@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/types": "npm:8.57.1"
+    "@typescript-eslint/types": "npm:8.59.3"
     eslint-visitor-keys: "npm:^5.0.0"
-  checksum: 10c0/088a545c4aec6d9cabb266e1e40634f5fafa06cb05ef172526555957b0d99ac08822733fb788a09227071fdd6bd8b63f054393a0ecf9d4599c54b57918aa0e57
+  checksum: 10c0/124c1ecece3f1ea954a05b150f8ec89b1c790276baa6e60c542a006cf3e14ce2c6152f95f06740e73609c36c6db0eeba98caba572d19db0befaef8aaba6f9569
   languageName: node
   linkType: hard
 
@@ -9851,29 +9885,29 @@ __metadata:
   linkType: hard
 
 "acorn-walk@npm:^8.1.1":
-  version: 8.3.4
-  resolution: "acorn-walk@npm:8.3.4"
+  version: 8.3.5
+  resolution: "acorn-walk@npm:8.3.5"
   dependencies:
     acorn: "npm:^8.11.0"
-  checksum: 10c0/76537ac5fb2c37a64560feaf3342023dadc086c46da57da363e64c6148dc21b57d49ace26f949e225063acb6fb441eabffd89f7a3066de5ad37ab3e328927c62
+  checksum: 10c0/e31bf5b5423ed1349437029d66d708b9fbd1b77a644b031501e2c753b028d13b56348210ed901d5b1d0d86eb3381c0a0fc0d0998511a9d546d1194936266a332
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.11.0, acorn@npm:^8.14.0, acorn@npm:^8.4.1":
-  version: 8.15.0
-  resolution: "acorn@npm:8.15.0"
-  bin:
-    acorn: bin/acorn
-  checksum: 10c0/dec73ff59b7d6628a01eebaece7f2bdb8bb62b9b5926dcad0f8931f2b8b79c2be21f6c68ac095592adb5adb15831a3635d9343e6a91d028bbe85d564875ec3ec
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.15.0":
+"acorn@npm:^8.11.0, acorn@npm:^8.15.0, acorn@npm:^8.4.1":
   version: 8.16.0
   resolution: "acorn@npm:8.16.0"
   bin:
     acorn: bin/acorn
   checksum: 10c0/c9c52697227661b68d0debaf972222d4f622aa06b185824164e153438afa7b08273432ca43ea792cadb24dada1d46f6f6bb1ef8de9956979288cc1b96bf9914e
+  languageName: node
+  linkType: hard
+
+"acorn@npm:^8.14.0":
+  version: 8.15.0
+  resolution: "acorn@npm:8.15.0"
+  bin:
+    acorn: bin/acorn
+  checksum: 10c0/dec73ff59b7d6628a01eebaece7f2bdb8bb62b9b5926dcad0f8931f2b8b79c2be21f6c68ac095592adb5adb15831a3635d9343e6a91d028bbe85d564875ec3ec
   languageName: node
   linkType: hard
 
@@ -10691,7 +10725,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cli-spinners@npm:^2.5.0":
+"cli-spinners@npm:^2.5.0, cli-spinners@npm:^2.9.2":
   version: 2.9.2
   resolution: "cli-spinners@npm:2.9.2"
   checksum: 10c0/907a1c227ddf0d7a101e7ab8b300affc742ead4b4ebe920a5bf1bc6d45dce2958fcd195eb28fa25275062fe6fa9b109b93b63bc8033396ed3bcb50297008b3a3
@@ -11404,10 +11438,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:16.5.0":
-  version: 16.5.0
-  resolution: "dotenv@npm:16.5.0"
-  checksum: 10c0/5bc94c919fbd955bf0ba44d33922a1e93d1078e64a1db5c30faeded1d996e7a83c55332cb8ea4fae5a9ca4d0be44cbceb95c5811e70f9f095298df09d1997dd9
+"dotenv@npm:17.3.1":
+  version: 17.3.1
+  resolution: "dotenv@npm:17.3.1"
+  checksum: 10c0/c78e0c2d5a549c751e544cc60e2b95e7cb67e0c551f42e094d161c6b297aa44b630a3c2dcacf5569e529a6c2a6b84e2ab9be8d37b299d425df5a18b81ce4a35f
   languageName: node
   linkType: hard
 
@@ -11743,7 +11777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9":
+"eslint@npm:^9.39.4":
   version: 9.39.4
   resolution: "eslint@npm:9.39.4"
   dependencies:
@@ -12143,7 +12177,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"figures@npm:^3.0.0":
+"figures@npm:^3.0.0, figures@npm:^3.2.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
   dependencies:
@@ -12239,16 +12273,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"foreground-child@npm:^3.3.1":
-  version: 3.3.1
-  resolution: "foreground-child@npm:3.3.1"
-  dependencies:
-    cross-spawn: "npm:^7.0.6"
-    signal-exit: "npm:^4.0.1"
-  checksum: 10c0/8986e4af2430896e65bc2788d6679067294d6aee9545daefc84923a0a4b399ad9c7a3ea7bd8c0b2b80fdf4a92de4c69df3f628233ff3224260e9c1541a9e9ed3
-  languageName: node
-  linkType: hard
-
 "form-data@npm:^4.0.4":
   version: 4.0.5
   resolution: "form-data@npm:4.0.5"
@@ -12312,18 +12336,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:11.3.0":
-  version: 11.3.0
-  resolution: "fs-extra@npm:11.3.0"
-  dependencies:
-    graceful-fs: "npm:^4.2.0"
-    jsonfile: "npm:^6.0.1"
-    universalify: "npm:^2.0.0"
-  checksum: 10c0/5f95e996186ff45463059feb115a22fb048bdaf7e487ecee8a8646c78ed8fdca63630e3077d4c16ce677051f5e60d3355a06f3cd61f3ca43f48cc58822a44d0a
-  languageName: node
-  linkType: hard
-
-"fs-extra@npm:^11.1.1":
+"fs-extra@npm:11.3.3, fs-extra@npm:^11.1.1":
   version: 11.3.3
   resolution: "fs-extra@npm:11.3.3"
   dependencies:
@@ -12493,19 +12506,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:11.1.0":
-  version: 11.1.0
-  resolution: "glob@npm:11.1.0"
+"glob@npm:13.0.6":
+  version: 13.0.6
+  resolution: "glob@npm:13.0.6"
   dependencies:
-    foreground-child: "npm:^3.3.1"
-    jackspeak: "npm:^4.1.1"
-    minimatch: "npm:^10.1.1"
-    minipass: "npm:^7.1.2"
-    package-json-from-dist: "npm:^1.0.0"
-    path-scurry: "npm:^2.0.0"
-  bin:
-    glob: dist/esm/bin.mjs
-  checksum: 10c0/1ceae07f23e316a6fa74581d9a74be6e8c2e590d2f7205034dd5c0435c53f5f7b712c2be00c3b65bf0a49294a1c6f4b98cd84c7637e29453b5aa13b79f1763a2
+    minimatch: "npm:^10.2.2"
+    minipass: "npm:^7.1.3"
+    path-scurry: "npm:^2.0.2"
+  checksum: 10c0/269c236f11a9b50357fe7a8c6aadac667e01deb5242b19c84975628f05f4438d8ee1354bb62c5d6c10f37fd59911b54d7799730633a2786660d8c69f1d18120a
   languageName: node
   linkType: hard
 
@@ -13183,15 +13191,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jackspeak@npm:^4.1.1":
-  version: 4.1.1
-  resolution: "jackspeak@npm:4.1.1"
-  dependencies:
-    "@isaacs/cliui": "npm:^8.0.2"
-  checksum: 10c0/84ec4f8e21d6514db24737d9caf65361511f75e5e424980eebca4199f400874f45e562ac20fa8aeb1dd20ca2f3f81f0788b6e9c3e64d216a5794fd6f30e0e042
-  languageName: node
-  linkType: hard
-
 "jiti@npm:^1.21.7":
   version: 1.21.7
   resolution: "jiti@npm:1.21.7"
@@ -13381,9 +13380,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knex@npm:3.1.0":
-  version: 3.1.0
-  resolution: "knex@npm:3.1.0"
+"knex@npm:3.2.8":
+  version: 3.2.8
+  resolution: "knex@npm:3.2.8"
   dependencies:
     colorette: "npm:2.0.19"
     commander: "npm:^10.0.0"
@@ -13399,6 +13398,8 @@ __metadata:
     resolve-from: "npm:^5.0.0"
     tarn: "npm:^3.0.2"
     tildify: "npm:2.0.0"
+  peerDependencies:
+    pg-query-stream: ^4.14.0
   peerDependenciesMeta:
     better-sqlite3:
       optional: true
@@ -13410,13 +13411,15 @@ __metadata:
       optional: true
     pg-native:
       optional: true
+    pg-query-stream:
+      optional: true
     sqlite3:
       optional: true
     tedious:
       optional: true
   bin:
     knex: bin/cli.js
-  checksum: 10c0/d8a1f99fad143c6057e94759b2ae700ae661a0b0b2385f643011962ef501dcc7b32cfdb5bda66ef81283ca56f13630f47691c579ce66ad0e8128e209533c3785
+  checksum: 10c0/f6035da7e7793620b7313b548786e6f0db361ad68981560ff099975b289cdc459eb04f7a68a3cc87d2279578c16b7ed3b7c0814e5e540f1825fa2d8a6772a0bb
   languageName: node
   linkType: hard
 
@@ -13798,10 +13801,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:6.4.16":
-  version: 6.4.16
-  resolution: "mikro-orm@npm:6.4.16"
-  checksum: 10c0/6a7d6ad717503433eba0372f890fc66c8f0f80927b40ae8666bc0795006b0a5a089e662a7a5fc121d3e0fbdb1350c1878dc3bee2c1c6bc4028c729b2c4a45f7a
+"mikro-orm@npm:6.6.12":
+  version: 6.6.12
+  resolution: "mikro-orm@npm:6.6.12"
+  checksum: 10c0/917a0f8cafce5a6c8d69985bbd2c9611ad9d1e55d4791fbc4e006e10788d00cf04eda50e5c6d692ba62ff321df5283f15b97a1813709da6f966e95dccd6f0920
   languageName: node
   linkType: hard
 
@@ -13844,15 +13847,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^10.1.1":
-  version: 10.1.1
-  resolution: "minimatch@npm:10.1.1"
-  dependencies:
-    "@isaacs/brace-expansion": "npm:^5.0.0"
-  checksum: 10c0/c85d44821c71973d636091fddbfbffe62370f5ee3caf0241c5b60c18cd289e916200acb2361b7e987558cd06896d153e25d505db9fc1e43e6b4b6752e2702902
-  languageName: node
-  linkType: hard
-
 "minimatch@npm:^10.2.2":
   version: 10.2.4
   resolution: "minimatch@npm:10.2.4"
@@ -13862,16 +13856,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^3.0.4, minimatch@npm:^3.1.1":
-  version: 3.1.2
-  resolution: "minimatch@npm:3.1.2"
-  dependencies:
-    brace-expansion: "npm:^1.1.7"
-  checksum: 10c0/0262810a8fc2e72cca45d6fd86bd349eee435eb95ac6aa45c9ea2180e7ee875ef44c32b55b5973ceabe95ea12682f6e3725cbb63d7a2d1da3ae1163c8b210311
-  languageName: node
-  linkType: hard
-
-"minimatch@npm:^3.1.5":
+"minimatch@npm:^3.0.4, minimatch@npm:^3.1.1, minimatch@npm:^3.1.5":
   version: 3.1.5
   resolution: "minimatch@npm:3.1.5"
   dependencies:
@@ -13960,6 +13945,13 @@ __metadata:
   version: 7.1.2
   resolution: "minipass@npm:7.1.2"
   checksum: 10c0/b0fd20bb9fb56e5fa9a8bfac539e8915ae07430a619e4b86ff71f5fc757ef3924b23b2c4230393af1eda647ed3d75739e4e0acb250a6b1eb277cf7f8fe449557
+  languageName: node
+  linkType: hard
+
+"minipass@npm:^7.1.3":
+  version: 7.1.3
+  resolution: "minipass@npm:7.1.3"
+  checksum: 10c0/539da88daca16533211ea5a9ee98dc62ff5742f531f54640dd34429e621955e91cc280a91a776026264b7f9f6735947629f920944e9c1558369e8bf22eb33fbb
   languageName: node
   linkType: hard
 
@@ -14690,13 +14682,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-scurry@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "path-scurry@npm:2.0.1"
+"path-scurry@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "path-scurry@npm:2.0.2"
   dependencies:
     lru-cache: "npm:^11.0.0"
     minipass: "npm:^7.1.2"
-  checksum: 10c0/2a16ed0e81fbc43513e245aa5763354e25e787dab0d539581a6c3f0f967461a159ed6236b2559de23aa5b88e7dc32b469b6c47568833dd142a4b24b4f5cd2620
+  checksum: 10c0/b35ad37cf6557a87fd057121ce2be7695380c9138d93e87ae928609da259ea0a170fac6f3ef1eb3ece8a068e8b7f2f3adf5bb2374cf4d4a57fe484954fcc9482
   languageName: node
   linkType: hard
 
@@ -14728,7 +14720,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-cloudflare@npm:^1.2.5, pg-cloudflare@npm:^1.3.0":
+"pg-cloudflare@npm:^1.3.0":
   version: 1.3.0
   resolution: "pg-cloudflare@npm:1.3.0"
   checksum: 10c0/b0866c88af8e54c7b3ed510719d92df37714b3af5e3a3a10d9f761fcec99483e222f5b78a1f2de590368127648087c45c01aaf66fadbe46edb25673eedc4f8fc
@@ -14742,10 +14734,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-connection-string@npm:^2.10.1, pg-connection-string@npm:^2.9.0":
+"pg-connection-string@npm:^2.10.1":
   version: 2.10.1
   resolution: "pg-connection-string@npm:2.10.1"
   checksum: 10c0/f218a72b59c661022caca9a7f2116655632b1d7e7d6dc9a8ee9f238744e0927e0d6f44e12f50d9767c6d9cd47d9b3766aa054b77504b15c6bf503400530e053e
+  languageName: node
+  linkType: hard
+
+"pg-connection-string@npm:^2.12.0":
+  version: 2.13.0
+  resolution: "pg-connection-string@npm:2.13.0"
+  checksum: 10c0/870f83a8fca06d0340fc522653471d9c7081efbadf25c7f5801fcfb58104ef527138bb5d0546b21498ff4df75a742469622f657911a3b74034a1e94e59f34e31
   languageName: node
   linkType: hard
 
@@ -14779,12 +14778,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-pool@npm:^3.10.0, pg-pool@npm:^3.11.0":
+"pg-pool@npm:^3.11.0":
   version: 3.11.0
   resolution: "pg-pool@npm:3.11.0"
   peerDependencies:
     pg: ">=8.0"
   checksum: 10c0/4b104b48a47257a0edad0c62e5ea1908b72cb79386270264b452e69895e9e4c589d00cdbf6e46d4e9c05bc7e7d191656b66814b5282d65f33b12648a21df3c7f
+  languageName: node
+  linkType: hard
+
+"pg-pool@npm:^3.13.0":
+  version: 3.14.0
+  resolution: "pg-pool@npm:3.14.0"
+  peerDependencies:
+    pg: ">=8.0"
+  checksum: 10c0/3dd706e67e3b317e29409d9eb3bd44e960eabd86db2a9711a9391bbd43881f8ce7a5f7054a341509558ee05e9bf0a3cc7aef037039da0790ce1e16762ade3ba6
   languageName: node
   linkType: hard
 
@@ -14797,10 +14805,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*, pg-protocol@npm:^1.10.0, pg-protocol@npm:^1.11.0":
+"pg-protocol@npm:*, pg-protocol@npm:^1.11.0":
   version: 1.11.0
   resolution: "pg-protocol@npm:1.11.0"
   checksum: 10c0/93e83581781418c9173eba4e4545f73392cfe66b78dd1d3624d7339fbd37e7f4abebaf2615e68e0701a9bf0edf5b81a4ad533836f388f775fe25fa24a691c464
+  languageName: node
+  linkType: hard
+
+"pg-protocol@npm:^1.13.0":
+  version: 1.14.0
+  resolution: "pg-protocol@npm:1.14.0"
+  checksum: 10c0/dccb29b30f5cee8f2ca7dfd17da9eb957174f7a1a25e987e0bfc9fe7640f53dc9fd05c7f3635e7db0c5eefcd41716fffe625f3c1ea9789634d438851b9ce90ae
   languageName: node
   linkType: hard
 
@@ -14824,14 +14839,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg@npm:8.16.0":
-  version: 8.16.0
-  resolution: "pg@npm:8.16.0"
+"pg@npm:8.20.0":
+  version: 8.20.0
+  resolution: "pg@npm:8.20.0"
   dependencies:
-    pg-cloudflare: "npm:^1.2.5"
-    pg-connection-string: "npm:^2.9.0"
-    pg-pool: "npm:^3.10.0"
-    pg-protocol: "npm:^1.10.0"
+    pg-cloudflare: "npm:^1.3.0"
+    pg-connection-string: "npm:^2.12.0"
+    pg-pool: "npm:^3.13.0"
+    pg-protocol: "npm:^1.13.0"
     pg-types: "npm:2.2.0"
     pgpass: "npm:1.0.5"
   peerDependencies:
@@ -14842,7 +14857,7 @@ __metadata:
   peerDependenciesMeta:
     pg-native:
       optional: true
-  checksum: 10c0/24542229c7e5cbf69d654de32e8cdc8302c73f1338e56728543cb16364fb319d5689e03fa704b69a208105c7065c867cfccb9dbccccea2020bb5c64ead785713
+  checksum: 10c0/e21d44b9fb3ec188e67778d7abd32d945a546f2da5128b6c8c16da8ae1e42fdc953c0d6f0a2ee65d11f31808c1dffaf908cb9c880cd2e8f0ae05525e4b8bc832
   languageName: node
   linkType: hard
 
@@ -15119,12 +15134,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.8.1":
-  version: 3.8.1
-  resolution: "prettier@npm:3.8.1"
+"prettier@npm:^3.8.3":
+  version: 3.8.3
+  resolution: "prettier@npm:3.8.3"
   bin:
     prettier: bin/prettier.cjs
-  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
+  checksum: 10c0/754816fd7593eb80f6376d7476d463e832c38a12f32775a82683adb6e35b772b1f484d65f19401507b983a8c8a7cd5a4a9f12006bd56491e8f35503473f77473
   languageName: node
   linkType: hard
 
@@ -15944,6 +15959,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"run-async@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "run-async@npm:3.0.0"
+  checksum: 10c0/b18b562ae37c3020083dcaae29642e4cc360c824fbfb6b7d50d809a9d5227bb986152d09310255842c8dce40526e82ca768f02f00806c91ba92a8dfa6159cb85
+  languageName: node
+  linkType: hard
+
 "run-parallel@npm:^1.1.9":
   version: 1.2.0
   resolution: "run-parallel@npm:1.2.0"
@@ -16745,7 +16767,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-api-utils@npm:^2.4.0":
+"ts-api-utils@npm:^2.5.0":
   version: 2.5.0
   resolution: "ts-api-utils@npm:2.5.0"
   peerDependencies:
@@ -16887,38 +16909,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.57.1":
-  version: 8.57.1
-  resolution: "typescript-eslint@npm:8.57.1"
+"typescript-eslint@npm:^8.59.3":
+  version: 8.59.3
+  resolution: "typescript-eslint@npm:8.59.3"
   dependencies:
-    "@typescript-eslint/eslint-plugin": "npm:8.57.1"
-    "@typescript-eslint/parser": "npm:8.57.1"
-    "@typescript-eslint/typescript-estree": "npm:8.57.1"
-    "@typescript-eslint/utils": "npm:8.57.1"
+    "@typescript-eslint/eslint-plugin": "npm:8.59.3"
+    "@typescript-eslint/parser": "npm:8.59.3"
+    "@typescript-eslint/typescript-estree": "npm:8.59.3"
+    "@typescript-eslint/utils": "npm:8.59.3"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
-    typescript: ">=4.8.4 <6.0.0"
-  checksum: 10c0/be5a19738a785a2695e01874cbedbddbb63ea0a1c2eac331be7d251bda35116505f4d4d8de5a25a77a09392396247af4b89d2a793580217af4891e9e5036a716
+    typescript: ">=4.8.4 <6.1.0"
+  checksum: 10c0/7bd251921d583be5a29565118a5babc068e7c1e893d30a0dbea4215ed20cebcad186b419ba747e001b48339e18c4a2cf6c936e013a77b225692f7f48331839f6
   languageName: node
   linkType: hard
 
-"typescript@npm:^5":
-  version: 5.9.2
-  resolution: "typescript@npm:5.9.2"
+"typescript@npm:^5.9.3":
+  version: 5.9.3
+  resolution: "typescript@npm:5.9.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/cd635d50f02d6cf98ed42de2f76289701c1ec587a363369255f01ed15aaf22be0813226bff3c53e99d971f9b540e0b3cc7583dbe05faded49b1b0bed2f638a18
+  checksum: 10c0/6bd7552ce39f97e711db5aa048f6f9995b53f1c52f7d8667c1abdc1700c68a76a308f579cd309ce6b53646deb4e9a1be7c813a93baaf0a28ccd536a30270e1c5
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5#optional!builtin<compat/typescript>":
-  version: 5.9.2
-  resolution: "typescript@patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=5786d5"
+"typescript@patch:typescript@npm%3A^5.9.3#optional!builtin<compat/typescript>":
+  version: 5.9.3
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/34d2a8e23eb8e0d1875072064d5e1d9c102e0bdce56a10a25c0b917b8aa9001a9cf5c225df12497e99da107dc379360bc138163c66b55b95f5b105b50578067e
+  checksum: 10c0/ad09fdf7a756814dce65bc60c1657b40d44451346858eea230e10f2e95a289d9183b6e32e5c11e95acc0ccc214b4f36289dcad4bf1886b0adb84d711d336a430
   languageName: node
   linkType: hard
 
@@ -17505,18 +17527,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod-validation-error@npm:3.5.1":
-  version: 3.5.1
-  resolution: "zod-validation-error@npm:3.5.1"
+"zod-validation-error@npm:5.0.0":
+  version: 5.0.0
+  resolution: "zod-validation-error@npm:5.0.0"
   peerDependencies:
-    zod: ^3.25.0
-  checksum: 10c0/37e83266755f798cf7f0437441ad72657882afae36e451177e9ae6ba555d211aa80b4f5d9dfbb08839ddb5538b94325499f0445aae923e09c0f7d9f472868c85
+    zod: ^3.25.0 || ^4.0.0
+  checksum: 10c0/1f137003dad6da34e954e31f270ea8bf2cc6e29dbb9b03858951f6498a7f728b935ca66782514b2fca6485750844cef4633ce1acbd17ad3dde359a2ad6b22973
   languageName: node
   linkType: hard
 
-"zod@npm:3.25.76":
-  version: 3.25.76
-  resolution: "zod@npm:3.25.76"
-  checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
+"zod@npm:4.2.0":
+  version: 4.2.0
+  resolution: "zod@npm:4.2.0"
+  checksum: 10c0/c9fa563f4866f5554c84728f69fe01979d5ab41a104176a4b9f1a182fa670b6e55ffe1be81863dc03d8b36c90ee9e917353b429f4aa3615b5f63dc4c8d5d92d3
   languageName: node
   linkType: hard

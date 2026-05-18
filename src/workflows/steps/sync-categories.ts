@@ -41,7 +41,9 @@ export const syncCategoriesStep = createStep(
         break
       }
 
-      await Promise.all(categoryIndexes.map((index) => meilisearchService.addDocuments(index, categories)))
+      await Promise.all(
+        categoryIndexes.map((index) => meilisearchService.addDocuments(index, categories, 'categories', { container })),
+      )
 
       allCategoryIds.push(...categories.map((c) => c.id))
       offset += batchSize
