@@ -16,7 +16,15 @@ export const upsertTagStep = createStep('upsert-tag', async ({ tagId }: StepInpu
     filters: { id: tagId },
   })
 
-  const productIds = tags.flatMap((tag) => tag.products?.map((p: { id: string }) => p.id) || []).filter(Boolean)
+  const productIds = tags
+    .flatMap((tag) => {
+      return (
+        tag.products?.map((p: { id: string }) => {
+          return p.id
+        }) ?? []
+      )
+    })
+    .filter(Boolean)
 
   if (!productIds.length) {
     return new StepResponse({ products: [] })
@@ -35,12 +43,16 @@ export const upsertTagStep = createStep('upsert-tag', async ({ tagId }: StepInpu
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

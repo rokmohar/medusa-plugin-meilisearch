@@ -1,5 +1,5 @@
 import { Embedder, type Embedders, Meilisearch } from 'meilisearch'
-import { MeilisearchPluginOptions } from '../types'
+import { EmbeddingConfig, MeilisearchPluginOptions } from '../types'
 
 /**
  * MeiliSearch Embedder Service for AI-powered semantic search
@@ -18,7 +18,7 @@ export class MeiliSearchEmbedder {
    * Check if vector search is enabled and properly configured
    */
   isVectorSearchEnabled(): boolean {
-    return !!(this.config_.vectorSearch?.enabled && this.config_.vectorSearch.embedding)
+    return this.config_.vectorSearch?.enabled === true
   }
 
   /**
@@ -26,7 +26,8 @@ export class MeiliSearchEmbedder {
    */
   async configureEmbedders(indexKey: string): Promise<void> {
     const { vectorSearch } = this.config_
-    if (!vectorSearch?.enabled || !vectorSearch.embedding) {
+
+    if (!vectorSearch?.enabled) {
       return
     }
 
@@ -47,9 +48,9 @@ export class MeiliSearchEmbedder {
   /**
    * Create embedder configuration based on provider settings
    */
-  private createEmbedderConfig(embeddingConfig: Record<string, any>): Embedder {
+  private createEmbedderConfig(embeddingConfig: EmbeddingConfig): Embedder {
     const baseConfig = {
-      dimensions: embeddingConfig.dimensions || this.getDefaultDimensions(embeddingConfig.model),
+      dimensions: this.config_.vectorSearch?.dimensions ?? this.getDefaultDimensions(embeddingConfig.model),
       distribution: {
         mean: 0.7,
         sigma: 0.3,
@@ -82,8 +83,11 @@ export class MeiliSearchEmbedder {
           ...baseConfig,
         }
 
-      default:
-        throw new Error(`Unsupported embedding provider: ${embeddingConfig.provider}`)
+      default: {
+        const _exhaustiveCheck: never = embeddingConfig
+
+        throw new Error(`Unsupported embedding provider: ${String(_exhaustiveCheck)}`)
+      }
     }
   }
 
@@ -95,24 +99,28 @@ export class MeiliSearchEmbedder {
       'nomic-embed-text': 768,
       'text-embedding-3-small': 1536,
     }
-    return modelDimensions[model] || 768
+
+    return modelDimensions[model] ?? 768
   }
 
   /**
    * Create document template for embedding generation
    */
   private createDocumentTemplate(): string {
-    const { embeddingFields = ['title', 'description'] } = this.config_.vectorSearch || {}
+    const { embeddingFields = ['title', 'description'] } = this.config_.vectorSearch ?? {}
 
     // Create a template that combines the specified fields
-    const fieldTemplates = embeddingFields.map((field) => `{{doc.${field}}}`)
+    const fieldTemplates = embeddingFields.map((field) => {
+      return `{{doc.${field}}}`
+    })
+
     return fieldTemplates.join(' ')
   }
 
   /**
    * Enhance search options with vector search parameters
    */
-  enhanceSearchOptions(searchOptions: Record<string, any>, semanticSearch: boolean, semanticRatio: number) {
+  enhanceSearchOptions(searchOptions: Record<string, unknown>, semanticSearch: boolean, semanticRatio: number) {
     if (!semanticSearch || !this.isVectorSearchEnabled()) {
       return searchOptions
     }
@@ -159,9 +167,9 @@ export class MeiliSearchEmbedder {
       enabled: true,
       provider: vectorSearch.embedding.provider,
       model: vectorSearch.embedding.model,
-      dimensions: vectorSearch.dimensions || this.getDefaultDimensions(vectorSearch.embedding.model),
-      embeddingFields: vectorSearch.embeddingFields || ['title', 'description'],
-      semanticRatio: vectorSearch.semanticRatio || 0.5,
+      dimensions: vectorSearch.dimensions ?? this.getDefaultDimensions(vectorSearch.embedding.model),
+      embeddingFields: vectorSearch.embeddingFields ?? ['title', 'description'],
+      semanticRatio: vectorSearch.semanticRatio ?? 0.5,
     }
   }
 }

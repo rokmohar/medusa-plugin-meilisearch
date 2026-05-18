@@ -69,6 +69,7 @@ export function normalizeFieldConfig(field: string | TranslatableField): Transla
   if (typeof field === 'string') {
     return { source: field }
   }
+
   return field
 }
 
@@ -80,20 +81,26 @@ export function getTranslation(
   language?: string,
   fallbackLanguage = 'en',
 ): string | undefined {
-  if (!translations?.length) {
+  if (!translations.length) {
     return undefined
   }
 
   // Try to find translation in requested language
   if (language) {
-    const translation = translations.find((t) => t.language_code === language)
+    const translation = translations.find((t) => {
+      return t.language_code === language
+    })
+
     if (translation) {
       return translation.value
     }
   }
 
   // Fall back to the default language
-  const fallback = translations.find((t) => t.language_code === fallbackLanguage)
+  const fallback = translations.find((t) => {
+    return t.language_code === fallbackLanguage
+  })
+
   if (fallback) {
     return fallback.value
   }

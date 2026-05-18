@@ -1,3 +1,4 @@
+import { toError } from '../utils/error'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { InventoryEvents } from '@medusajs/utils'
 import { upsertInventoryLevelWorkflow } from '../workflows/upsert-inventory-level'
@@ -13,7 +14,7 @@ export default async function meilisearchInventoryLevelUpsertHandler({
       input: { id: data.id },
     })
   } catch (error) {
-    logger.error(error)
+    logger.error(toError(error))
     throw error
   }
 }

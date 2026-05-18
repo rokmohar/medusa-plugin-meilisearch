@@ -1,5 +1,5 @@
 import z from 'zod'
-import { SearchResponse } from 'meilisearch'
+import { Hit, SearchResponse } from 'meilisearch'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 
@@ -10,6 +10,9 @@ export const StoreSearchProductsSchema = z.object({
   language: z.string().optional(),
   semanticSearch: z.coerce.boolean().default(false),
   semanticRatio: z.coerce.number().min(0).max(1).default(0.5),
+  // Meilisearch-native faceting/sorting passthrough.
+  filter: z.string().optional(),
+  sort: z.union([z.string(), z.array(z.string())]).optional(),
 })
 
 export type StoreSearchProductsParams = z.infer<typeof StoreSearchProductsSchema>
@@ -17,10 +20,11 @@ export type StoreSearchProductsParams = z.infer<typeof StoreSearchProductsSchema
 export type ProductsHitsResponse = SearchResponse & { hybridSearch?: boolean; semanticRatio?: number }
 
 export async function GET(
-  req: MedusaRequest<any, StoreSearchProductsParams>,
+  req: MedusaRequest<unknown, StoreSearchProductsParams>,
   res: MedusaResponse<ProductsHitsResponse>,
 ) {
-  const { query, language, limit, offset, semanticSearch, semanticRatio } = req.validatedQuery
+  const { query, language, limit, offset, semanticSearch, semanticRatio, filter, sort } = req.validatedQuery
+  const sortArr = Array.isArray(sort) ? sort : sort !== undefined ? [sort] : undefined
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
   const indexes = await meilisearchService.getIndexesByType('products')
@@ -32,6 +36,8 @@ export async function GET(
           limit,
           offset,
         },
+        filter,
+        additionalOptions: sortArr ? { sort: sortArr } : undefined,
         semanticSearch,
         semanticRatio,
       })
@@ -39,22 +45,25 @@ export async function GET(
   )
 
   // Merge results from all indexes
-  const mergedResults = results.reduce(
+  const mergedResults = results.reduce<{
+    hits: Hit[]
+    estimatedTotalHits: number
+    processingTimeMs: number
+    query: string
+  }>(
     (acc, result) => {
       return {
         hits: [...acc.hits, ...result.hits],
-        estimatedTotalHits: (acc.estimatedTotalHits || 0) + (result.estimatedTotalHits || 0),
+        estimatedTotalHits: acc.estimatedTotalHits + result.estimatedTotalHits,
         processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
         query: result.query,
-        // Include vector search metadata if available
-        ...(semanticSearch && {
-          hybridSearch: true,
-          semanticRatio,
-        }),
       }
     },
     { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query },
   )
 
-  res.json(mergedResults)
+  res.json({
+    ...mergedResults,
+    ...(semanticSearch && { hybridSearch: true, semanticRatio }),
+  })
 }

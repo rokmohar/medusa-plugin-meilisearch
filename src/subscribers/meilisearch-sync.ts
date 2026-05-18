@@ -1,3 +1,4 @@
+import { toError } from '../utils/error'
 import { SubscriberArgs, type SubscriberConfig } from '@medusajs/framework'
 import { syncCategoriesWorkflow } from '../workflows/sync-categories'
 import { syncProductsWorkflow } from '../workflows/sync-products'
@@ -13,6 +14,7 @@ export default async function meilisearchSyncHandler({ container }: SubscriberAr
     } = await syncCategoriesWorkflow(container).run({
       input: {},
     })
+
     logger.info(`Successfully indexed ${categoriesProcessed} categories and deleted ${categoriesDeleted} categories`)
 
     const {
@@ -20,9 +22,10 @@ export default async function meilisearchSyncHandler({ container }: SubscriberAr
     } = await syncProductsWorkflow(container).run({
       input: {},
     })
+
     logger.info(`Successfully indexed ${productsProcessed} products and deleted ${productsDeleted} products`)
   } catch (error) {
-    logger.error(error)
+    logger.error(toError(error))
     throw error
   }
 }

@@ -9,6 +9,7 @@ export const upsertInventoryLevelWorkflow = createWorkflow(
   'meilisearch-upsert-inventory-level',
   ({ id }: WorkflowInput) => {
     const { products } = upsertInventoryLevelStep({ inventoryLevelId: id })
+
     return new WorkflowResponse({ products })
   },
 )

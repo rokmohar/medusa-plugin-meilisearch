@@ -1,25 +1,15 @@
-import z from 'zod'
-import { MedusaRequest, MedusaResponse, prepareListQuery } from '@medusajs/framework'
-import { ContainerRegistrationKeys, QueryContext } from '@medusajs/utils'
-import { RemoteQueryFilters, QueryContextType, ProductDTO } from '@medusajs/types'
+import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
+import { ProductDTO } from '@medusajs/types'
+import { Hit } from 'meilisearch'
 import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
-
-// Schema that combines standard MedusaJS product query params with meilisearch params
-export const StoreProductsSchema = z.object({
-  // Standard MedusaJS v2 product query parameters
-  fields: z.string().optional(),
-  limit: z.coerce.number().default(50).optional(),
-  offset: z.coerce.number().default(0).optional(),
-  region_id: z.string().optional(),
-  currency_code: z.string().optional(),
-  // Meilisearch-specific parameters
-  query: z.string().optional(),
-  language: z.string().optional(),
-  semanticSearch: z.coerce.boolean().default(false).optional(),
-  semanticRatio: z.coerce.number().min(0).max(1).default(0.5).optional(),
-})
-
-export type StoreProductsParams = z.infer<typeof StoreProductsSchema>
+import {
+  ContainerRegistrationKeys,
+  QueryContext,
+  isPresent,
+  wrapVariantsWithInventoryQuantityForSalesChannel,
+  wrapProductsWithTaxPrices,
+} from '../../../utils/medusa'
+import '../../../types'
 
 export interface ProductsResponse {
   products: ProductDTO[]
@@ -28,117 +18,132 @@ export interface ProductsResponse {
   offset?: number
 }
 
-export async function GET(req: MedusaRequest<any, StoreProductsParams>, res: MedusaResponse<ProductsResponse>) {
-  const {
-    // Meilisearch params
-    query,
-    language,
-    semanticSearch = false,
-    semanticRatio = 0.5,
-    // Extract standard MedusaJS params separately
-    ...standardQuery
-  } = req.validatedQuery
+/**
+ * Behaves like the native `/store/products` route. The native middleware stack
+ * (see ../../../middlewares.ts) populates `req.queryConfig`, `req.filterableFields`,
+ * `req.pricingContext` and `req.taxContext`. When a Meilisearch `query`/`semanticSearch`
+ * is present, Meilisearch supplies the candidate product ids + ranking and that id set
+ * is intersected into the native filters; everything else (fields, filters, pricing,
+ * tax, inventory_quantity) is handled exactly as native.
+ */
+export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsResponse>) {
+  const meili = req.meiliParams ?? { semanticSearch: false, semanticRatio: 0.5 }
+  const isSearch = Boolean(meili.query ?? meili.semanticSearch)
 
-  const queryService = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
   const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
-  // Use prepareListQuery to handle field selectors and other standard parameters
-  const queryConfig = await prepareListQuery(standardQuery, {
-    defaults: ['id', 'title', 'handle', 'status'],
-    isList: true,
+  const { fields, pagination } = req.queryConfig
+  const filters = req.filterableFields
+  const limit = pagination.take
+  const offset = pagination.skip
+
+  // `variants.inventory_quantity` is a virtual field that `query.graph` cannot resolve.
+  // Native strips it from the fields and post-computes it. Mirror that here.
+  const allFields: string[] = [...fields]
+  const withInventoryQuantity = allFields.some((f) => {
+    return f.includes('variants.inventory_quantity')
   })
-
-  // Extract query parameters manually for custom filter logic
-  const { limit, offset, region_id, currency_code } = standardQuery
-
-  // Build standard Medusa filters
-  const filters: RemoteQueryFilters<'product'> = {}
+  const graphFields = withInventoryQuantity
+    ? allFields.filter((f) => {
+        return !f.includes('variants.inventory_quantity')
+      })
+    : allFields
 
   let productIds: string[] = []
   let totalCount = 0
 
-  // If meilisearch query parameters are provided, use meilisearch for filtering
-  if (query || semanticSearch) {
+  if (isSearch) {
     const indexes = await meilisearchService.getIndexesByType('products')
     const results = await Promise.all(
       indexes.map(async (indexKey) => {
-        return await meilisearchService.search(indexKey, query || '', {
-          language,
-          paginationOptions: {
-            limit,
-            offset,
-          },
-          semanticSearch,
-          semanticRatio,
+        return meilisearchService.search(indexKey, meili.query ?? '', {
+          language: meili.language,
+          paginationOptions: { limit, offset },
+          semanticSearch: meili.semanticSearch,
+          semanticRatio: meili.semanticRatio,
         })
       }),
     )
 
-    // Merge results from all indexes
-    const mergedResults = results.reduce(
+    const mergedResults = results.reduce<{
+      hits: Hit[]
+      estimatedTotalHits: number
+      processingTimeMs: number
+      query: string
+    }>(
       (acc, result) => {
         return {
           hits: [...acc.hits, ...result.hits],
-          estimatedTotalHits: (acc.estimatedTotalHits || 0) + (result.estimatedTotalHits || 0),
+          estimatedTotalHits: acc.estimatedTotalHits + result.estimatedTotalHits,
           processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
           query: result.query,
         }
       },
-      { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: query || '' },
+      { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: meili.query ?? '' },
     )
 
-    productIds = mergedResults.hits.map((hit) => hit.id)
-    totalCount = mergedResults.estimatedTotalHits ?? 0
+    productIds = mergedResults.hits.map((hit) => {
+      return hit.id
+    })
+    totalCount = mergedResults.estimatedTotalHits
 
-    // If we have meilisearch results, filter by those IDs
-    if (productIds.length > 0) {
-      filters.id = { $in: productIds }
-    } else {
-      // No results from meilisearch, return empty response
-      res.json({
-        products: [],
-        count: 0,
-        limit,
-        offset,
-      })
+    if (productIds.length === 0) {
+      res.json({ products: [], count: 0, limit, offset })
+
       return
     }
+
+    filters.id = { $in: productIds }
   }
 
-  // Build context for region and currency - always include currency_code for price calculations
-  const context: QueryContextType = {
-    variants: {
-      calculated_price: QueryContext({
-        region_id,
-        currency_code,
-      }),
+  // Native pricing context (provided by setPricingContext middleware).
+  const context: Record<string, unknown> = {}
+
+  if (isPresent(req.pricingContext)) {
+    context.variants = { calculated_price: QueryContext({ ...req.pricingContext }) }
+  }
+
+  const { data: products = [], metadata } = await query.graph(
+    {
+      entity: 'product',
+      fields: graphFields,
+      filters,
+      pagination,
+      context,
     },
+    {
+      cache: { enable: true },
+      locale: req.locale,
+    },
+  )
+
+  if (withInventoryQuantity) {
+    await wrapVariantsWithInventoryQuantityForSalesChannel(
+      req,
+      products
+        .map((product) => {
+          return product.variants
+        })
+        .flat(1),
+    )
   }
 
-  // Fetch products using the standard Medusa query service with prepareListQuery config
-  const { data: products, metadata } = await queryService.graph({
-    ...queryConfig.remoteQueryConfig,
-    entity: 'product',
-    filters,
-    context,
-  })
+  await wrapProductsWithTaxPrices(req, products)
 
-  // If we used meilisearch, preserve the order from the search results
+  // Preserve Meilisearch ranking when search drove the result set.
   let orderedProducts = products
 
-  if (query || semanticSearch) {
-    const productIdOrder = productIds
-    orderedProducts = products.sort((a, b) => {
-      const aIndex = productIdOrder.indexOf(a.id)
-      const bIndex = productIdOrder.indexOf(b.id)
-      return aIndex - bIndex
+  if (isSearch) {
+    orderedProducts = [...products].sort((a, b) => {
+      return productIds.indexOf(a.id) - productIds.indexOf(b.id)
     })
   }
 
   res.json({
     products: orderedProducts,
-    count: query || semanticSearch ? totalCount : metadata?.count || products.length,
-    offset,
-    limit,
+    count: isSearch ? totalCount : (metadata?.count ?? products.length),
+    offset: metadata?.skip ?? offset,
+    limit: metadata?.take ?? limit,
   })
 }

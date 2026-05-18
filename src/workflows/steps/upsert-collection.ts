@@ -19,7 +19,13 @@ export const upsertCollectionStep = createStep(
     })
 
     const productIds = collections
-      .flatMap((col) => col.products?.map((p: { id: string }) => p.id) || [])
+      .flatMap((col) => {
+        return (
+          col.products?.map((p: { id: string }) => {
+            return p.id
+          }) ?? []
+        )
+      })
       .filter(Boolean)
 
     if (!productIds.length) {
@@ -39,12 +45,18 @@ export const upsertCollectionStep = createStep(
       products.map(async (product) => {
         if (!product.status || product.status === 'published') {
           await Promise.all(
-            productIndexes.map((indexKey) =>
-              meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-            ),
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, {
+                container,
+              })
+            }),
           )
         } else {
-          await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+          await Promise.all(
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.deleteDocument(indexKey, product.id)
+            }),
+          )
         }
       }),
     )

@@ -22,16 +22,19 @@ const SyncPage = () => {
     refetch: refetchStatus,
   } = useQuery<AdminVectorStatusResponse>({
     queryKey: ['meilisearch-vector-status'],
-    queryFn: async () => sdk.client.fetch<AdminVectorStatusResponse>('/admin/meilisearch/vector-status'),
+    queryFn: async () => {
+      return sdk.client.fetch<AdminVectorStatusResponse>('/admin/meilisearch/vector-status')
+    },
     retry: 2,
     staleTime: 30000, // Consider data stale after 30 seconds
   })
 
   const { mutate: syncData, isPending: syncPending } = useMutation({
-    mutationFn: () =>
-      sdk.client.fetch<AdminSyncResponse>('/admin/meilisearch/sync', {
+    mutationFn: async () => {
+      return sdk.client.fetch<AdminSyncResponse>('/admin/meilisearch/sync', {
         method: 'POST',
-      }),
+      })
+    },
     onSuccess: () => {
       toast.success('Successfully triggered data sync to Meilisearch')
     },
@@ -46,6 +49,7 @@ const SyncPage = () => {
       if (!searchQuery.trim()) {
         throw new Error('Search query cannot be empty')
       }
+
       return sdk.client.fetch<AdminProductsHitsResponse>('/admin/meilisearch/products-hits', {
         method: 'POST',
         body: {
@@ -59,6 +63,7 @@ const SyncPage = () => {
     },
     onSuccess: (data) => {
       const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
+
       toast.success(`Search successful. Found ${data.hits.length} products${hybridInfo}`)
     },
     onError: (err: Error) => {
@@ -72,6 +77,7 @@ const SyncPage = () => {
       if (!searchQuery.trim()) {
         throw new Error('Search query cannot be empty')
       }
+
       return sdk.client.fetch<AdminCategoriesHitsResponse>('/admin/meilisearch/categories-hits', {
         method: 'POST',
         body: {
@@ -85,6 +91,7 @@ const SyncPage = () => {
     },
     onSuccess: (data) => {
       const hybridInfo = data.hybridSearch ? ` (hybrid search with ratio ${data.semanticRatio})` : ''
+
       toast.success(`Search successful. Found ${data.hits.length} categories${hybridInfo}`)
     },
     onError: (err: Error) => {
@@ -130,7 +137,14 @@ const SyncPage = () => {
                 <Badge color="grey">Disabled</Badge>
               )}
             </div>
-            <Button variant="secondary" size="small" onClick={() => refetchStatus()} isLoading={statusLoading}>
+            <Button
+              variant="secondary"
+              size="small"
+              onClick={async () => {
+                return refetchStatus()
+              }}
+              isLoading={statusLoading}
+            >
               Refresh Status
             </Button>
           </div>
@@ -145,11 +159,11 @@ const SyncPage = () => {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <Text className="text-sm font-medium text-gray-700">Provider</Text>
-                <Text className="text-sm text-gray-600">{vectorStatus.provider || 'Not specified'}</Text>
+                <Text className="text-sm text-gray-600">{vectorStatus.provider ?? 'Not specified'}</Text>
               </div>
               <div>
                 <Text className="text-sm font-medium text-gray-700">Model</Text>
-                <Text className="text-sm text-gray-600">{vectorStatus.model || 'Not specified'}</Text>
+                <Text className="text-sm text-gray-600">{vectorStatus.model ?? 'Not specified'}</Text>
               </div>
               {vectorStatus.dimensions && (
                 <div>
@@ -187,7 +201,9 @@ const SyncPage = () => {
                       max="1"
                       step="0.1"
                       value={semanticRatio}
-                      onChange={(e) => setSemanticRatio(parseFloat(e.target.value))}
+                      onChange={(e) => {
+                        return setSemanticRatio(parseFloat(e.target.value))
+                      }}
                       className="flex-1"
                       aria-label="Semantic search ratio"
                       aria-describedby="semantic-ratio-description"
@@ -239,7 +255,9 @@ const SyncPage = () => {
               <Text className="text-sm font-medium text-gray-700 mb-2">Search Query</Text>
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  return setSearchQuery(e.target.value)
+                }}
                 placeholder="Enter search query (e.g., 'blue shirt', 'comfortable clothing')"
                 className="w-full"
                 aria-label="Search query input"

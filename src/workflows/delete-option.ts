@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const deleteOptionWorkflow = createWorkflow('meilisearch-delete-option', ({ id }: WorkflowInput) => {
   const { products } = deleteOptionStep({ optionId: id })
+
   return new WorkflowResponse({ products })
 })

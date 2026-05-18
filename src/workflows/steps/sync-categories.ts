@@ -42,10 +42,16 @@ export const syncCategoriesStep = createStep(
       }
 
       await Promise.all(
-        categoryIndexes.map((index) => meilisearchService.addDocuments(index, categories, 'categories', { container })),
+        categoryIndexes.map(async (index) => {
+          return meilisearchService.addDocuments(index, categories, 'categories', { container })
+        }),
       )
 
-      allCategoryIds.push(...categories.map((c) => c.id))
+      allCategoryIds.push(
+        ...categories.map((c) => {
+          return c.id
+        }),
+      )
       offset += batchSize
 
       if (categories.length < batchSize) {
@@ -93,7 +99,12 @@ export const syncCategoriesStep = createStep(
 
       for (let i = 0; i < orphanedIds.length; i += batchSize) {
         const batch = orphanedIds.slice(i, i + batchSize)
-        await Promise.all(categoryIndexes.map((index) => meilisearchService.deleteDocuments(index, batch)))
+
+        await Promise.all(
+          categoryIndexes.map(async (index) => {
+            return meilisearchService.deleteDocuments(index, batch)
+          }),
+        )
       }
     }
 

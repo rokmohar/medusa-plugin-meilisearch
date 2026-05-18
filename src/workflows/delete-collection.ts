@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const deleteCollectionWorkflow = createWorkflow('meilisearch-delete-collection', ({ id }: WorkflowInput) => {
   const { products } = deleteCollectionStep({ collectionId: id })
+
   return new WorkflowResponse({ products })
 })

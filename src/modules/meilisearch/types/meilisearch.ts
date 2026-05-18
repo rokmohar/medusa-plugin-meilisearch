@@ -1,4 +1,4 @@
-import { ProductCategoryDTO, ProductDTO, SearchTypes } from '@medusajs/types'
+import { SearchTypes } from '@medusajs/types'
 import type { MedusaContainer } from '@medusajs/framework'
 import { Config, Settings } from 'meilisearch'
 import { TranslatableField } from './translation'
@@ -11,7 +11,7 @@ export const meilisearchErrorCodes = {
 /**
  * Custom plugin modules can't access the shared MedusaContainer from the service
  * constructor in Medusa 2.x — the framework only injects the awilix cradle proxy
-   * and only built-in modules opt into `__passSharedContainer`. Callers (workflow
+ * and only built-in modules opt into `__passSharedContainer`. Callers (workflow
  * steps, API routes) have the real container in their context and must forward
  * it here when a transformer needs to resolve framework services.
  */
@@ -47,35 +47,38 @@ export interface I18nConfig {
   translatableFields?: (string | TranslatableField)[]
 }
 
-export type TransformedProduct = Record<string, any>
-export type TransformedCategory = Record<string, any>
+export type TransformedProduct = Record<string, unknown>
+export type TransformedCategory = Record<string, unknown>
 
-export type DefaultTransformer<Result = any> = (document: any, options?: TransformOptions) => Result
+export type DefaultTransformer<Result = TransformedProduct> = (
+  document: Record<string, unknown>,
+  options?: TransformOptions,
+) => Result
 
-export type Transformer<Result = any> = (
-  document: any,
+export type Transformer<Result = TransformedProduct> = (
+  document: Record<string, unknown>,
   defaultTransformer: DefaultTransformer,
   options?: TransformOptions,
 ) => Result
 
 export type DefaultProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
-  document: ProductDTO,
+  document: Record<string, unknown>,
   options?: TransformOptions,
 ) => Result
 
 export type ProductTransformer<Result extends TransformedProduct = TransformedProduct> = (
-  document: ProductDTO,
+  document: Record<string, unknown>,
   defaultTransformer: DefaultProductTransformer,
   options?: TransformOptions,
 ) => Promise<Result>
 
 export type DefaultCategoryTransformer<Result extends TransformedCategory = TransformedCategory> = (
-  document: ProductCategoryDTO,
+  document: Record<string, unknown>,
   options?: TransformOptions,
 ) => Result
 
 export type CategoryTransformer<Result extends TransformedCategory = TransformedCategory> = (
-  document: ProductCategoryDTO,
+  document: Record<string, unknown>,
   defaultTransformer: DefaultCategoryTransformer,
   options?: TransformOptions,
 ) => Promise<Result>

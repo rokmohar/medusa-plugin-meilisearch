@@ -1,3 +1,4 @@
+import { toError } from '../utils/error'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { PricingEvents } from '@medusajs/utils'
 import { upsertPriceWorkflow } from '../workflows/upsert-price'
@@ -13,7 +14,7 @@ export default async function meilisearchPriceUpsertHandler({
       input: { id: data.id },
     })
   } catch (error) {
-    logger.error(error)
+    logger.error(toError(error))
     throw error
   }
 }

@@ -12,11 +12,13 @@ const productsIndexJobWorkflow = createWorkflow('products-index-job-workflow', (
   const result = syncProductsWorkflow.runAsStep({
     input: {},
   })
+
   return new WorkflowResponse(result)
 })
 
 export default async function meilisearchProductsIndexJob(container: MedusaContainer) {
   const logger = container.resolve('logger')
+
   logger.info('Starting product indexing...')
 
   const {

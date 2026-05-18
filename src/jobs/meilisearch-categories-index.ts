@@ -12,11 +12,13 @@ const categoriesIndexJobWorkflow = createWorkflow('categories-index-job-workflow
   const result = syncCategoriesWorkflow.runAsStep({
     input: {},
   })
+
   return new WorkflowResponse(result)
 })
 
 export default async function meilisearchCategoriesIndexJob(container: MedusaContainer) {
   const logger = container.resolve('logger')
+
   logger.info('Starting category indexing...')
 
   const {
