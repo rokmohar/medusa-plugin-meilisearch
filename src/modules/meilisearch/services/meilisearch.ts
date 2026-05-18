@@ -265,14 +265,14 @@ export class MeiliSearchService extends SearchUtils.AbstractSearchService {
     switch (indexConfig?.type) {
       case SearchUtils.indexTypes.PRODUCTS:
         return Promise.all(
-          documents.map((doc) => {
+          documents.map(async (doc) => {
             return indexConfig.transformer?.(doc, transformProduct, { ...options }) ?? transformProduct(doc, options)
           }),
         )
 
       case 'categories':
         return Promise.all(
-          documents.map((doc) => {
+          documents.map(async (doc) => {
             return indexConfig.transformer?.(doc, transformCategory, { ...options }) ?? transformCategory(doc, options)
           }),
         )

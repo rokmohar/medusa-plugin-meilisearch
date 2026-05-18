@@ -155,6 +155,39 @@ export interface VectorSearchConfig {
   dimensions?: number
 }
 
+/**
+ * Registry mapping `type` discriminator → transformer signature.
+ * Open for declaration merging so consumers can register custom index types:
+ *
+ *   declare module '@rokmohar/medusa-plugin-meilisearch' {
+ *     interface IndexTransformerRegistry {
+ *       blog: BlogTransformer
+ *     }
+ *   }
+ */
+export interface IndexTransformerRegistry {
+  products: ProductTransformer
+  categories: CategoryTransformer
+}
+
+type BaseIndexConfig = Omit<SearchTypes.IndexSettings, 'transformer'> & {
+  enabled?: boolean
+  fields?: string[]
+  indexSettings: Settings
+}
+
+export type IndexConfig =
+  | {
+      [K in keyof IndexTransformerRegistry]: BaseIndexConfig & {
+        type: K
+        transformer?: IndexTransformerRegistry[K]
+      }
+    }[keyof IndexTransformerRegistry]
+  | (BaseIndexConfig & {
+      type: string
+      transformer?: Transformer
+    })
+
 export interface MeilisearchPluginOptions {
   /**
    * Meilisearch client configuration
@@ -165,13 +198,7 @@ export interface MeilisearchPluginOptions {
    * Index settings
    */
   settings?: {
-    [key: string]: Omit<SearchTypes.IndexSettings, 'transformer'> & {
-      type: string
-      enabled?: boolean
-      fields?: string[]
-      indexSettings: Settings
-      transformer?: Transformer
-    }
+    [key: string]: IndexConfig
   }
 
   /**
