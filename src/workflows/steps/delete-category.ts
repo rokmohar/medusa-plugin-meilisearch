@@ -9,7 +9,11 @@ export const deleteCategoryStep = createStep('delete-category', async ({ categor
   const meilisearchService: MeiliSearchService = container.resolve(MEILISEARCH_MODULE)
   const categoryIndexes = await meilisearchService.getIndexesByType('categories')
 
-  await Promise.all(categoryIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, categoryId)))
+  await Promise.all(
+    categoryIndexes.map(async (indexKey) => {
+      return meilisearchService.deleteDocument(indexKey, categoryId)
+    }),
+  )
 
   return new StepResponse({
     categoryId,

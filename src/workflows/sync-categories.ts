@@ -11,6 +11,7 @@ export const syncCategoriesWorkflow = createWorkflow(
   'sync-categories',
   ({ filters, batchSize }: SyncCategoriesWorkflowInput) => {
     const { totalProcessed, totalDeleted } = syncCategoriesStep({ filters, batchSize })
+
     return new WorkflowResponse({
       totalProcessed,
       totalDeleted,

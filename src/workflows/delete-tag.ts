@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const deleteTagWorkflow = createWorkflow('meilisearch-delete-tag', ({ id }: WorkflowInput) => {
   const { products } = deleteTagStep({ tagId: id })
+
   return new WorkflowResponse({ products })
 })

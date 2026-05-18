@@ -7,6 +7,7 @@ export interface AdminSyncResponse {
 
 export async function POST(req: MedusaRequest, res: MedusaResponse<AdminSyncResponse>) {
   const eventService = req.scope.resolve(Modules.EVENT_BUS)
+
   await eventService.emit({
     name: 'meilisearch.sync',
     data: {},

@@ -26,7 +26,11 @@ export const upsertPriceStep = createStep('upsert-price', async ({ priceId }: St
     filters: { price_set_id: prices[0].price_set_id },
   })
 
-  const variantIds = links.map((l) => l.variant_id).filter(Boolean)
+  const variantIds = links
+    .map((l) => {
+      return l.variant_id
+    })
+    .filter(Boolean)
 
   if (!variantIds.length) {
     return new StepResponse({ products: [] })
@@ -38,7 +42,15 @@ export const upsertPriceStep = createStep('upsert-price', async ({ priceId }: St
     filters: { id: variantIds },
   })
 
-  const productIds = [...new Set(variants.map((v) => v.product_id).filter(Boolean))]
+  const productIds = [
+    ...new Set(
+      variants
+        .map((v) => {
+          return v.product_id
+        })
+        .filter(Boolean),
+    ),
+  ]
 
   if (!productIds.length) {
     return new StepResponse({ products: [] })
@@ -57,12 +69,16 @@ export const upsertPriceStep = createStep('upsert-price', async ({ priceId }: St
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

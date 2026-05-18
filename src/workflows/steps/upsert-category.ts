@@ -23,12 +23,16 @@ export const upsertCategoryStep = createStep('upsert-category', async ({ categor
     categories.map(async (category) => {
       if (category.is_active) {
         await Promise.all(
-          categoryIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [category], 'categories', { container }),
-          ),
+          categoryIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [category], 'categories', { container })
+          }),
         )
       } else {
-        await Promise.all(categoryIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, category.id)))
+        await Promise.all(
+          categoryIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, category.id)
+          }),
+        )
       }
     }),
   )

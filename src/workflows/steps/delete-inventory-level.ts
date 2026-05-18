@@ -35,7 +35,8 @@ export const deleteInventoryLevelStep = createStep(
           { id: inventoryLevelId },
           { withDeleted: true, select: ['inventory_item_id'] },
         )
-        if (level?.inventory_item_id) {
+
+        if (level.inventory_item_id) {
           inventoryItemId = level.inventory_item_id
         }
       } catch {
@@ -53,7 +54,11 @@ export const deleteInventoryLevelStep = createStep(
       filters: { inventory_item_id: inventoryItemId },
     })
 
-    const variantIds = links.map((l) => l.variant_id).filter(Boolean)
+    const variantIds = links
+      .map((l) => {
+        return l.variant_id
+      })
+      .filter(Boolean)
 
     if (!variantIds.length) {
       return new StepResponse({ products: [] })
@@ -65,7 +70,15 @@ export const deleteInventoryLevelStep = createStep(
       filters: { id: variantIds },
     })
 
-    const productIds = [...new Set(variants.map((v) => v.product_id).filter(Boolean))]
+    const productIds = [
+      ...new Set(
+        variants
+          .map((v) => {
+            return v.product_id
+          })
+          .filter(Boolean),
+      ),
+    ]
 
     if (!productIds.length) {
       return new StepResponse({ products: [] })
@@ -84,12 +97,18 @@ export const deleteInventoryLevelStep = createStep(
       products.map(async (product) => {
         if (!product.status || product.status === 'published') {
           await Promise.all(
-            productIndexes.map((indexKey) =>
-              meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-            ),
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, {
+                container,
+              })
+            }),
           )
         } else {
-          await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+          await Promise.all(
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.deleteDocument(indexKey, product.id)
+            }),
+          )
         }
       }),
     )

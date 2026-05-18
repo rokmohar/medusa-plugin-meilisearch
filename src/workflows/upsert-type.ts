@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const upsertTypeWorkflow = createWorkflow('meilisearch-upsert-type', ({ id }: WorkflowInput) => {
   const { products } = upsertTypeStep({ typeId: id })
+
   return new WorkflowResponse({ products })
 })

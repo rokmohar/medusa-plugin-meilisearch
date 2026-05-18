@@ -21,7 +21,15 @@ export const deleteCollectionStep = createStep(
         filters: { id: collectionId },
       })
 
-      productIds = collections.flatMap((col) => col.products?.map((p: { id: string }) => p.id) || []).filter(Boolean)
+      productIds = collections
+        .flatMap((col) => {
+          return (
+            col.products?.map((p: { id: string }) => {
+              return p.id
+            }) ?? []
+          )
+        })
+        .filter(Boolean)
     } catch {
       // Collection might be deleted
     }
@@ -33,7 +41,12 @@ export const deleteCollectionStep = createStep(
           fields: ['id'],
           filters: { collection_id: collectionId },
         })
-        productIds = products.map((p) => p.id).filter(Boolean)
+
+        productIds = products
+          .map((p) => {
+            return p.id
+          })
+          .filter(Boolean)
       } catch {
         // Products not found
       }
@@ -56,12 +69,18 @@ export const deleteCollectionStep = createStep(
       products.map(async (product) => {
         if (!product.status || product.status === 'published') {
           await Promise.all(
-            productIndexes.map((indexKey) =>
-              meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-            ),
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, {
+                container,
+              })
+            }),
           )
         } else {
-          await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+          await Promise.all(
+            productIndexes.map(async (indexKey) => {
+              return meilisearchService.deleteDocument(indexKey, product.id)
+            }),
+          )
         }
       }),
     )

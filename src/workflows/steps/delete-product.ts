@@ -10,7 +10,11 @@ export const deleteProductStep = createStep('delete-product', async ({ productId
   const meilisearchService: MeiliSearchService = container.resolve(MEILISEARCH_MODULE)
   const productIndexes = await meilisearchService.getIndexesByType(SearchUtils.indexTypes.PRODUCTS)
 
-  await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, productId)))
+  await Promise.all(
+    productIndexes.map(async (indexKey) => {
+      return meilisearchService.deleteDocument(indexKey, productId)
+    }),
+  )
 
   return new StepResponse({
     productId,

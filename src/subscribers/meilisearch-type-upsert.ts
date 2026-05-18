@@ -1,3 +1,4 @@
+import { toError } from '../utils/error'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { ProductEvents } from '@medusajs/utils'
 import { upsertTypeWorkflow } from '../workflows/upsert-type'
@@ -13,7 +14,7 @@ export default async function meilisearchTypeUpsertHandler({
       input: { id: data.id },
     })
   } catch (error) {
-    logger.error(error)
+    logger.error(toError(error))
     throw error
   }
 }

@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const upsertCollectionWorkflow = createWorkflow('meilisearch-upsert-collection', ({ id }: WorkflowInput) => {
   const { products } = upsertCollectionStep({ collectionId: id })
+
   return new WorkflowResponse({ products })
 })

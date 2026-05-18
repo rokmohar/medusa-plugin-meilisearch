@@ -33,7 +33,8 @@ export const deleteVariantStep = createStep('delete-variant', async ({ variantId
         { id: variantId },
         { withDeleted: true, select: ['product_id'] },
       )
-      if (variant?.product_id) {
+
+      if (variant.product_id) {
         productId = variant.product_id
       }
     } catch {
@@ -58,12 +59,16 @@ export const deleteVariantStep = createStep('delete-variant', async ({ variantId
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

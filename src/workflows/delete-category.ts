@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const deleteCategoryWorkflow = createWorkflow('meilisearch-delete-category', ({ id }: WorkflowInput) => {
   deleteCategoryStep({ categoryId: id })
+
   return new WorkflowResponse({})
 })

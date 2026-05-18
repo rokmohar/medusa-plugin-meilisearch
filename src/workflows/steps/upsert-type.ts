@@ -26,12 +26,16 @@ export const upsertTypeStep = createStep('upsert-type', async ({ typeId }: StepI
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

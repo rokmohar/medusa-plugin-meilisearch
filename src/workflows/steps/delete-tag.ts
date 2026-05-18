@@ -19,7 +19,15 @@ export const deleteTagStep = createStep('delete-tag', async ({ tagId }: StepInpu
       filters: { id: tagId },
     })
 
-    productIds = tags.flatMap((tag) => tag.products?.map((p: { id: string }) => p.id) || []).filter(Boolean)
+    productIds = tags
+      .flatMap((tag) => {
+        return (
+          tag.products?.map((p: { id: string }) => {
+            return p.id
+          }) ?? []
+        )
+      })
+      .filter(Boolean)
   } catch {
     // Tag might be deleted
   }
@@ -31,7 +39,12 @@ export const deleteTagStep = createStep('delete-tag', async ({ tagId }: StepInpu
         fields: ['id'],
         filters: { tags: { id: [tagId] } },
       })
-      productIds = products.map((p) => p.id).filter(Boolean)
+
+      productIds = products
+        .map((p) => {
+          return p.id
+        })
+        .filter(Boolean)
     } catch {
       // Products not found
     }
@@ -54,12 +67,16 @@ export const deleteTagStep = createStep('delete-tag', async ({ tagId }: StepInpu
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

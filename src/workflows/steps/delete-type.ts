@@ -19,7 +19,15 @@ export const deleteTypeStep = createStep('delete-type', async ({ typeId }: StepI
       filters: { id: typeId },
     })
 
-    productIds = types.flatMap((type) => type.products?.map((p: { id: string }) => p.id) || []).filter(Boolean)
+    productIds = types
+      .flatMap((type) => {
+        return (
+          type.products?.map((p: { id: string }) => {
+            return p.id
+          }) ?? []
+        )
+      })
+      .filter(Boolean)
   } catch {
     // Type might be deleted
   }
@@ -31,7 +39,12 @@ export const deleteTypeStep = createStep('delete-type', async ({ typeId }: StepI
         fields: ['id'],
         filters: { type_id: typeId },
       })
-      productIds = products.map((p) => p.id).filter(Boolean)
+
+      productIds = products
+        .map((p) => {
+          return p.id
+        })
+        .filter(Boolean)
     } catch {
       // Products not found
     }
@@ -54,12 +67,16 @@ export const deleteTypeStep = createStep('delete-type', async ({ typeId }: StepI
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

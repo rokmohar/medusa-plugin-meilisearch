@@ -33,12 +33,14 @@ export const deleteOptionValueStep = createStep('delete-value', async ({ optionV
         { id: optionValueId },
         { withDeleted: true, select: ['option_id'] },
       )
-      if (optionValue?.option_id) {
+
+      if (optionValue.option_id) {
         const [option] = await productModuleService.listProductOptions(
           { id: optionValue.option_id },
           { withDeleted: true, select: ['product_id'] },
         )
-        if (option?.product_id) {
+
+        if (option.product_id) {
           productId = option.product_id
         }
       }
@@ -64,12 +66,16 @@ export const deleteOptionValueStep = createStep('delete-value', async ({ optionV
     products.map(async (product) => {
       if (!product.status || product.status === 'published') {
         await Promise.all(
-          productIndexes.map((indexKey) =>
-            meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container }),
-          ),
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.addDocuments(indexKey, [product], SearchUtils.indexTypes.PRODUCTS, { container })
+          }),
         )
       } else {
-        await Promise.all(productIndexes.map((indexKey) => meilisearchService.deleteDocument(indexKey, product.id)))
+        await Promise.all(
+          productIndexes.map(async (indexKey) => {
+            return meilisearchService.deleteDocument(indexKey, product.id)
+          }),
+        )
       }
     }),
   )

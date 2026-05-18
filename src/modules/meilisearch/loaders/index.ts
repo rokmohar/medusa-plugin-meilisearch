@@ -16,7 +16,7 @@ export default async ({ container, options }: LoaderOptions<MeilisearchPluginOpt
   })
 
   await Promise.all(
-    Object.entries(settings || {}).map(async ([indexName, value]) => {
+    Object.entries(settings ?? {}).map(async ([indexName, value]) => {
       return await meilisearchService.updateSettings(indexName, value)
     }),
   )

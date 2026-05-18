@@ -7,5 +7,6 @@ type WorkflowInput = {
 
 export const deletePriceWorkflow = createWorkflow('meilisearch-delete-price', ({ id }: WorkflowInput) => {
   const { products } = deletePriceStep({ priceId: id })
+
   return new WorkflowResponse({ products })
 })

@@ -36,8 +36,8 @@
     "dev": "medusa plugin:develop",
     "prepublishOnly": "medusa plugin:build",
     "typecheck": "tsc --noEmit --pretty --project tsconfig.json",
-    "lint": "eslint \"src/**/*.ts\" --cache --cache-strategy content",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix --cache --cache-strategy content",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --cache --cache-strategy content",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix --cache --cache-strategy content",
     "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\" --cache --cache-strategy content --log-level warn",
     "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --cache --cache-strategy content --log-level warn"
   },
@@ -58,6 +58,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-unused-imports": "^4.4.1",
     "globals": "^16",
     "prettier": "^3.8.3",
     "react": "^18",
@@ -78,7 +79,7 @@
     "react-dom": "^18"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "packageManager": "yarn@4.14.1"
 }
