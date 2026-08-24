@@ -1,19 +1,13 @@
 /**
- * Adapter around native Medusa internals so the custom Meilisearch endpoints can
- * behave exactly like the native /store/products and /store/product-categories routes.
+ * Single coupling point to non-public Medusa internals: these symbols live on
+ * subpaths the plugin's classic `moduleResolution: "node"` cannot resolve as
+ * imports, so they are `require()`d and typed by hand.
  *
- * Several of these symbols live on subpaths (`@medusajs/framework/http`,
- * `@medusajs/medusa/api/...`) that the plugin's classic `moduleResolution: "node"`
- * tsconfig cannot resolve as `import` specifiers, and a few of them are non-public
- * Medusa internals that may move across majors. They are therefore loaded via
- * `require()` and re-exported with hand-written types. This file is the single
- * coupling point — if a Medusa upgrade breaks these, fix them here only.
- *
- * Verified against @medusajs/medusa ^2.15.x.
+ * Verified against @medusajs/medusa ^2.19.0.
  */
-import type { MedusaRequest, MedusaResponse, MedusaNextFunction } from '@medusajs/framework'
+import type { MedusaRequest, MedusaResponse, MedusaNextFunction, MedusaStoreRequest } from '@medusajs/framework'
+import type { SearchTypes } from '@medusajs/types'
 
-// `@medusajs/utils` is a root-resolvable package (already used across this plugin).
 export {
   ContainerRegistrationKeys,
   QueryContext,
@@ -25,20 +19,33 @@ export {
 
 type MiddlewareFn = (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => void | Promise<void>
 
+interface ContextOptions {
+  priceFieldPaths?: string[]
+}
+
 interface NativeHttp {
   authenticate: (actor: string, methods: string[], options?: { allowUnauthenticated?: boolean }) => MiddlewareFn
   applyDefaultFilters: (defaults: Record<string, unknown>) => MiddlewareFn
   clearFiltersByKey: (keys: string[]) => MiddlewareFn
-  maybeApplyLinkFilter: (config: { entryPoint: string; resourceId: string; filterableField: string }) => MiddlewareFn
+  maybeApplyLinkFilter: (config: {
+    entryPoint: string
+    resourceId: string
+    filterableField: string
+    filterByField?: string
+  }) => MiddlewareFn
 }
 
 interface NativeMiddlewares {
   filterByValidSalesChannels: () => MiddlewareFn
-  normalizeDataForContext: () => MiddlewareFn
-  setPricingContext: () => MiddlewareFn
-  setTaxContext: () => MiddlewareFn
-  wrapVariantsWithInventoryQuantityForSalesChannel: (req: MedusaRequest, variants: unknown[]) => Promise<void>
+  normalizeDataForContext: (options?: ContextOptions) => MiddlewareFn
+  setPricingContext: (options?: ContextOptions) => MiddlewareFn
+  setTaxContext: (options?: ContextOptions) => MiddlewareFn
+  wrapVariantsWithInventoryQuantityForSalesChannel: (req: MedusaStoreRequest, variants: unknown[]) => Promise<void>
   wrapVariantsWithTotalInventoryQuantity: (req: MedusaRequest, variants: unknown[]) => Promise<void>
+}
+
+interface NativeModulesSdk {
+  MedusaModule: { getSearchIndexes?: () => SearchTypes.SearchIndexDefinition[] }
 }
 
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -50,6 +57,7 @@ const productsValidators = require('@medusajs/medusa/api/store/products/validato
 const productsHelpers = require('@medusajs/medusa/api/store/products/helpers')
 const categoriesQueryConfig = require('@medusajs/medusa/api/store/product-categories/query-config')
 const categoriesValidators = require('@medusajs/medusa/api/store/product-categories/validators')
+const modulesSdk: NativeModulesSdk = require('@medusajs/framework/modules-sdk')
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 export const authenticate = http.authenticate
@@ -71,3 +79,7 @@ export const wrapProductsWithTaxPrices: (req: MedusaRequest, products: unknown[]
   productsHelpers.wrapProductsWithTaxPrices
 export const listProductCategoryConfig = categoriesQueryConfig.listProductCategoryConfig
 export const StoreProductCategoriesParams = categoriesValidators.StoreProductCategoriesParams
+
+export function getRegisteredSearchIndexes(): SearchTypes.SearchIndexDefinition[] {
+  return modulesSdk.MedusaModule.getSearchIndexes?.() ?? []
+}

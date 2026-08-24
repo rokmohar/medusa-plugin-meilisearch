@@ -1,7 +1,5 @@
-import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
+import { MedusaResponse, MedusaStoreRequest } from '@medusajs/framework'
 import { ProductDTO } from '@medusajs/types'
-import { Hit } from 'meilisearch'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 import {
   ContainerRegistrationKeys,
   QueryContext,
@@ -9,6 +7,7 @@ import {
   wrapVariantsWithInventoryQuantityForSalesChannel,
   wrapProductsWithTaxPrices,
 } from '../../../utils/medusa'
+import { searchDocumentIds } from '../../../utils/search'
 import '../../../types'
 
 export interface ProductsResponse {
@@ -18,28 +17,17 @@ export interface ProductsResponse {
   offset?: number
 }
 
-/**
- * Behaves like the native `/store/products` route. The native middleware stack
- * (see ../../../middlewares.ts) populates `req.queryConfig`, `req.filterableFields`,
- * `req.pricingContext` and `req.taxContext`. When a Meilisearch `query`/`semanticSearch`
- * is present, Meilisearch supplies the candidate product ids + ranking and that id set
- * is intersected into the native filters; everything else (fields, filters, pricing,
- * tax, inventory_quantity) is handled exactly as native.
- */
-export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsResponse>) {
+export async function GET(req: MedusaStoreRequest, res: MedusaResponse<ProductsResponse>) {
   const meili = req.meiliParams ?? { semanticSearch: false, semanticRatio: 0.5 }
   const isSearch = Boolean(meili.query ?? meili.semanticSearch)
 
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-  const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
   const { fields, pagination } = req.queryConfig
   const filters = req.filterableFields
   const limit = pagination.take
   const offset = pagination.skip
 
-  // `variants.inventory_quantity` is a virtual field that `query.graph` cannot resolve.
-  // Native strips it from the fields and post-computes it. Mirror that here.
   const allFields: string[] = [...fields]
   const withInventoryQuantity = allFields.some((f) => {
     return f.includes('variants.inventory_quantity')
@@ -52,52 +40,34 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsRespon
 
   let productIds: string[] = []
   let totalCount = 0
+  let graphPagination = pagination
 
   if (isSearch) {
-    const indexes = await meilisearchService.getIndexesByType('products')
-    const results = await Promise.all(
-      indexes.map(async (indexKey) => {
-        return meilisearchService.search(indexKey, meili.query ?? '', {
-          language: meili.language,
-          paginationOptions: { limit, offset },
-          semanticSearch: meili.semanticSearch,
-          semanticRatio: meili.semanticRatio,
-        })
-      }),
-    )
-
-    const mergedResults = results.reduce<{
-      hits: Hit[]
-      estimatedTotalHits: number
-      processingTimeMs: number
-      query: string
-    }>(
-      (acc, result) => {
-        return {
-          hits: [...acc.hits, ...result.hits],
-          estimatedTotalHits: acc.estimatedTotalHits + result.estimatedTotalHits,
-          processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
-          query: result.query,
-        }
-      },
-      { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: meili.query ?? '' },
-    )
-
-    productIds = mergedResults.hits.map((hit) => {
-      return hit.id
+    const result = await searchDocumentIds(req, 'product', {
+      query: meili.query,
+      index: meili.index,
+      limit,
+      offset,
+      language: meili.language,
+      semanticSearch: meili.semanticSearch,
+      semanticRatio: meili.semanticRatio,
+      embedder: meili.embedder,
+      filter: meili.filter,
     })
-    totalCount = mergedResults.estimatedTotalHits
 
-    if (productIds.length === 0) {
+    productIds = result.ids
+    totalCount = result.count
+
+    if (!productIds.length) {
       res.json({ products: [], count: 0, limit, offset })
 
       return
     }
 
     filters.id = { $in: productIds }
+    graphPagination = { ...pagination, skip: 0, take: productIds.length }
   }
 
-  // Native pricing context (provided by setPricingContext middleware).
   const context: Record<string, unknown> = {}
 
   if (isPresent(req.pricingContext)) {
@@ -109,7 +79,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsRespon
       entity: 'product',
       fields: graphFields,
       filters,
-      pagination,
+      pagination: graphPagination,
       context,
     },
     {
@@ -131,7 +101,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsRespon
 
   await wrapProductsWithTaxPrices(req, products)
 
-  // Preserve Meilisearch ranking when search drove the result set.
   let orderedProducts = products
 
   if (isSearch) {
@@ -143,7 +112,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<ProductsRespon
   res.json({
     products: orderedProducts,
     count: isSearch ? totalCount : (metadata?.count ?? products.length),
-    offset: metadata?.skip ?? offset,
-    limit: metadata?.take ?? limit,
+    offset: isSearch ? offset : (metadata?.skip ?? offset),
+    limit: isSearch ? limit : (metadata?.take ?? limit),
   })
 }

@@ -1,69 +1,17 @@
-import z from 'zod'
-import { Hit, SearchResponse } from 'meilisearch'
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
+import z from 'zod'
+import { HitsSearchSchema, runHitsSearch, toSearchRequestParams, type MeiliHitsEnvelope } from '../../../utils/search'
+import '../../../types'
 
-export const StoreSearchCategoriesSchema = z.object({
-  query: z.string(),
-  limit: z.coerce.number().default(10),
-  offset: z.coerce.number().default(0),
-  language: z.string().optional(),
-  semanticSearch: z.coerce.boolean().default(false),
-  semanticRatio: z.coerce.number().min(0).max(1).default(0.5),
-  // Meilisearch-native faceting/sorting passthrough.
-  filter: z.string().optional(),
-  sort: z.union([z.string(), z.array(z.string())]).optional(),
-})
+export const StoreSearchCategoriesSchema = HitsSearchSchema
 
 export type StoreSearchCategoriesParams = z.infer<typeof StoreSearchCategoriesSchema>
 
-export type CategoriesHitsResponse = SearchResponse & { hybridSearch?: boolean; semanticRatio?: number }
+export type CategoriesHitsResponse = MeiliHitsEnvelope
 
 export async function GET(
   req: MedusaRequest<unknown, StoreSearchCategoriesParams>,
   res: MedusaResponse<CategoriesHitsResponse>,
 ) {
-  const { query, language, limit, offset, semanticSearch, semanticRatio, filter, sort } = req.validatedQuery
-  const sortArr = Array.isArray(sort) ? sort : sort !== undefined ? [sort] : undefined
-  const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
-
-  const indexes = await meilisearchService.getIndexesByType('categories')
-  const results = await Promise.all(
-    indexes.map(async (indexKey) => {
-      return await meilisearchService.search(indexKey, query, {
-        language,
-        paginationOptions: {
-          limit,
-          offset,
-        },
-        filter,
-        additionalOptions: sortArr ? { sort: sortArr } : undefined,
-        semanticSearch,
-        semanticRatio,
-      })
-    }),
-  )
-
-  // Merge results from all indexes
-  const mergedResults = results.reduce<{
-    hits: Hit[]
-    estimatedTotalHits: number
-    processingTimeMs: number
-    query: string
-  }>(
-    (acc, result) => {
-      return {
-        hits: [...acc.hits, ...result.hits],
-        estimatedTotalHits: acc.estimatedTotalHits + result.estimatedTotalHits,
-        processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
-        query: result.query,
-      }
-    },
-    { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query },
-  )
-
-  res.json({
-    ...mergedResults,
-    ...(semanticSearch && { hybridSearch: true, semanticRatio }),
-  })
+  res.json(await runHitsSearch(req, 'product_category', toSearchRequestParams(req.validatedQuery)))
 }

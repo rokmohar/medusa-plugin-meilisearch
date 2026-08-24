@@ -1,32 +1,21 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ProductCategoryDTO } from '@medusajs/types'
-import { Hit } from 'meilisearch'
-import { MEILISEARCH_MODULE, MeiliSearchService } from '../../../../modules/meilisearch'
 import { ContainerRegistrationKeys } from '../../../utils/medusa'
+import { searchDocumentIds } from '../../../utils/search'
 import '../../../types'
 
 export interface CategoriesResponse {
-  // Envelope key kept as `categories` for backwards-compat with existing plugin
-  // consumers (native uses `product_categories`); query/filter/sort behaviour matches
-  // native `/store/product-categories`.
   categories: ProductCategoryDTO[]
   count: number
   limit?: number
   offset?: number
 }
 
-/**
- * Behaves like the native `/store/product-categories` route. The native middleware
- * stack (see ../../../middlewares.ts) populates `req.queryConfig` / `req.filterableFields`.
- * When a Meilisearch `query`/`semanticSearch` is present, Meilisearch supplies the
- * candidate category ids + ranking; otherwise behaviour is identical to native.
- */
 export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResponse>) {
   const meili = req.meiliParams ?? { semanticSearch: false, semanticRatio: 0.5 }
   const isSearch = Boolean(meili.query ?? meili.semanticSearch)
 
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-  const meilisearchService: MeiliSearchService = req.scope.resolve(MEILISEARCH_MODULE)
 
   const { fields, pagination } = req.queryConfig
   const filters = req.filterableFields
@@ -35,49 +24,32 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
 
   let categoryIds: string[] = []
   let totalCount = 0
+  let graphPagination = pagination
 
   if (isSearch) {
-    const indexes = await meilisearchService.getIndexesByType('categories')
-    const results = await Promise.all(
-      indexes.map(async (indexKey) => {
-        return meilisearchService.search(indexKey, meili.query ?? '', {
-          language: meili.language,
-          paginationOptions: { limit, offset },
-          semanticSearch: meili.semanticSearch,
-          semanticRatio: meili.semanticRatio,
-        })
-      }),
-    )
-
-    const mergedResults = results.reduce<{
-      hits: Hit[]
-      estimatedTotalHits: number
-      processingTimeMs: number
-      query: string
-    }>(
-      (acc, result) => {
-        return {
-          hits: [...acc.hits, ...result.hits],
-          estimatedTotalHits: acc.estimatedTotalHits + result.estimatedTotalHits,
-          processingTimeMs: Math.max(acc.processingTimeMs, result.processingTimeMs),
-          query: result.query,
-        }
-      },
-      { hits: [], estimatedTotalHits: 0, processingTimeMs: 0, query: meili.query ?? '' },
-    )
-
-    categoryIds = mergedResults.hits.map((hit) => {
-      return hit.id
+    const result = await searchDocumentIds(req, 'product_category', {
+      query: meili.query,
+      index: meili.index,
+      limit,
+      offset,
+      language: meili.language,
+      semanticSearch: meili.semanticSearch,
+      semanticRatio: meili.semanticRatio,
+      embedder: meili.embedder,
+      filter: meili.filter,
     })
-    totalCount = mergedResults.estimatedTotalHits
 
-    if (categoryIds.length === 0) {
+    categoryIds = result.ids
+    totalCount = result.count
+
+    if (!categoryIds.length) {
       res.json({ categories: [], count: 0, limit, offset })
 
       return
     }
 
     filters.id = { $in: categoryIds }
+    graphPagination = { ...pagination, skip: 0, take: categoryIds.length }
   }
 
   const { data: categories = [], metadata } = await query.graph(
@@ -85,7 +57,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
       entity: 'product_category',
       fields,
       filters,
-      pagination,
+      pagination: graphPagination,
     },
     {
       locale: req.locale,
@@ -103,7 +75,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
   res.json({
     categories: orderedCategories,
     count: isSearch ? totalCount : (metadata?.count ?? categories.length),
-    offset: metadata?.skip ?? offset,
-    limit: metadata?.take ?? limit,
+    offset: isSearch ? offset : (metadata?.skip ?? offset),
+    limit: isSearch ? limit : (metadata?.take ?? limit),
   })
 }

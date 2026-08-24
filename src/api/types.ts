@@ -3,17 +3,17 @@
 export interface MeiliParams {
   query?: string
   language?: string
+  index?: string
+  filter?: string
+  embedder?: string
   semanticSearch: boolean
   semanticRatio: number
 }
 
-// Augment Express.Request so req.meiliParams and req.locale are available
-// on MedusaRequest (which extends Express.Request) without type casts.
 declare global {
   namespace Express {
     interface Request {
       meiliParams?: MeiliParams
-      locale?: string
     }
   }
 }

@@ -1,408 +1,201 @@
-# AI-Powered Semantic Search
+# Semantic search
 
-The MeiliSearch plugin now supports AI-powered semantic search using vector embeddings. This enables more intelligent search results based on meaning rather than just keywords.
+Semantic (vector) search matches on meaning rather than on words: "warm winter clothing" finds a wool coat that never
+uses either word. Hybrid search blends it with keyword matching, which is usually what you want in a catalog.
 
-## Features
+Embeddings are Meilisearch's own feature. This plugin passes your embedder configuration through to the engine and maps
+query-time options onto Meilisearch's `hybrid` parameters, so every source Meilisearch supports works: `openAi`,
+`ollama`, `huggingFace`, `rest` and `userProvided`.
 
-- **Native MeiliSearch Vector Search**: Uses MeiliSearch's built-in embedder support (requires MeiliSearch v1.5+)
-- **Hybrid Search**: Combines traditional keyword search with semantic vector search
-- **Multiple Embedding Providers**: Support for both Ollama (local) and OpenAI (cloud)
-- **Configurable Semantic Ratio**: Control the balance between keyword and semantic search (0.0 = pure keyword, 1.0 = pure semantic)
-- **Automatic Embedding Generation**: MeiliSearch generates embeddings automatically using configured embedders
-- **Admin Panel Controls**: Manage and test semantic search from the admin interface
+Meilisearch generates the embeddings itself, from a `documentTemplate` you declare. Nothing needs to be embedded in
+Medusa, and existing documents are re-embedded when the embedder changes.
 
-> **Note**: This implementation uses MeiliSearch's native embedder functionality. Make sure you're using MeiliSearch v1.5 or later for full vector search support.
+## Configuring an embedder
 
-## Use Case 1: Local Ollama with nomic-embed-text
+Embedders declared on the provider apply to every index it manages:
 
-```js
-module.exports = defineConfig({
-  plugins: [
-    {
-      resolve: '@rokmohar/medusa-plugin-meilisearch',
-      options: {
-        config: {
-          host: process.env.MEILISEARCH_HOST ?? 'http://127.0.0.1:7700',
-          apiKey: process.env.MEILISEARCH_API_KEY ?? 'ms',
-        },
-        settings: {
-          products: {
-            type: 'products',
-            enabled: true,
-            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
-            indexSettings: {
-              searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],
-              filterableAttributes: ['id', 'handle'],
+```ts
+// medusa-config.ts
+modules: [
+  {
+    resolve: '@medusajs/medusa/search',
+    options: {
+      providers: [
+        {
+          resolve: '@rokmohar/medusa-plugin-meilisearch/providers/meilisearch',
+          id: 'meilisearch',
+          options: {
+            config: {
+              host: process.env.MEILISEARCH_HOST!,
+              apiKey: process.env.MEILISEARCH_API_KEY,
+            },
+            embedders: {
+              default: {
+                source: 'openAi',
+                apiKey: process.env.OPENAI_API_KEY,
+                model: 'text-embedding-3-small',
+                dimensions: 1536,
+                documentTemplate: '{{doc.title}} {{doc.description}}',
+              },
             },
           },
         },
-        vectorSearch: {
-          enabled: true,
-          embedding: {
-            provider: 'ollama',
-            baseUrl: 'http://localhost:11434',
+      ],
+    },
+  },
+]
+```
+
+To scope an embedder to one index, declare it on the index instead. The admin status card reads index declarations, so
+per-index embedders also show up there:
+
+```ts
+// src/search/products.ts
+import { defineProductSearchIndex } from '@rokmohar/medusa-plugin-meilisearch/indexes'
+
+export default defineProductSearchIndex({
+  settings: {
+    provider_options: {
+      meilisearch: {
+        embedders: {
+          default: {
+            source: 'ollama',
+            url: 'http://localhost:11434/api/embeddings',
             model: 'nomic-embed-text',
+            dimensions: 768,
+            documentTemplate: '{{doc.title}} {{doc.description}}',
           },
-          embeddingFields: ['title', 'description'],
-          semanticRatio: 0.5, // Balanced hybrid search
-          dimensions: 768, // nomic-embed-text dimension
         },
       },
     },
-  ],
+  },
 })
 ```
 
-## Use Case 2: Local Ollama with Ngrok (Simulating Live Version)
+Embedder names matter: `default` is what the store and admin endpoints use unless a request names another one through
+the `embedder` parameter.
 
-```js
-module.exports = defineConfig({
-  plugins: [
-    {
-      resolve: '@rokmohar/medusa-plugin-meilisearch',
-      options: {
-        config: {
-          host: process.env.MEILISEARCH_HOST ?? 'http://127.0.0.1:7700',
-          apiKey: process.env.MEILISEARCH_API_KEY ?? 'ms',
-        },
-        settings: {
-          products: {
-            type: 'products',
-            enabled: true,
-            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
-            indexSettings: {
-              searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],
-              filterableAttributes: ['id', 'handle'],
-            },
-          },
-        },
-        vectorSearch: {
-          enabled: true,
-          embedding: {
-            provider: 'ollama',
-            baseUrl: 'http://localhost:11434', // Local fallback
-            model: 'nomic-embed-text',
-            ngrokUrl: process.env.OLLAMA_NGROK_URL, // e.g., 'https://abc123.ngrok.io'
-          },
-          embeddingFields: ['title', 'description'],
-          semanticRatio: 0.7, // More semantic-focused search
-          dimensions: 768,
-        },
-      },
-    },
-  ],
-})
-```
-
-## Use Case 3: Remote OpenAI text-embedding-3-small
-
-```js
-module.exports = defineConfig({
-  plugins: [
-    {
-      resolve: '@rokmohar/medusa-plugin-meilisearch',
-      options: {
-        config: {
-          host: process.env.MEILISEARCH_HOST ?? 'http://127.0.0.1:7700',
-          apiKey: process.env.MEILISEARCH_API_KEY ?? 'ms',
-        },
-        settings: {
-          products: {
-            type: 'products',
-            enabled: true,
-            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
-            indexSettings: {
-              searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],
-              filterableAttributes: ['id', 'handle'],
-            },
-          },
-        },
-        vectorSearch: {
-          enabled: true,
-          embedding: {
-            provider: 'openai',
-            apiKey: process.env.OPENAI_API_KEY,
-            model: 'text-embedding-3-small',
-          },
-          embeddingFields: ['title', 'description'],
-          semanticRatio: 1.0, // Pure semantic search
-          dimensions: 1536, // text-embedding-3-small dimension
-        },
-      },
-    },
-  ],
-})
-```
-
-## Required Environment Variables
-
-### For Use Case 1 & 2 (Ollama):
-
-```env
-# Standard MeiliSearch
-MEILISEARCH_HOST=http://127.0.0.1:7700
-MEILISEARCH_API_KEY=ms
-
-# For Use Case 2 only - Ngrok tunnel URL
-OLLAMA_NGROK_URL=https://your-ngrok-url.ngrok.io
-```
-
-### For Use Case 3 (OpenAI):
-
-```env
-# Standard MeiliSearch
-MEILISEARCH_HOST=http://127.0.0.1:7700
-MEILISEARCH_API_KEY=ms
-
-# OpenAI API
-OPENAI_API_KEY=sk-your-openai-api-key
-```
-
-## Ollama Setup (Use Cases 1 & 2)
-
-1. **Install Ollama**: Follow instructions at [ollama.com](https://ollama.com)
-
-2. **Pull the embedding model**:
-
-   ```bash
-   ollama pull nomic-embed-text
-   ```
-
-3. **Start Ollama server** (usually runs on `http://localhost:11434`):
-
-   ```bash
-   ollama serve
-   ```
-
-4. **For Use Case 2 - Setup Ngrok** (optional):
-
-   ```bash
-   # Install ngrok and expose Ollama
-   ngrok http 11434
-
-   # Use the provided HTTPS URL in your configuration
-   ```
-
-## Using Semantic Search
-
-### API Endpoint Parameters
-
-The `/store/meilisearch/hits` endpoint now supports these additional parameters:
-
-- `semanticSearch` (boolean): Enable semantic search
-- `semanticRatio` (number, 0-1): Balance between keyword and semantic search
-
-### Examples
-
-**Pure keyword search** (traditional):
-
-```http
-GET /store/meilisearch/hits?query=blue shirt&semanticSearch=false
-```
-
-**Balanced hybrid search**:
-
-```http
-GET /store/meilisearch/hits?query=blue shirt&semanticSearch=true&semanticRatio=0.5
-```
-
-**Pure semantic search**:
-
-```http
-GET /store/meilisearch/hits?query=comfortable clothing&semanticSearch=true&semanticRatio=1.0
-```
-
-### JavaScript Example
-
-```javascript
-// Fetch with semantic search
-const response = await fetch(
-  '/store/meilisearch/hits?' +
-    new URLSearchParams({
-      query: 'comfortable summer clothing',
-      semanticSearch: 'true',
-      semanticRatio: '0.7',
-      language: 'en',
-      limit: '10',
-    }),
-)
-
-const results = await response.json()
-console.log('Found:', results.hits.length, 'products')
-console.log('Hybrid search used:', results.hybridSearch)
-console.log('Semantic ratio:', results.semanticRatio)
-```
-
-## Admin Panel
-
-Access the MeiliSearch admin panel at `/admin/settings/meilisearch` to:
-
-- View vector search configuration status
-- Test semantic search with different ratios
-- Manually trigger data synchronization (including embedding generation)
-- Monitor search performance
-
-## How It Works
-
-This implementation leverages MeiliSearch's **native embedder functionality** rather than managing embeddings manually:
-
-1. **Embedder Configuration**: Plugin automatically configures MeiliSearch embedders based on your settings
-2. **Automatic Embedding**: MeiliSearch generates embeddings for your documents using the configured model
-3. **Native Hybrid Search**: Uses MeiliSearch's built-in `hybrid` search parameter for optimal performance
-4. **Document Templates**: Automatically creates document templates to combine your specified embedding fields
-
-### Key Differences from Manual Approaches
-
-- ✅ **No manual embedding generation**: MeiliSearch handles everything
-- ✅ **Better performance**: Native implementation is optimized
-- ✅ **Automatic updates**: Embeddings stay in sync with document changes
-- ✅ **Less complexity**: No need to manage vector storage separately
-
-## Performance Considerations
-
-- **Ollama (Local)**: Faster for development, no API costs, requires local compute resources
-- **OpenAI (Cloud)**: Faster embedding generation, API costs apply, better for production
-- **MeiliSearch Version**: Requires MeiliSearch v1.5+ for full vector search support
-- **Embedding Generation**: Happens automatically when documents are indexed
-- **Search Performance**: Native hybrid search is optimized and faster than manual implementations
-
-## Troubleshooting
-
-### Common Issues
-
-1. **MeiliSearch Version**: Ensure you're using MeiliSearch v1.5+ for vector search support
-2. **Ollama Connection Failed**: Make sure Ollama is running on the correct port (default: 11434)
-3. **Vector Search Not Working**: Check that `vectorSearch.enabled` is set to `true` and embedders are properly configured
-4. **Ngrok URL Issues**: Ensure the ngrok tunnel is active and the URL is correctly set in environment variables
-5. **Embedder Configuration Failed**: Check MeiliSearch logs for embedder setup errors
-
-### Verify Embedder Configuration
-
-You can check if embedders are properly configured by accessing your MeiliSearch instance directly:
+## Ollama, locally
 
 ```bash
-# Check embedders for an index
-curl "http://localhost:7700/indexes/products/settings/embedders" \
-  -H "Authorization: Bearer YOUR_API_KEY"
-
-# Should return something like:
-{
-  "default": {
-    "source": "ollama",
-    "model": "nomic-embed-text",
-    "url": "http://localhost:11434/api/embeddings",
-    "dimensions": 768
-  }
-}
+ollama pull nomic-embed-text
+ollama serve
 ```
 
-### Debug Vector Search
-
-Test vector search directly through MeiliSearch API:
-
-```bash
-# Test hybrid search
-curl -X POST "http://localhost:7700/indexes/products/search" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{
-    "q": "comfortable shirt",
-    "hybrid": {
-      "embedder": "default",
-      "semanticRatio": 0.8
-    }
-  }'
-```
-
-## Advanced Configuration
-
-### Custom Embedding Fields
-
-You can customize which fields are used for embedding generation:
-
-```js
-vectorSearch: {
-  enabled: true,
-  embedding: {
-    provider: 'ollama',
-    baseUrl: 'http://localhost:11434',
+```ts
+embedders: {
+  default: {
+    source: 'ollama',
+    url: 'http://localhost:11434/api/embeddings',
     model: 'nomic-embed-text',
-  },
-  embeddingFields: ['title', 'description', 'tags', 'category'], // Custom fields
-  semanticRatio: 0.6,
-}
-```
-
-### Custom Transformer with Embeddings
-
-You can provide a custom transformer that works with vector embeddings:
-
-```js
-settings: {
-  products: {
-    type: 'products',
-    enabled: true,
-    transformer: async (product, defaultTransformer, options) => {
-      // Use default transformer first
-      const transformed = await defaultTransformer(product, options)
-
-      // Add custom fields for embedding
-      return {
-        ...transformed,
-        searchText: `${product.title} ${product.description} ${product.tags?.join(' ') || ''}`,
-        category_path: product.categories?.map(c => c.name).join(' > ') || '',
-      }
-    },
+    dimensions: 768,
+    documentTemplate: '{{doc.title}} {{doc.description}}',
   },
 }
 ```
 
-## Migration from Basic Search
+If Meilisearch runs in Docker while Ollama runs on the host, the container cannot reach `localhost` — use
+`http://host.docker.internal:11434/api/embeddings`, or expose Ollama through a tunnel and point `url` at that.
 
-If you're upgrading from basic keyword search to semantic search:
+## OpenAI
 
-1. **Backup your current index**: Export your existing MeiliSearch data
-2. **Add vector configuration**: Update your plugin configuration with `vectorSearch` options
-3. **Re-sync data**: Trigger a full data sync to generate embeddings
-4. **Test gradually**: Start with a low `semanticRatio` (0.2-0.3) and increase based on results
-5. **Monitor performance**: Check search response times and adjust configuration as needed
-
-## API Reference
-
-### Vector Search Configuration
-
-```typescript
-interface VectorSearchConfig {
-  enabled: boolean
-  embedding: EmbeddingConfig
-  embeddingFields?: string[]
-  semanticRatio?: number
-  dimensions?: number
-}
-
-interface EmbeddingConfig {
-  provider: 'ollama' | 'openai'
-  // Provider-specific options...
+```ts
+embedders: {
+  default: {
+    source: 'openAi',
+    apiKey: process.env.OPENAI_API_KEY,
+    model: 'text-embedding-3-small',
+    dimensions: 1536,
+    documentTemplate: '{{doc.title}} {{doc.description}}',
+  },
 }
 ```
 
-### Search Response
+Keep `documentTemplate` short and specific. Every indexed document is sent to the embedding provider once, so a template
+pulling in long descriptions costs more and usually retrieves worse.
 
-When using semantic search, the response includes additional metadata:
+## Pre-computed embeddings
 
-```typescript
-interface SearchResponse {
-  hits: Array<{
-    // ... product data
-    _combinedScore?: number // Hybrid search score
-    _keywordScore?: number // Keyword search score
-    _vectorScore?: number // Vector similarity score
-  }>
-  hybridSearch?: boolean // True if hybrid search was used
-  semanticRatio?: number // The semantic ratio used
-  // ... other standard MeiliSearch response fields
-}
+If you compute vectors yourself, declare a vector field. The provider registers a `userProvided` embedder named after
+the field, and your `transform` writes the vector into the document:
+
+```ts
+import { search } from '@medusajs/framework/utils'
+import { defineProductSearchIndex, productSearchSchema } from '@rokmohar/medusa-plugin-meilisearch/indexes'
+
+export default defineProductSearchIndex({
+  fields: search.define({
+    ...productSearchSchema(),
+    embedding: search.vector(768),
+  }),
+  transform: (product) => ({
+    ...product,
+    id: String(product.id),
+    embedding: myEmbedder(product),
+  }),
+})
 ```
+
+A vector field without `dimensions` is rejected when the index is migrated rather than at query time.
+
+## Environment variables
+
+```bash
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_API_KEY=your_master_key
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+```
+
+## Searching
+
+Store and admin endpoints take `semanticSearch`, `semanticRatio` and `embedder`:
+
+| Parameter        | Default   | Description                                                   |
+| ---------------- | --------- | ------------------------------------------------------------- |
+| `semanticSearch` | `false`   | Blend semantic matching into the query.                       |
+| `semanticRatio`  | `0.5`     | `0` is keyword-only, `1` is semantic-only, `0.5` is balanced. |
+| `embedder`       | `default` | Which declared embedder to use.                               |
+
+```bash
+curl 'http://localhost:9000/store/meilisearch/products-hits?query=warm+winter+clothing&semanticSearch=true&semanticRatio=0.7' \
+  -H 'x-publishable-api-key: pk_...'
+```
+
+The response adds `hybridSearch: true` and the effective `semanticRatio`. The same parameters work on
+`/store/meilisearch/products`, which then hydrates the matches natively (prices, tax, inventory).
+
+From code, use `search_options.vector`:
+
+```ts
+const search = container.resolve(Modules.SEARCH)
+
+const { hits } = await search.search({
+  entity: 'products',
+  filters: { q: 'warm winter clothing' },
+  search_options: { vector: { field: 'default', semantic_ratio: 0.7 } },
+})
+```
+
+`field` names the embedder. Meilisearch embeds the text query itself, so `vector.query` must match the query in
+`filters.q`; pass `vector.value` instead if you already hold an embedding.
+
+## Verifying and troubleshooting
+
+Check what the engine actually stored:
+
+```bash
+curl 'http://localhost:7700/indexes/products/settings/embedders' -H 'Authorization: Bearer <MEILISEARCH_API_KEY>'
+```
+
+- **No embedders listed.** The declaration never reached the engine — run `npx medusa db:migrate` after changing
+  embedder configuration.
+- **Documents are indexed but semantic results are poor.** Check `documentTemplate` renders something meaningful; a
+  template referencing a field that is not in the document produces empty embeddings.
+- **Writes are slow after enabling an embedder.** Expected: every document is embedded before the write is applied, one
+  round trip per batch to the embedding provider. Raise `task_timeout_ms` on the provider if seeding times out.
+- **Semantic status shows disabled in the admin.** The card reads index declarations. Embedders declared only on the
+  provider are invisible to it — declare them on the index to have them reported.
+
+Semantic search needs Meilisearch 1.20 or newer, the same floor as the rest of this plugin.

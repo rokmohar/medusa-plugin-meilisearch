@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "1.4.3",
+  "version": "2.0.0",
   "description": "Meilisearch plugin for Medusa 2",
   "author": "Rok Mohar",
   "license": "MIT",
@@ -17,7 +17,8 @@
     "medusa-plugin-search"
   ],
   "files": [
-    ".medusa/server"
+    ".medusa/server/src",
+    "README.md"
   ],
   "main": ".medusa/server/src/index.js",
   "exports": {
@@ -27,15 +28,18 @@
       "require": "./.medusa/server/src/admin/index.js",
       "default": "./.medusa/server/src/admin/index.js"
     },
-    "./workflows": "./.medusa/server/src/workflows/index.js",
-    "./.medusa/server/src/modules/*": "./.medusa/server/src/modules/*/index.js",
-    ".": "./.medusa/server/src/modules/meilisearch/index.js"
+    "./providers/meilisearch": "./.medusa/server/src/providers/meilisearch/index.js",
+    "./indexes": "./.medusa/server/src/indexes/index.js",
+    ".": "./.medusa/server/src/index.js"
   },
   "scripts": {
     "build": "medusa plugin:build",
     "dev": "medusa plugin:develop",
     "prepublishOnly": "medusa plugin:build",
-    "typecheck": "tsc --noEmit --pretty --project tsconfig.json",
+    "typecheck": "yarn typecheck:server && yarn typecheck:admin",
+    "typecheck:server": "tsc --noEmit --pretty --project tsconfig.json",
+    "typecheck:admin": "tsc --noEmit --pretty --project src/admin/tsconfig.json",
+    "test": "node --require ts-node/register --test \"tests/unit/*.test.ts\"",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --cache --cache-strategy content",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix --cache --cache-strategy content",
     "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\" --cache --cache-strategy content --log-level warn",
@@ -45,38 +49,41 @@
     "meilisearch": "^0.56.0"
   },
   "devDependencies": {
-    "@medusajs/admin-sdk": "^2.15.2",
-    "@medusajs/cli": "^2.15.2",
-    "@medusajs/framework": "^2.15.2",
-    "@medusajs/medusa": "^2.15.2",
-    "@medusajs/ui": "^4.1.12",
-    "@swc/core": "^1.15.33",
+    "@medusajs/admin-sdk": "^2.19.0",
+    "@medusajs/cli": "^2.19.0",
+    "@medusajs/framework": "^2.19.0",
+    "@medusajs/medusa": "^2.19.0",
+    "@medusajs/types": "^2.19.0",
+    "@medusajs/ui": "^4.2.1",
+    "@medusajs/utils": "^2.19.0",
+    "@swc/core": "^1.16.1",
     "@tanstack/react-query": "5.64.2",
-    "@types/node": "^22",
-    "@types/react": "^18",
+    "@types/node": "^22.20.1",
+    "@types/react": "^18.3.31",
     "awilix": "^8.0.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.9.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-prettier": "^5.5.6",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^16",
-    "prettier": "^3.8.3",
-    "react": "^18",
-    "react-dom": "^18",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.3",
-    "yalc": "^1.0.0-pre.53"
+    "typescript-eslint": "^8.67.0",
+    "yalc": "^1.0.0-pre.53",
+    "zod": "4.2.0"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "^2.15.2",
-    "@medusajs/framework": "^2.15.2",
-    "@medusajs/medusa": "^2.15.2",
-    "@medusajs/ui": "^4.1.12",
+    "@medusajs/admin-sdk": "^2.19.0",
+    "@medusajs/framework": "^2.19.0",
+    "@medusajs/medusa": "^2.19.0",
+    "@medusajs/ui": "^4.2.1",
     "@tanstack/react-query": "5.64.2",
     "awilix": "^8.0.1",
-    "react": "^18",
-    "react-dom": "^18"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "engines": {
     "node": ">=22"
