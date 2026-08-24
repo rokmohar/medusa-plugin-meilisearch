@@ -1,75 +1,86 @@
-# How to Include Product Variant Prices in Search
+# Indexing variant prices
 
-This guide explains how to include product variant prices information (min_price, max_price) in your MeiliSearch index for filtering and sorting by price.
+The shipped product schema deliberately holds no prices. Prices depend on region, currency, customer group and price
+lists, so a single indexed number is only ever right for one context — and it goes stale whenever a price changes.
+Prefer asking `/store/meilisearch/products` for calculated prices, which resolves them per request
+([details](./faq-product-search-prices.md)).
 
-## Solution
+Indexing a price is still worth it for one job: sorting and range-filtering a result list by a "from" price. Do it with
+a denormalized field per currency you actually sort on.
 
-In your plugin configuration, specify the fields that should be loaded for products, including variant pricing information:
+## Declaring the fields
 
-```typescript
-{
-  resolve: '@rokmohar/medusa-plugin-meilisearch',
-  options: {
-    config: {
-      host: process.env.MEILISEARCH_HOST ?? '',
-      apiKey: process.env.MEILISEARCH_API_KEY ?? '',
-    },
-    settings: {
-      products: {
-        type: 'products',
-        enabled: true,
-        fields: [
-          'id',
-          'title',
-          'description',
-          'handle',
-          'thumbnail',
-          'variants.prices.*', // Include variant prices
-        ],
-        indexSettings: {
-          searchableAttributes: ['title', 'description'],
-          displayedAttributes: [
-            'id', 'handle', 'title', 'description', 'thumbnail',
-            'min_price', 'max_price', 'currency_code', 'has_variants'
-          ],
-          filterableAttributes: [
-            'id', 'handle', 'min_price', 'max_price', 'currency_code'
-          ],
-          // Enable sorting by price
-          sortableAttributes: ['min_price', 'max_price'],
-        },
-        primaryKey: 'id',
-        // Custom transformer to extract pricing
-        transformer: async (product) => {
-          // Calculate min_price from variant.prices array
-          let min_price = null;
-          let cheapest_variant_id = null;
+```ts
+// src/search/products.ts
+import { search } from '@medusajs/framework/utils'
+import { defineProductSearchIndex, productSearchSchema } from '@rokmohar/medusa-plugin-meilisearch/indexes'
 
-          if (Array.isArray(product.variants)) {
-            for (const variant of product.variants) {
-              if (Array.isArray(variant.prices)) {
-                const variantMin = variant.prices
-                  .filter((p) => p.currency_code === 'eur' && !p.price_list_id)
-                  .reduce((min, p) => (min === null || p.amount < min ? p.amount : min), null);
+export default defineProductSearchIndex({
+  fields: search.define({
+    ...productSearchSchema(),
+    min_price_usd: search
+      .float()
+      .filterable()
+      .sortable()
+      .facetable({ types: ['range', 'stats'] }),
+  }),
+  graph_fields: ['variants.prices.amount', 'variants.prices.currency_code', 'variants.prices.price_list_id'],
+  transform: (product) => {
+    const variants = Array.isArray(product.variants) ? product.variants : []
 
-                if (variantMin !== null && (min_price === null || variantMin < min_price)) {
-                  min_price = variantMin;
-                  cheapest_variant_id = variant.id;
-                }
-              }
-            }
-          }
+    const amounts = variants.flatMap((variant) => {
+      const prices = Array.isArray(variant.prices) ? variant.prices : []
 
-          return {
-            ...product,
-            min_price,
-            cheapest_variant_id,
-            // ... other fields
-          };
-        },
-      },
-    },
-    // ... other config
-  } satisfies MeilisearchPluginOptions,
-}
+      return prices
+        .filter((price) => price.currency_code === 'usd' && !price.price_list_id)
+        .map((price) => price.amount)
+    })
+
+    return {
+      ...product,
+      id: String(product.id),
+      min_price_usd: amounts.length ? Math.min(...amounts) : undefined,
+    }
+  },
+})
 ```
+
+`graph_fields` is what makes the price rows available to `transform`; without those paths the variants arrive without
+prices. Excluding `price_list_id` keeps promotional prices out of the sort key, which is usually what a "from" price
+should show.
+
+Sorting and filtering then work through the normal query options:
+
+```ts
+await search.search({
+  entity: 'products',
+  filters: { q: 'shirt', min_price_usd: { $lte: 5000 } },
+  pagination: { order: { min_price_usd: 'ASC' } },
+})
+```
+
+Or through a store request: `?query=shirt&sort=min_price_usd:asc&filter=min_price_usd%20%3C%3D%205000`.
+
+## Keeping the value current
+
+Price changes do not reach the index on their own. The default declaration subscribes to product and product-relation
+events only, because the shipped schema has nothing that price events could invalidate. Add them yourself when you
+index a price:
+
+```ts
+import { PricingEvents } from '@medusajs/framework/utils'
+import { PRODUCT_EVENTS } from '@rokmohar/medusa-plugin-meilisearch/indexes'
+
+export default defineProductSearchIndex({
+  // fields, graph_fields and transform as above
+  events: [...PRODUCT_EVENTS, PricingEvents.PRICE_CREATED, PricingEvents.PRICE_UPDATED, PricingEvents.PRICE_DELETED],
+  consume: async (event, context) => {
+    // resolve the affected product ids for a price event, then return
+    // [{ action: 'upsert', documents }] for them
+  },
+})
+```
+
+A price event carries a price id, so `consume` has to walk back to the product — price set, then variant, then product —
+using `context.container.query`. If that traversal is more than you want to own, leave price events out and rebuild
+periodically instead: `searchModule.reindex({ index: 'products' })` from a scheduled job re-reads every price.

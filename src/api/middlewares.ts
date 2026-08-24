@@ -42,12 +42,18 @@ function extractMeiliParams(req: MedusaRequest, _res: MedusaResponse, next: Medu
   req.meiliParams = {
     query: typeof q.query === 'string' ? q.query : undefined,
     language: typeof q.language === 'string' ? q.language : undefined,
+    index: typeof q.index === 'string' ? q.index : undefined,
+    filter: typeof q.filter === 'string' ? q.filter : undefined,
+    embedder: typeof q.embedder === 'string' ? q.embedder : undefined,
     semanticSearch: q.semanticSearch === 'true',
     semanticRatio: typeof semanticRatioRaw === 'string' && semanticRatioRaw !== '' ? Number(semanticRatioRaw) : 0.5,
   }
 
   delete q.query
   delete q.language
+  delete q.index
+  delete q.filter
+  delete q.embedder
   delete q.semanticSearch
   delete q.semanticRatio
 

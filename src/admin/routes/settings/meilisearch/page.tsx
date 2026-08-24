@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { Button, Container, Heading, Badge, Text, Switch, Input, toast } from '@medusajs/ui'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { defineRouteConfig } from '@medusajs/admin-sdk'
 import { sdk } from '../../../lib/sdk'
 
 import { AdminCategoriesHitsResponse } from '../../../../api/admin/meilisearch/categories-hits/route.ts'
+import { AdminIndexesResponse } from '../../../../api/admin/meilisearch/indexes/route.ts'
 import { AdminProductsHitsResponse } from '../../../../api/admin/meilisearch/products-hits/route'
 import { AdminSyncResponse } from '../../../../api/admin/meilisearch/sync/route.ts'
 import { AdminVectorStatusResponse } from '../../../../api/admin/meilisearch/vector-status/route.ts'
 
 const SyncPage = () => {
+  const queryClient = useQueryClient()
   const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(false)
   const [semanticRatio, setSemanticRatio] = useState(0.5)
   const [searchQuery, setSearchQuery] = useState('jeans')
@@ -29,18 +31,30 @@ const SyncPage = () => {
     staleTime: 30000, // Consider data stale after 30 seconds
   })
 
+  const { data: indexData, isLoading: indexesLoading } = useQuery<AdminIndexesResponse>({
+    queryKey: ['meilisearch-indexes'],
+    queryFn: async () => {
+      return sdk.client.fetch<AdminIndexesResponse>('/admin/meilisearch/indexes')
+    },
+    retry: 2,
+    staleTime: 30000,
+  })
+
   const { mutate: syncData, isPending: syncPending } = useMutation({
     mutationFn: async () => {
       return sdk.client.fetch<AdminSyncResponse>('/admin/meilisearch/sync', {
         method: 'POST',
+        body: {},
       })
     },
-    onSuccess: () => {
-      toast.success('Successfully triggered data sync to Meilisearch')
+    onSuccess: async (data) => {
+      toast.success(`Reindex started for ${data.indexes.length} index(es)`)
+
+      await queryClient.invalidateQueries({ queryKey: ['meilisearch-indexes'] })
     },
     onError: (err) => {
       console.error(err)
-      toast.error('Failed to sync data to Meilisearch')
+      toast.error('Failed to start the Meilisearch reindex')
     },
   })
 
@@ -117,13 +131,13 @@ const SyncPage = () => {
       <div className="flex flex-col gap-y-6">
         <div>
           <Heading level="h1">Meilisearch Configuration</Heading>
-          <Text className="text-gray-500 mt-2">
+          <Text className="text-ui-fg-subtle mt-2">
             Manage your Meilisearch index synchronization and AI-powered semantic search settings.
           </Text>
         </div>
 
         {/* Vector Search Status */}
-        <div className="border border-gray-200 rounded-lg p-6">
+        <div className="border border-ui-border-base rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Heading level="h2">AI-Powered Semantic Search</Heading>
@@ -150,30 +164,32 @@ const SyncPage = () => {
           </div>
 
           {statusError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <Text className="text-red-800 text-sm">Failed to load vector search status: {statusError.message}</Text>
+            <div className="mb-4 p-3 bg-ui-tag-red-bg border border-ui-tag-red-border rounded-md">
+              <Text className="text-ui-tag-red-text text-sm">
+                Failed to load vector search status: {statusError.message}
+              </Text>
             </div>
           )}
 
           {vectorStatus?.enabled && (
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <Text className="text-sm font-medium text-gray-700">Provider</Text>
-                <Text className="text-sm text-gray-600">{vectorStatus.provider ?? 'Not specified'}</Text>
+                <Text className="text-sm font-medium">Provider</Text>
+                <Text className="text-ui-fg-subtle text-sm">{vectorStatus.provider ?? 'Not specified'}</Text>
               </div>
               <div>
-                <Text className="text-sm font-medium text-gray-700">Model</Text>
-                <Text className="text-sm text-gray-600">{vectorStatus.model ?? 'Not specified'}</Text>
+                <Text className="text-sm font-medium">Model</Text>
+                <Text className="text-ui-fg-subtle text-sm">{vectorStatus.model ?? 'Not specified'}</Text>
               </div>
               {vectorStatus.dimensions && (
                 <div>
-                  <Text className="text-sm font-medium text-gray-700">Vector Dimensions</Text>
-                  <Text className="text-sm text-gray-600">{vectorStatus.dimensions}</Text>
+                  <Text className="text-sm font-medium">Vector Dimensions</Text>
+                  <Text className="text-ui-fg-subtle text-sm">{vectorStatus.dimensions}</Text>
                 </div>
               )}
               <div>
-                <Text className="text-sm font-medium text-gray-700">Embedding Fields</Text>
-                <Text className="text-sm text-gray-600">{vectorStatus.embeddingFields.join(', ')}</Text>
+                <Text className="text-sm font-medium">Embedding Fields</Text>
+                <Text className="text-ui-fg-subtle text-sm">{vectorStatus.embeddingFields.join(', ')}</Text>
               </div>
             </div>
           )}
@@ -183,7 +199,7 @@ const SyncPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <Text className="font-medium">Enable Semantic Search in Tests</Text>
-                  <Text className="text-sm text-gray-500">Use AI-powered semantic search for better results</Text>
+                  <Text className="text-ui-fg-subtle text-sm">Use AI-powered semantic search for better results</Text>
                 </div>
                 <Switch checked={semanticSearchEnabled} onCheckedChange={setSemanticSearchEnabled} />
               </div>
@@ -191,7 +207,7 @@ const SyncPage = () => {
               {semanticSearchEnabled && (
                 <div>
                   <Text className="font-medium mb-2">Semantic Ratio: {semanticRatio}</Text>
-                  <Text className="text-sm text-gray-500 mb-3">
+                  <Text className="text-ui-fg-subtle text-sm mb-3">
                     0.0 = Pure keyword search, 1.0 = Pure semantic search, 0.5 = Balanced hybrid
                   </Text>
                   <div className="flex items-center gap-2">
@@ -208,7 +224,7 @@ const SyncPage = () => {
                       aria-label="Semantic search ratio"
                       aria-describedby="semantic-ratio-description"
                     />
-                    <span className="text-sm text-gray-700">{semanticRatio.toFixed(1)}</span>
+                    <span className="text-sm">{semanticRatio.toFixed(1)}</span>
                   </div>
                   <div id="semantic-ratio-description" className="sr-only">
                     Adjust the balance between keyword and semantic search from 0 to 1
@@ -219,40 +235,70 @@ const SyncPage = () => {
           )}
 
           {!vectorStatus?.enabled && (
-            <Text className="text-gray-500">
-              Vector search is not configured. Add vectorSearch configuration to your plugin options to enable
-              AI-powered semantic search.
+            <Text className="text-ui-fg-subtle">
+              Semantic search is not configured. Declare a vector field or Meilisearch embedders on your index
+              definition (settings.provider_options.meilisearch.embedders) to enable it.
             </Text>
           )}
         </div>
 
         {/* Data Synchronization */}
-        <div className="border border-gray-200 rounded-lg p-6">
+        <div className="border border-ui-border-base rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <Heading level="h2">Data Synchronization</Heading>
           </div>
-          <Text className="text-gray-500 mb-4">
-            Manually trigger synchronization of your product catalog with Meilisearch.
-            {vectorStatus?.enabled && ' This will also generate embeddings for semantic search.'}
+          <Text className="text-ui-fg-subtle mb-4">
+            Reindex the registered search indexes. Seeding runs in the background; progress is written to the server
+            logs.
+            {vectorStatus?.enabled && ' Embeddings are regenerated as documents are written.'}
           </Text>
-          <Button onClick={handleSync} isLoading={syncPending} variant="primary">
+
+          <div className="mb-4">
+            {indexesLoading ? (
+              <Text className="text-ui-fg-subtle text-sm">Loading indexes...</Text>
+            ) : indexData?.indexes.length ? (
+              <ul className="flex flex-col gap-y-1">
+                {indexData.indexes.map((index) => {
+                  return (
+                    <li key={index.name} className="flex items-center gap-2">
+                      <Text className="text-sm font-medium">{index.name}</Text>
+                      <Badge size="2xsmall">{index.entity}</Badge>
+                      {index.locales?.map((locale) => {
+                        return (
+                          <Badge key={locale} size="2xsmall" color="blue">
+                            {locale}
+                          </Badge>
+                        )
+                      })}
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <Text className="text-ui-fg-subtle text-sm">
+                No search indexes are registered. Add an index definition under src/search and run medusa db:migrate.
+              </Text>
+            )}
+          </div>
+
+          <Button onClick={handleSync} isLoading={syncPending} variant="primary" disabled={!indexData?.indexes.length}>
             Sync Now
           </Button>
         </div>
 
         {/* Search Testing */}
-        <div className="border border-gray-200 rounded-lg p-6">
+        <div className="border border-ui-border-base rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
             <Heading level="h2">Search Testing</Heading>
           </div>
-          <Text className="text-gray-500 mb-4">
+          <Text className="text-ui-fg-subtle mb-4">
             Test your products search configuration with a custom query.
             {vectorStatus?.enabled && ' You can test both traditional keyword search and AI-powered semantic search.'}
           </Text>
 
           <div className="space-y-4">
             <div>
-              <Text className="text-sm font-medium text-gray-700 mb-2">Search Query</Text>
+              <Text className="text-sm font-medium mb-2">Search Query</Text>
               <Input
                 value={searchQuery}
                 onChange={(e) => {
@@ -288,7 +334,7 @@ const SyncPage = () => {
               </Button>
 
               {vectorStatus?.enabled && (
-                <Text className="text-sm text-gray-500 self-center">
+                <Text className="text-ui-fg-subtle text-sm self-center">
                   {semanticSearchEnabled
                     ? `Using hybrid search (${Math.round(semanticRatio * 100)}% semantic)`
                     : 'Using keyword search only'}

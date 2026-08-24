@@ -1,557 +1,350 @@
-# MedusaJS v2 MeiliSearch Plugin with i18n Support
+# MedusaJS v2 Meilisearch plugin
 
-This plugin integrates MeiliSearch with your Medusa e-commerce store and adds support for internationalization (i18n) of your product catalog.
+Meilisearch for Medusa v2 catalogs: full-text and hybrid search over products and categories, plus store endpoints you
+can swap in for `/store/products` and `/store/product-categories` without your storefront noticing.
 
-## Features
+## How it fits together
 
-- Full-text search for your Medusa store
-- Real-time indexing
-- Typo-tolerance
-- Faceted search
-- Support for both products and categories
-- Internationalization (i18n) support with multiple strategies:
-  1. Separate index per language
-  2. Language-specific fields with suffix
-- Flexible translation configuration
-- Custom field transformations
-- Automatic field detection
+Medusa 2.19.0 introduced a Search Module of its own, and from v2.0.0 this plugin plugs into it as the Meilisearch
+engine behind it. The division of labour:
+
+| Who                                 | Does what                                                                                          |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Medusa's Search Module              | Creates and migrates indexes, seeds them, batches writes, routes catalog events, rebuilds on drift |
+| This plugin's provider              | Turns index declarations into Meilisearch settings and queries into Meilisearch requests           |
+| This plugin's factories             | Ship ready-made product and category declarations you can extend                                   |
+| This plugin's routes and admin page | Native-parity store search, plus a settings screen for indexes and reindexing                      |
+
+Practically, that means you no longer run any indexing code yourself. You declare what an index holds; Medusa keeps it
+filled.
+
+## What you get
+
+- Every method of the provider contract, including atomic index swaps for rebuilds without downtime, batched
+  multi-search, and write-task tracking so seeding knows when a batch has actually landed
+- Declared field weights compiled into Meilisearch relevance ordering, with filterable, sortable and facetable
+  attributes derived from the same declaration
+- Value, range and statistical facets; highlighting and cropped snippets; estimated or exhaustive counts
+- Hybrid search over Meilisearch embedders — OpenAI, Ollama, Hugging Face, a REST endpoint, or vectors you compute
+- One index per locale, translated through Medusa's Translation Module
+- An escape hatch at every level: raw Meilisearch settings per index, raw Meilisearch parameters per query
+- Store endpoints that keep native pricing, tax, `variants.inventory_quantity`, sales-channel scoping, filters and sorts
+
+## Compatibility
+
+| Plugin   | Medusa           | Meilisearch server | Node    |
+| -------- | ---------------- | ------------------ | ------- |
+| `^2.0.0` | `^2.19.0`        | `>= 1.20`          | `>= 22` |
+| `^1.4.1` | `>= 2.15 < 2.19` | `>= 1.5`           | `>= 22` |
+| `^1.3.7` | `^2.13.4`        | `>= 1.5`           | `>= 20` |
+| `^1.0.1` | `^2.4.0`         | `>= 1.5`           | `>= 20` |
+
+The 2.19 release removed the search interface the v1 line was written against, so the two lines do not overlap: v1 stops
+at Medusa 2.18, v2 starts at 2.19. Coming from v1, work through [the upgrade guide](./docs/migration.md).
+
+The `>= 1.20` server floor comes from index swapping: the plugin's `swap` reindex strategy uses the `rename` field that
+Meilisearch 1.20 added to `POST /swap-indexes`. Medusa 2.19 itself still runs on Node 20.19+, but this plugin is built
+and tested on Node 22 only.
+
+The Meilisearch JS client stays on `^0.56.0`, the last version published as CommonJS.
 
 ## Installation
 
-Run the following command to install the plugin with **npm**:
-
 ```bash
 npm install --save @rokmohar/medusa-plugin-meilisearch
-```
-
-Or with **yarn**:
-
-```bash
+# or
 yarn add @rokmohar/medusa-plugin-meilisearch
 ```
 
-### Upgrade to v1.0
-
-_This step is required only if you are upgrading from previous version to v1.0._
-
-- The plugin now supports new MedusaJS plugin system.
-- Subscribers are included in the plugin.
-- You don't need custom subscribers anymore, you can remove them.
-
-## Minimum Compatibility
-
-| Plugin version | Medusa version |
-| -------------- | -------------- |
-| `^1.4.1`       | `^2.15.2`      |
-| `^1.3.7`       | `^2.13.4`      |
-| `^1.0.0`       | `^2.4.0`       |
-
-> **Note:** This plugin is only compatible with MedusaJS v2. For MedusaJS v1 / v2.3.x and older, use the [legacy version](https://github.com/rokmohar/medusa-plugin-meilisearch/tree/v0.2.1).
-
 ## Configuration
 
-Add the plugin to your `medusa-config.ts` file:
+Register the plugin (for its API routes and admin page) and the Search Module with this package as its provider:
 
-```js
-import { loadEnv, defineConfig } from '@medusajs/framework/utils'
-import { MeilisearchPluginOptions } from '@rokmohar/medusa-plugin-meilisearch'
+```ts
+// medusa-config.ts
+import { defineConfig, Modules } from '@medusajs/framework/utils'
 
-loadEnv(process.env.NODE_ENV || 'development', process.cwd())
-
-module.exports = defineConfig({
-  // ... other config
+export default defineConfig({
   plugins: [
-    // ... other plugins
     {
       resolve: '@rokmohar/medusa-plugin-meilisearch',
-      options: {
-        config: {
-          host: process.env.MEILISEARCH_HOST ?? '',
-          apiKey: process.env.MEILISEARCH_API_KEY ?? '',
-        },
-        settings: {
-          // The key is used as the index name in Meilisearch
-          products: {
-            // Required: Index type
-            type: 'products',
-            // Optional: Whether the index is enabled. When disabled:
-            // - Index won't be created or updated
-            // - Documents won't be added or removed
-            // - Index won't be included in searches
-            // - All operations will be silently skipped
-            enabled: true,
-            // Optional: Specify which fields to include in the index
-            // If not specified, all fields will be included
-            fields: ['id', 'title', 'description', 'handle', 'variant_sku', 'thumbnail'],
-            indexSettings: {
-              searchableAttributes: ['title', 'description', 'variant_sku'],
-              displayedAttributes: ['id', 'handle', 'title', 'description', 'variant_sku', 'thumbnail'],
-              filterableAttributes: ['id', 'handle'],
-            },
-            primaryKey: 'id',
-            // Create your own transformer
-            /*transformer: (product) => ({
-              id: product.id,
-              // other attributes...
-            }),*/
-          },
-          categories: {
-            // Required: Index type
-            type: 'categories',
-            // Optional: Whether the index is enabled
-            enabled: true,
-            // Optional: Specify which fields to include in the index
-            // If not specified, all fields will be included
-            fields: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
-            indexSettings: {
-              searchableAttributes: ['name', 'description'],
-              displayedAttributes: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
-              filterableAttributes: ['id', 'handle', 'is_active', 'parent_id'],
-            },
-            primaryKey: 'id',
-            // Create your own transformer
-            /*transformer: (category) => ({
-              id: category.id,
-              name: category.name,
-              // other attributes...
-            }),*/
-          },
-        },
-        i18n: {
-          // Choose one of the following strategies:
-
-          // 1. Separate index per language
-          // strategy: 'separate-index',
-          // languages: ['en', 'fr', 'de'],
-          // defaultLanguage: 'en',
-
-          // 2. Language-specific fields with suffix
-          strategy: 'field-suffix',
-          languages: ['en', 'fr', 'de'],
-          defaultLanguage: 'en',
-          translatableFields: ['title', 'description'],
-        },
-      } satisfies MeilisearchPluginOptions,
+      options: {},
     },
   ],
-})
-```
-
-### ⚠️ Worker Mode Considerations
-
-> **Important:** Product events and background tasks will **not work** if your Medusa instance is running in `server` mode, because the server instance does **not** process subscribers or background jobs.
-
-Depending on your setup:
-
-- **Monolithic architecture** (only one backend instance):  
-  Ensure you **do not set** the `MEDUSA_WORKER_MODE` or `WORKER_MODE` environment variable. By default, Medusa will use `shared` mode, which supports both background processing and serving HTTP requests from the same instance.
-
-- **Split architecture** (separate server and worker instances):  
-  Follow the [official Medusa documentation on worker mode](https://docs.medusajs.com/learn/production/worker-mode#content).  
-  In this case, you **must add this plugin in the worker instance**, as the server instance does not handle event subscribers or background tasks.
-
-## i18n Configuration
-
-The plugin supports two main strategies for handling translations, with flexible configuration options for each.
-
-### Basic Configuration
-
-```typescript
-{
-  i18n: {
-    // Choose strategy: 'separate-index' or 'field-suffix'
-    strategy: 'field-suffix',
-    // List of supported languages
-    languages: ['en', 'fr', 'de'],
-    // Default language to fall back to
-    defaultLanguage: 'en',
-    // Optional: List of translatable fields
-    translatableFields: ['title', 'description', 'handle']
-  }
-}
-```
-
-### Advanced Field Configuration
-
-You can provide detailed configuration for each translatable field:
-
-```typescript
-{
-  i18n: {
-    strategy: 'field-suffix',
-    languages: ['en', 'fr', 'de'],
-    defaultLanguage: 'en',
-    translatableFields: [
-      // Simple field name
-      'title',
-
-      // Field with different target name
-      {
-        source: 'description',
-        target: 'content'  // Will be indexed as content_en, content_fr, etc.
-      },
-
-      // Field with transformation
-      {
-        source: 'handle',
-        transform: (value) => value.toLowerCase().replace(/\s+/g, '-')
-      }
-    ]
-  }
-}
-```
-
-### Custom Translation Transformer
-
-The plugin provides a flexible way to transform your products with custom translations. Translations are passed directly to the default transformer via `TransformOptions`:
-
-```typescript
-{
-  settings: {
-    products: {
-      type: 'products',
-      // ... other config
-      transformer: async (product, defaultTransformer, options) => {
-        const translations = {
-          title: [
-            { language_code: 'en', value: 'Blue T-Shirt' },
-            { language_code: 'fr', value: 'T-Shirt Bleu' },
-          ],
-          description: [
-            { language_code: 'en', value: 'A comfortable blue t-shirt' },
-            { language_code: 'fr', value: 'Un t-shirt bleu confortable' },
-          ],
-        }
-
-        return defaultTransformer(product, {
-          ...options,
-          translations,
-          includeAllTranslations: true,
-        })
-      },
-    }
-  }
-}
-```
-
-Pass `includeAllTranslations: true` to emit all language suffixes (e.g. `title_en`, `title_fr`). Without it only the current language suffix is written.
-
-### Integration with Medusa Native Translations
-
-The recommended approach for production is to use the [Medusa Translation module](https://docs.medusajs.com/resources/commerce-modules/product/translations), which is built into Medusa v2.
-
-**1. Enable the translation feature flag and module in `medusa-config.ts`:**
-
-```typescript
-module.exports = defineConfig({
-  featureFlags: {
-    translation: true,
-  },
-  // ... other config
   modules: [
-    // ... other modules
     {
-      resolve: '@medusajs/medusa/translation',
+      resolve: '@medusajs/medusa/search',
+      options: {
+        providers: [
+          {
+            resolve: '@rokmohar/medusa-plugin-meilisearch/providers/meilisearch',
+            id: 'meilisearch',
+            options: {
+              config: {
+                host: process.env.MEILISEARCH_HOST!,
+                apiKey: process.env.MEILISEARCH_API_KEY,
+              },
+            },
+          },
+        ],
+      },
     },
   ],
 })
 ```
 
-**2. Create a translations utility (`src/utils/translations.ts`):**
+Then declare your indexes under `src/search`. The application loads every file in that directory and hands the
+declarations to the Search Module:
 
-```typescript
-import { ContainerRegistrationKeys } from '@medusajs/utils'
-import type { MedusaContainer } from '@medusajs/framework'
-import { TranslationMap } from '@rokmohar/medusa-plugin-meilisearch'
+```ts
+// src/search/products.ts
+import { defineProductSearchIndex } from '@rokmohar/medusa-plugin-meilisearch/indexes'
 
-// Maps Medusa locale codes (e.g. 'sl-SI') to index field suffixes (e.g. 'sl')
-export const LOCALE_MAP: Record<string, string> = {
-  'sl-SI': 'sl',
-  'en-US': 'en',
-  // add more as needed
-}
-
-export const getTranslations = async (
-  id: string,
-  langs: string[],
-  container: MedusaContainer,
-): Promise<TranslationMap> => {
-  const query = container.resolve(ContainerRegistrationKeys.QUERY)
-
-  const { data: rows } = await query.graph({
-    entity: 'translation',
-    fields: ['reference_id', 'locale_code', 'translations'],
-    filters: { reference_id: id, locale_code: langs },
-  })
-
-  const result: TranslationMap = {}
-
-  for (const row of rows) {
-    const langCode = LOCALE_MAP[row.locale_code] ?? row.locale_code
-
-    for (const [field, value] of Object.entries(row.translations as Record<string, string>)) {
-      if (!result[field]) {
-        result[field] = []
-      }
-      result[field].push({ language_code: langCode, value })
-    }
-  }
-
-  return result
-}
+export default defineProductSearchIndex()
 ```
 
-**3. Use in your transformer:**
+```ts
+// src/search/categories.ts
+import { defineCategorySearchIndex } from '@rokmohar/medusa-plugin-meilisearch/indexes'
 
-The transformer receives `options.container` — the real `MedusaContainer` forwarded by workflow steps. It is `undefined` when no container is available (e.g. during a manual index rebuild without a workflow context), so always guard with a fallback:
+export default defineCategorySearchIndex()
+```
 
-```typescript
-import { getTranslations, LOCALE_MAP } from './src/utils/translations'
+Create the indexes, then start the app:
 
-{
+```bash
+npx medusa db:migrate
+npx medusa develop
+```
+
+`db:migrate` creates and migrates the physical Meilisearch indexes. On boot the Search Module seeds any index that was
+just created, was emptied, or whose declaration changed; from then on it keeps them current from events. Indexes live
+in Meilisearch and are never recreated at startup.
+
+### Provider options
+
+| Option                     | Type        | Description                                                                                         |
+| -------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
+| `config`                   | `Config`    | Meilisearch client config. `host` is required; `apiKey` is optional for keyless instances.          |
+| `embedders`                | `Embedders` | Meilisearch embedders applied to every index this provider manages. Keys are the embedder names.    |
+| `settings`                 | `Settings`  | Meilisearch settings applied below the settings derived from each declaration, e.g. `rankingRules`. |
+| `task_timeout_ms`          | `number`    | How long to wait for a deferred write. Default `120000`.                                            |
+| `task_polling_interval_ms` | `number`    | How often to poll for a write to land. Default `500`.                                               |
+
+### Index factory options
+
+Both `defineProductSearchIndex()` and `defineCategorySearchIndex()` take the same options and always return an array of
+declarations (one per locale).
+
+| Option           | Default                                                               | Description                                                     |
+| ---------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `name`           | `products` / `categories`                                             | Base index name.                                                |
+| `provider`       | the module's default provider                                         | Provider identifier this index binds to.                        |
+| `primary_key`    | `id`                                                                  | Document primary key.                                           |
+| `fields`         | the default schema                                                    | Replaces the field schema. Use `search.define({ ... })`.        |
+| `settings`       | `{}`                                                                  | Index settings (synonyms, stop words, typo tolerance, …).       |
+| `graph_fields`   | the default selection                                                 | Extra `query.graph` paths to fetch while seeding and ingesting. |
+| `filters`        | `{ status: 'published' }` / `{ is_active: true, is_internal: false }` | `query.graph` filters.                                          |
+| `transform`      | pick of the declared paths                                            | Maps an entity to a search document. Synchronous.               |
+| `batch_size`     | `200`                                                                 | Seed page size.                                                 |
+| `events`         | product / category events, both namespaces                            | Events this index reacts to.                                    |
+| `consume`        | the default routing table                                             | Turns an event into index mutations.                            |
+| `locales`        | –                                                                     | BCP-47 locales; emits one index per locale.                     |
+| `default_locale` | first entry of `locales`                                              | Which locale keeps the bare index name.                         |
+
+Extending the default schema:
+
+```ts
+import { search } from '@medusajs/framework/utils'
+import { defineProductSearchIndex, productSearchSchema } from '@rokmohar/medusa-plugin-meilisearch/indexes'
+
+export default defineProductSearchIndex({
+  fields: search.define({
+    ...productSearchSchema(),
+    brand: search.text().searchable({ weight: 3 }).facetable(),
+  }),
+  graph_fields: ['brand'],
   settings: {
-    products: {
-      type: 'products',
-      indexSettings: {
-        searchableAttributes: ['title', 'title_sl', 'title_en'],
-        displayedAttributes: ['id', 'handle', 'title', 'title_sl', 'title_en', 'thumbnail'],
-        filterableAttributes: ['id'],
-      },
-      transformer: async (product, defaultTransformer, options) => {
-        if (!options?.container) {
-          // No container available — index without translations
-          return defaultTransformer(product, options)
-        }
-
-        const raw = await getTranslations(product.id, ['sl-SI', 'en-US'], options.container)
-
-        // Remap locale codes to match index field suffixes
-        const translations = Object.fromEntries(
-          Object.entries(raw).map(([field, values]) => [
-            field,
-            values.map((t) => ({
-              language_code: LOCALE_MAP[t.language_code] ?? t.language_code,
-              value: t.value,
-            })),
-          ]),
-        )
-
-        return defaultTransformer(product, {
-          ...options,
-          translations,
-          includeAllTranslations: true,
-        })
-      },
-    }
-  }
-}
+    synonyms: { trousers: ['pants'] },
+    stop_words: ['the'],
+  },
+})
 ```
 
-> **How `container` reaches the transformer:** Medusa plugin modules receive the awilix cradle proxy at construction time, not the real `MedusaContainer` — so the service cannot self-supply it. Workflow steps (triggered by product/category events) have the real container from their `createStep` context and forward it via `addDocuments(indexName, documents, type, { container })`. The transformer then resolves services (e.g. `QUERY`) from it.
+Meilisearch has no per-attribute weights — relevance follows the order of `searchableAttributes` — so declared weights
+become that ordering.
 
-## i18n Strategies
+### Worker mode
 
-### 1. Separate Index per Language
+Seeding and event ingestion run outside `worker_mode: 'server'`. In a split deployment, install and configure the
+plugin on the worker instance too, or its indexes will stay empty.
 
-This strategy creates a separate MeiliSearch index for each language. For example, if your base index is named "products", it will create:
+## Internationalization
 
-- products_en
-- products_fr
-- products_de
+Pass `locales` to a factory to get one index per locale. The default locale keeps the bare name, the others are
+suffixed:
 
-Benefits:
-
-- Better performance for language-specific searches
-- Language-specific settings and ranking rules
-- Cleaner index structure
-
-### 2. Language-specific Fields with Suffix
-
-This strategy adds language suffixes to translatable fields in the same index. For example:
-
-- title_en, title_fr, title_de
-- description_en, description_fr, description_de
-
-Benefits:
-
-- Single index to maintain
-- Ability to search across all languages at once
-- Smaller storage requirements
-
-## Custom Translatable Fields
-
-If no translatable fields are specified and using the field-suffix strategy, the plugin will automatically detect string fields as translatable. You can override this by explicitly specifying the fields:
-
-```typescript
-{
-  i18n: {
-    strategy: 'field-suffix',
-    languages: ['en', 'fr'],
-    defaultLanguage: 'en',
-    // Only these fields will be translatable
-    translatableFields: ['title', 'description']
-  }
-}
+```ts
+export default defineProductSearchIndex({
+  locales: ['en-US', 'fr-FR', 'de-DE'],
+  default_locale: 'en-US',
+})
 ```
 
-## Product API Endpoints
+This registers `products`, `products-fr-FR` and `products-de-DE`. Each index declares its locale, seeds and ingests
+through `query.graph(..., { locale })` so documents carry the translated values, and tells Meilisearch which analyzer
+to use. Localized reads require Medusa's Translation Module (`featureFlags: { translation: true }`).
 
-### Search for Product Hits
+Store requests select an index by locale: `?locale=fr-FR` (or the `x-medusa-locale` header). Region variants fall back
+to the same language, so `fr-CA` uses the `fr-FR` index when no `fr-CA` index exists, and an unknown locale falls back
+to the default index. `?index=products-fr-FR` addresses one index directly.
 
-```http
-GET /store/meilisearch/products-hits
-```
+## Semantic search
 
-Query Parameters:
+Configure Meilisearch embedders on the provider and query them with `semanticSearch`:
 
-- `query`: Search query string
-- `limit`: (Optional) Limit results from search
-- `offset`: (Optional) Offset results from search
-- `language`: (Optional) Language code
-- `semanticSearch` - Enable AI-powered semantic search (boolean)
-- `semanticRatio` - Semantic vs keyword search ratio (0-1)
-
-### Search for Products
-
-```http
-GET /store/meilisearch/products
-```
-
-Query Parameters:
-
-- `fields` - MedusaJS fields expression
-- `limit`: (Optional) Limit results from search
-- `offset`: (Optional) Offset results from search
-- `region_id`: (Optional, but required for `calculated_price`) Current region ID
-- `currency_code`: (Optional, but required for `calculated_price`) Current currency code
-- `query`: Search query string
-- `language`: (Optional) Language code
-- `semanticSearch` - Enable AI-powered semantic search (boolean)
-- `semanticRatio` - Semantic vs keyword search ratio (0-1)
-
-## Category Support
-
-This plugin provides full support for MedusaJS v2 categories, including:
-
-- Real-time indexing of category changes
-- i18n support for category names and descriptions
-- Hierarchical category structure support with parent-child relationships
-- Custom category field transformations
-
-### Category Configuration Example
-
-```typescript
-{
-  settings: {
-    categories: {
-      type: 'categories',
-      enabled: true,
-      fields: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
-      indexSettings: {
-        searchableAttributes: ['name', 'description'],
-        displayedAttributes: ['id', 'name', 'description', 'handle', 'is_active', 'parent_id'],
-        filterableAttributes: ['id', 'handle', 'is_active', 'parent_id'],
-      },
-      primaryKey: 'id',
+```ts
+options: {
+  config: { host: process.env.MEILISEARCH_HOST!, apiKey: process.env.MEILISEARCH_API_KEY },
+  embedders: {
+    default: {
+      source: 'openAi',
+      apiKey: process.env.OPENAI_API_KEY,
+      model: 'text-embedding-3-small',
+      dimensions: 1536,
+      documentTemplate: '{{doc.title}} {{doc.description}}',
     },
   },
-  i18n: {
-    strategy: 'field-suffix',
-    languages: ['en', 'fr', 'de'],
-    defaultLanguage: 'en',
-    translatableFields: ['name', 'description'], // Category-specific translatable fields
-  },
 }
 ```
 
-### Category API Endpoints
+Declare embedders under `settings.provider_options.meilisearch.embedders` on an index to scope them to that index — the
+admin status card reads declarations, so per-index embedders also show up there. Pre-computed embeddings are supported
+by declaring a `search.vector(dimensions)` field. See [docs/semantic-search.md](./docs/semantic-search.md) for Ollama
+and OpenAI walkthroughs.
 
-### Search for Category Hits
+## Querying from code
 
-```http
-GET /store/meilisearch/categories-hits
+```ts
+import { Modules } from '@medusajs/framework/utils'
+
+const search = container.resolve(Modules.SEARCH)
+
+const { hits, facets, metadata } = await search.search({
+  entity: 'products',
+  fields: ['id', 'title'],
+  filters: { q: 'shirt', status: 'published' },
+  pagination: { skip: 0, take: 20 },
+  search_options: {
+    facets: ['categories.name'],
+    highlight: { fields: ['title'] },
+    count: 'exact',
+  },
+})
 ```
 
-Query Parameters:
+`query.search(...)` does the same and additionally hydrates fields the index does not hold. Anything Meilisearch cannot
+express — `$like` and `$prefix` filters, cursor pagination, the `any` matching strategy, query-time typo tolerance,
+ascending relevance — raises an error instead of silently returning different results. Raw Meilisearch parameters go
+through `search_options.provider_options.meilisearch`.
 
-- `query`: Search query string
-- `limit`: (Optional) Limit results from search
-- `offset`: (Optional) Offset results from search
-- `language`: (Optional) Language code
-- `semanticSearch` - Enable AI-powered semantic search (boolean)
-- `semanticRatio` - Semantic vs keyword search ratio (0-1)
+Reindex on demand:
 
-### Search for Categories
-
-```http
-GET /store/meilisearch/categories
+```ts
+await search.reindex({ index: 'products', strategy: 'swap' })
 ```
 
-Query Parameters:
+## Store API endpoints
 
-- `fields` - MedusaJS fields expression
-- `limit`: (Optional) Limit results from search
-- `offset`: (Optional) Offset results from search
-- `query`: Search query string
-- `language`: (Optional) Language code
-- `semanticSearch` - Enable AI-powered semantic search (boolean)
-- `semanticRatio` - Semantic vs keyword search ratio (0-1)
+All four endpoints accept the Meilisearch-specific parameters `query`, `index`, `language`, `semanticSearch`,
+`semanticRatio`, `embedder` and `filter` (a raw Meilisearch filter expression).
 
-## AI-Powered Semantic Search
+### `GET /store/meilisearch/products`
 
-This plugin supports AI-powered semantic search using vector embeddings. See [docs/semantic-search.md](docs/semantic-search.md) for detailed configuration and usage instructions.
+Everything the native `/store/products` accepts, plus the parameters above. Without `query` it behaves exactly like the
+native route. With one, Meilisearch supplies the matching product ids and their ranking, and the response is hydrated
+natively — calculated prices, tax, `variants.inventory_quantity`, sales-channel scoping.
 
-## ENV variables
-
-Add the environment variables to your `.env` and `.env.template` file:
-
-```env
-# ... others vars
-MEILISEARCH_HOST=
-MEILISEARCH_API_KEY=
+```bash
+curl 'http://localhost:9000/store/meilisearch/products?query=shirt&limit=10&region_id=reg_1&fields=id,title,*variants.calculated_price' \
+  -H 'x-publishable-api-key: pk_...'
 ```
 
-If you want to use with the `docker-compose` from this README, use the following values:
+Response: `{ products, count, limit, offset }`.
 
-```env
-# ... others vars
-MEILISEARCH_HOST=http://127.0.0.1:7700
-MEILISEARCH_API_KEY=ms
+### `GET /store/meilisearch/categories`
+
+Same idea against the native `/store/product-categories`. Response: `{ categories, count, limit, offset }`.
+
+### `GET /store/meilisearch/products-hits` and `GET /store/meilisearch/categories-hits`
+
+Raw engine hits, with no database read: `{ hits, query, processingTimeMs, estimatedTotalHits, limit, offset }`, plus
+`facets` when requested and `hybridSearch` / `semanticRatio` for a hybrid query. Each hit carries the index's
+retrievable fields and `_score`. Additional parameters: `limit`, `offset`, `sort`, `facets`, `fields`.
+
+```bash
+curl 'http://localhost:9000/store/meilisearch/products-hits?query=shirt&limit=5&facets=categories.name' \
+  -H 'x-publishable-api-key: pk_...'
+```
+
+## Admin API endpoints
+
+| Endpoint                                  | Description                                                           |
+| ----------------------------------------- | --------------------------------------------------------------------- |
+| `GET /admin/meilisearch/indexes`          | Registered indexes with their entity, locales and retrievable fields. |
+| `POST /admin/meilisearch/sync`            | Starts a reindex (`{ index?, strategy? }`) and returns immediately.   |
+| `POST /admin/meilisearch/products-hits`   | Raw product hits, same body as the store endpoint.                    |
+| `POST /admin/meilisearch/categories-hits` | Raw category hits.                                                    |
+| `GET /admin/meilisearch/vector-status`    | Semantic-search status derived from the registered declarations.      |
+
+Medusa's own dashboard search uses the core `/admin/search` endpoint and picks up these indexes automatically.
+
+## Environment variables
+
+```bash
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_API_KEY=your_master_key
 ```
 
 ## docker-compose
 
-You can add the following configuration for Meilisearch to your `docker-compose.yml`:
-
-```yml
+```yaml
 services:
-  # ... other services
-
   meilisearch:
-    image: getmeili/meilisearch:latest
+    image: getmeili/meilisearch:v1.53
     ports:
       - '7700:7700'
-    volumes:
-      - ~/data.ms:/data.ms
     environment:
-      - MEILI_MASTER_KEY=ms
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:7700']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      MEILI_MASTER_KEY: your_master_key
+      MEILI_NO_ANALYTICS: 'true'
+    volumes:
+      - meilisearch:/meili_data
+
+volumes:
+  meilisearch:
 ```
 
-## Add search to Medusa NextJS starter
+## Add search to the Medusa Next.js starter
 
-You can find instructions on how to add search to a Medusa NextJS starter inside the [nextjs](nextjs) folder.
+See [nextjs/README.md](./nextjs/README.md).
 
 ## FAQ
 
-- [How do I include product categories and tags in my search index?](docs/faq-product-categories-and-tags.md)
-- [How do I include product variant prices (min_price, max_price) in my search index?](docs/faq-product-variant-prices.md)
-- [How do I include prices in the search response from the search endpoint?](docs/faq-product-search-prices.md)
+- [Product categories and tags](./docs/faq-product-categories-and-tags.md)
+- [Product variant prices](./docs/faq-product-variant-prices.md)
+- [Product search prices](./docs/faq-product-search-prices.md)
+- [Semantic search](./docs/semantic-search.md)
+- [Migrating from v1](./docs/migration.md)
 
 ## Contributing
 
-Feel free to open issues and pull requests!
+Issues and pull requests are welcome at
+[github.com/rokmohar/medusa-plugin-meilisearch](https://github.com/rokmohar/medusa-plugin-meilisearch).
+
+```bash
+yarn install
+yarn lint
+yarn typecheck
+yarn test
+yarn build
+```

@@ -1,0 +1,114 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: 'npm dist-tag to publish under'
+        type: choice
+        default: latest
+        options:
+          - latest
+          - next
+          - beta
+      dry_run:
+        description: 'Run every check and pack the tarball, but do not publish'
+        type: boolean
+        default: false
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Format
+        run: yarn format
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Test
+        run: yarn test
+
+      - name: Read package identity
+        id: pkg
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing $name@$version as ${{ inputs.dist_tag }}"
+
+      - name: Verify version is unpublished
+        run: |
+          published=$(npm view "${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}" version 2>/dev/null || true)
+          if [ -n "$published" ]; then
+            echo "::error::${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }} is already on npm. Bump the version in package.json first."
+            exit 1
+          fi
+
+      - name: Verify git tag is free
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${{ steps.pkg.outputs.tag }}" >/dev/null 2>&1; then
+            echo "::error::Tag ${{ steps.pkg.outputs.tag }} already exists on origin."
+            exit 1
+          fi
+
+      - name: Build
+        run: yarn build
+
+      - name: Inspect package contents
+        run: npm pack --dry-run --ignore-scripts
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        run: npm publish --provenance --access public --ignore-scripts --tag "${{ inputs.dist_tag }}"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Tag the release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.pkg.outputs.tag }}" \
+            --target "${{ github.sha }}" \
+            --title "${{ steps.pkg.outputs.tag }}" \
+            --generate-notes \
+            ${{ inputs.dist_tag != 'latest' && '--prerelease' || '' }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### ${{ steps.pkg.outputs.name }}@${{ steps.pkg.outputs.version }}"
+            echo
+            echo "- dist-tag: \`${{ inputs.dist_tag }}\`"
+            echo "- dry run: \`${{ inputs.dry_run }}\`"
+            echo "- commit: \`${{ github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
