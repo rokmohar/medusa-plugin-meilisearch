@@ -21,54 +21,54 @@ afterEach(() => {
 })
 
 describe('resolveSearchIndexName', () => {
-  it('prefers the index named by the request', () => {
+  it('prefers the index named by the request', async () => {
     const searchModule = createSearchModule({ indexes: ['products', 'products-fr-FR'] })
 
     assert.equal(
-      resolveSearchIndexName({ searchModule, entity: 'product', explicitIndex: 'products-fr-FR' }),
+      await resolveSearchIndexName({ searchModule, entity: 'product', explicitIndex: 'products-fr-FR' }),
       'products-fr-FR',
     )
   })
 
-  it('matches the locale exactly when one is declared', () => {
+  it('matches the locale exactly when one is declared', async () => {
     defineProductSearchIndex({ locales: ['en-US', 'fr-FR'] })
 
     const searchModule = createSearchModule({ indexes: ['products', 'products-fr-FR'] })
 
-    assert.equal(resolveSearchIndexName({ searchModule, entity: 'product', locale: 'fr-FR' }), 'products-fr-FR')
+    assert.equal(await resolveSearchIndexName({ searchModule, entity: 'product', locale: 'fr-FR' }), 'products-fr-FR')
   })
 
-  it('falls back to the language when the region has no index of its own', () => {
+  it('falls back to the language when the region has no index of its own', async () => {
     defineProductSearchIndex({ locales: ['en-US', 'fr-FR'] })
 
     const searchModule = createSearchModule({ indexes: ['products', 'products-fr-FR'] })
 
-    assert.equal(resolveSearchIndexName({ searchModule, entity: 'product', locale: 'fr-CA' }), 'products-fr-FR')
+    assert.equal(await resolveSearchIndexName({ searchModule, entity: 'product', locale: 'fr-CA' }), 'products-fr-FR')
   })
 
-  it('falls back to the non-localized index for an unrelated locale', () => {
+  it('falls back to the non-localized index for an unrelated locale', async () => {
     defineProductSearchIndex({ locales: ['en-US', 'fr-FR'] })
 
     const searchModule = createSearchModule({ indexes: ['products', 'products-fr-FR'] })
 
-    assert.equal(resolveSearchIndexName({ searchModule, entity: 'product', locale: 'de-DE' }), 'products')
+    assert.equal(await resolveSearchIndexName({ searchModule, entity: 'product', locale: 'de-DE' }), 'products')
   })
 
-  it('reports an entity that has no declaration', () => {
+  it('reports an entity that has no declaration', async () => {
     const searchModule = createSearchModule({ indexes: ['products'] })
 
-    assert.throws(
-      () => resolveSearchIndexName({ searchModule, entity: 'product_category' }),
+    await assert.rejects(
+      resolveSearchIndexName({ searchModule, entity: 'product_category' }),
       /No search index is registered for "product_category"/,
     )
   })
 
-  it('ignores declarations the engine does not hold', () => {
+  it('ignores declarations the engine does not hold', async () => {
     defineProductSearchIndex()
 
     const searchModule = createSearchModule({ indexes: [] })
 
-    assert.throws(() => resolveSearchIndexName({ searchModule, entity: 'product' }), /No search index is registered/)
+    await assert.rejects(resolveSearchIndexName({ searchModule, entity: 'product' }), /No search index is registered/)
   })
 })
 

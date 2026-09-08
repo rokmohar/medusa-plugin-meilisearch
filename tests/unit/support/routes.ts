@@ -33,7 +33,7 @@ export function createQuery(data: Record<string, unknown>[]): FakeQuery {
 export interface FakeSearchModule {
   searchCalls: Record<string, unknown>[]
   reindexCalls: Record<string, unknown>[]
-  listIndexes: () => string[]
+  listIndexes: () => Promise<{ name: string }[]>
   listRetrievableFields: (index: string) => string[]
   search: (query: Record<string, unknown>) => Promise<unknown>
   reindex: (input: Record<string, unknown>) => Promise<{ indexes: string[]; job_id: string }>
@@ -57,7 +57,7 @@ export function createSearchModule(
   return {
     searchCalls,
     reindexCalls,
-    listIndexes: () => options.indexes ?? ['products'],
+    listIndexes: async () => (options.indexes ?? ['products']).map((name) => ({ name })),
     listRetrievableFields: () => options.retrievableFields ?? ['id', 'title'],
     search: async (query: Record<string, unknown>) => {
       searchCalls.push(query)

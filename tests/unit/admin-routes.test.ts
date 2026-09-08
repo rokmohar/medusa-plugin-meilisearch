@@ -31,11 +31,11 @@ afterEach(() => {
 })
 
 describe('POST /admin/meilisearch/sync', () => {
-  it('reindexes every registered index when no body is sent', () => {
+  it('reindexes every registered index when no body is sent', async () => {
     const searchModule = createSearchModule({ indexes: ['products', 'categories'] })
     const { req, res, payloads } = syncHarness(undefined, searchModule)
 
-    syncRoute(req, res)
+    await syncRoute(req, res)
 
     assert.deepEqual(payloads[0], {
       message: 'Reindex started for 2 index(es)',
@@ -44,28 +44,28 @@ describe('POST /admin/meilisearch/sync', () => {
     assert.deepEqual(searchModule.reindexCalls, [{ index: undefined, strategy: undefined }])
   })
 
-  it('accepts a single index name and a strategy', () => {
+  it('accepts a single index name and a strategy', async () => {
     const { req, res, payloads, searchModule } = syncHarness({ index: 'products', strategy: 'swap' })
 
-    syncRoute(req, res)
+    await syncRoute(req, res)
 
     assert.deepEqual(payloads[0].indexes, ['products'])
     assert.deepEqual(searchModule.reindexCalls, [{ index: 'products', strategy: 'swap' }])
   })
 
-  it('accepts a list of index names', () => {
+  it('accepts a list of index names', async () => {
     const { req, res, payloads, searchModule } = syncHarness({ index: ['products', 'categories'] })
 
-    syncRoute(req, res)
+    await syncRoute(req, res)
 
     assert.deepEqual(payloads[0].indexes, ['products', 'categories'])
     assert.deepEqual(searchModule.reindexCalls[0].index, ['products', 'categories'])
   })
 
-  it('rejects an unknown strategy', () => {
+  it('rejects an unknown strategy', async () => {
     const { req, res } = syncHarness({ strategy: 'sideways' })
 
-    assert.throws(() => syncRoute(req, res), /strategy/i)
+    await assert.rejects(syncRoute(req, res), /strategy/i)
   })
 
   it('answers before the reindex finishes and logs its outcome', async () => {
@@ -78,7 +78,7 @@ describe('POST /admin/meilisearch/sync', () => {
     const searchModule = createSearchModule({ reindex: () => pending })
     const { req, res, payloads, logger } = syncHarness({}, searchModule)
 
-    syncRoute(req, res)
+    await syncRoute(req, res)
 
     assert.equal(payloads.length, 1)
     assert.deepEqual(logger.infos, [])
@@ -97,7 +97,7 @@ describe('POST /admin/meilisearch/sync', () => {
     })
     const { req, res, payloads, logger } = syncHarness({}, searchModule)
 
-    syncRoute(req, res)
+    await syncRoute(req, res)
 
     assert.equal(payloads.length, 1)
 
@@ -108,7 +108,7 @@ describe('POST /admin/meilisearch/sync', () => {
 })
 
 describe('GET /admin/meilisearch/indexes', () => {
-  it('reports the registered declarations that the engine actually holds', () => {
+  it('reports the registered declarations that the engine actually holds', async () => {
     defineProductSearchIndex({ locales: ['en-US', 'fr-FR'] })
 
     const searchModule = createSearchModule({
@@ -118,7 +118,7 @@ describe('GET /admin/meilisearch/indexes', () => {
     const req = createRequest({}, { [SEARCH_KEY]: searchModule })
     const { res, payloads } = createResponse<AdminIndexesResponse>()
 
-    indexesRoute(req, res)
+    await indexesRoute(req, res)
 
     assert.deepEqual(payloads[0].indexes, [
       { name: 'products', entity: 'product', locales: ['en-US'], retrievable_fields: ['id', 'title', 'handle'] },
@@ -131,13 +131,13 @@ describe('GET /admin/meilisearch/indexes', () => {
     ])
   })
 
-  it('omits declarations the engine does not know about', () => {
+  it('omits declarations the engine does not know about', async () => {
     defineProductSearchIndex()
 
     const req = createRequest({}, { [SEARCH_KEY]: createSearchModule({ indexes: [] }) })
     const { res, payloads } = createResponse<AdminIndexesResponse>()
 
-    indexesRoute(req, res)
+    await indexesRoute(req, res)
 
     assert.deepEqual(payloads[0].indexes, [])
   })
