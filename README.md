@@ -34,7 +34,8 @@ filled.
 
 | Plugin   | Medusa           | Meilisearch server | Node    |
 | -------- | ---------------- | ------------------ | ------- |
-| `^2.0.0` | `^2.19.0`        | `>= 1.20`          | `>= 22` |
+| `^2.1.0` | `2.20.x`         | `>= 1.20`          | `>= 22` |
+| `^2.0.0` | `2.19.x`         | `>= 1.20`          | `>= 22` |
 | `^1.4.1` | `>= 2.15 < 2.19` | `>= 1.5`           | `>= 22` |
 | `^1.3.7` | `^2.13.4`        | `>= 1.5`           | `>= 20` |
 | `^1.0.1` | `^2.4.0`         | `>= 1.5`           | `>= 20` |
@@ -42,8 +43,14 @@ filled.
 The 2.19 release removed the search interface the v1 line was written against, so the two lines do not overlap: v1 stops
 at Medusa 2.18, v2 starts at 2.19. Coming from v1, work through [the upgrade guide](./docs/migration.md).
 
+Each Medusa minor has so far reshaped the Search Module, so every row above is exact rather than a floor. Medusa 2.20
+made `listIndexes()` asynchronous and made it resolve to index records, which 2.0.0 cannot read, so that release needs
+2.19 and 2.1.0 needs 2.20. Medusa 2.21 dropped further pieces this plugin builds on, among them the declaration
+settings behind localized indexes and the document shape the seed function yields; support for it lands in the next
+release.
+
 The `>= 1.20` server floor comes from index swapping: the plugin's `swap` reindex strategy uses the `rename` field that
-Meilisearch 1.20 added to `POST /swap-indexes`. Medusa 2.19 itself still runs on Node 20.19+, but this plugin is built
+Meilisearch 1.20 added to `POST /swap-indexes`. Medusa 2.20 itself still runs on Node 20.19+, but this plugin is built
 and tested on Node 22 only.
 
 The Meilisearch JS client stays on `^0.56.0`, the last version published as CommonJS.

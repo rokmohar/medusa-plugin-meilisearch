@@ -132,15 +132,7 @@ describe('assertIndexSupported', () => {
     })
   })
 
-  it('rejects correlated fields, misplaced geo and dimensionless vectors', () => {
-    assert.throws(() => {
-      return assertIndexSupported(
-        definition({
-          fields: { variants: { type: 'object', array: true, correlated: true, fields: {} } },
-        }),
-      )
-    }, /correlated/)
-
+  it('rejects misplaced geo and dimensionless vectors', () => {
     assert.throws(() => {
       return assertIndexSupported(definition({ fields: { location: { type: 'geo' } } }))
     }, /_geo/)

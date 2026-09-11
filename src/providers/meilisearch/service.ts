@@ -131,7 +131,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
     return result
   }
 
-  async searchMany(inputs: SearchTypes.ProviderSearchQuery[]): Promise<SearchTypes.SearchResult[]> {
+  override async searchMany(inputs: SearchTypes.ProviderSearchQuery[]): Promise<SearchTypes.SearchResult[]> {
     if (!inputs.length) {
       return []
     }

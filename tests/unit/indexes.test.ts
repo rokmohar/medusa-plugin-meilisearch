@@ -1,4 +1,5 @@
 import '@medusajs/modules-sdk'
+import { search } from '@medusajs/utils'
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import { defineCategorySearchIndex } from '../../src/indexes/categories'
@@ -80,7 +81,7 @@ describe('defineProductSearchIndex', () => {
     const [definition] = defineProductSearchIndex({
       name: 'products-custom',
       provider: 'other',
-      fields: { id: { type: 'keyword', filterable: true } },
+      fields: search.define({ id: search.keyword().filterable() }),
       settings: { synonyms: { trousers: ['pants'] } },
     })
 

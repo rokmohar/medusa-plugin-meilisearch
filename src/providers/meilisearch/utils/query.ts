@@ -458,6 +458,13 @@ function applyVector(base: MultiSearchQuery, vector: SearchTypes.SearchVectorOpt
     base.vector = vector.value
   }
 
+  if (!vector.field) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      'Meilisearch runs a hybrid search against a named embedder, so `search_options.vector.field` is required.',
+    )
+  }
+
   base.hybrid = { embedder: vector.field, semanticRatio: vector.semantic_ratio ?? DEFAULT_SEMANTIC_RATIO }
 }
 

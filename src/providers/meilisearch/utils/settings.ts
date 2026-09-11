@@ -20,15 +20,6 @@ export interface IndexPlan {
 
 export function assertIndexSupported(index: SearchTypes.ResolvedSearchIndexDefinition): void {
   for (const { path, field } of flattenFields(index.fields)) {
-    if (field.correlated) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        `Meilisearch cannot serve the correlated field "${path}" on index "${index.name}": it flattens arrays of ` +
-          `objects, so filters on sibling sub-fields match across elements. Drop \`correlated\` or move the index to ` +
-          `a provider that supports it.`,
-      )
-    }
-
     if (field.type === 'geo' && path !== '_geo') {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
