@@ -71,13 +71,40 @@ describe('buildIndexPlan', () => {
     const plan = buildIndexPlan(
       definition({
         settings: {
-          synonyms: { trousers: ['pants'] },
-          stop_words: ['the'],
           typo_tolerance: { enabled: true, min_word_size_for_one_typo: 4 },
-          faceting: { max_values_per_facet: 50, sort_by: 'alpha' },
-          pagination: { max_total_hits: 5000 },
           distinct_attribute: 'handle',
-          locales: ['fr-FR'],
+          provider_options: {
+            meilisearch: {
+              locales: ['fr-FR'],
+              synonyms: { trousers: ['pants'] },
+              stopWords: ['the'],
+              faceting: { maxValuesPerFacet: 50, sortFacetValuesBy: { '*': 'alpha' } },
+              pagination: { maxTotalHits: 5000 },
+            },
+          },
+        },
+      }),
+      { config: { host: 'http://localhost:7700' } },
+    )
+
+    assert.deepEqual(plan.settings.typoTolerance, { enabled: true, minWordSizeForTypos: { oneTypo: 4 } })
+    assert.equal(plan.settings.distinctAttribute, 'handle')
+    assert.deepEqual(plan.settings.localizedAttributes, [{ attributePatterns: ['*'], locales: ['fr'] }])
+  })
+
+  it('passes Meilisearch-only settings through from provider options, without the locales key', () => {
+    const plan = buildIndexPlan(
+      definition({
+        settings: {
+          provider_options: {
+            meilisearch: {
+              locales: ['fr-FR'],
+              synonyms: { trousers: ['pants'] },
+              stopWords: ['the'],
+              faceting: { maxValuesPerFacet: 50, sortFacetValuesBy: { '*': 'alpha' } },
+              pagination: { maxTotalHits: 5000 },
+            },
+          },
         },
       }),
       { config: { host: 'http://localhost:7700' } },
@@ -85,11 +112,9 @@ describe('buildIndexPlan', () => {
 
     assert.deepEqual(plan.settings.synonyms, { trousers: ['pants'] })
     assert.deepEqual(plan.settings.stopWords, ['the'])
-    assert.deepEqual(plan.settings.typoTolerance, { enabled: true, minWordSizeForTypos: { oneTypo: 4 } })
     assert.deepEqual(plan.settings.faceting, { maxValuesPerFacet: 50, sortFacetValuesBy: { '*': 'alpha' } })
     assert.deepEqual(plan.settings.pagination, { maxTotalHits: 5000 })
-    assert.equal(plan.settings.distinctAttribute, 'handle')
-    assert.deepEqual(plan.settings.localizedAttributes, [{ attributePatterns: ['*'], locales: ['fr'] }])
+    assert.ok(!Object.hasOwn(plan.settings, 'locales'))
   })
 
   it('lets per-index provider options win over derived settings', () => {

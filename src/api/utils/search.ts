@@ -2,6 +2,7 @@ import type { MedusaRequest } from '@medusajs/framework'
 import type { SearchTypes } from '@medusajs/types'
 import { MedusaError, Modules } from '@medusajs/utils'
 import z from 'zod'
+import { readIndexLocales } from '../../indexes/locales'
 import { getRegisteredSearchIndexes } from './medusa'
 
 export interface MeiliHitsEnvelope {
@@ -132,7 +133,7 @@ export async function resolveSearchIndexName(input: {
   }
 
   const fallback = candidates.find((definition) => {
-    return !definition.settings?.locales?.length
+    return !readIndexLocales(definition.settings)?.length
   })
 
   return (fallback ?? candidates[0]).name
@@ -143,7 +144,7 @@ function matchLocale(
   locale: string,
 ): SearchTypes.SearchIndexDefinition | undefined {
   const exact = candidates.find((definition) => {
-    return definition.settings?.locales?.includes(locale)
+    return readIndexLocales(definition.settings)?.includes(locale)
   })
 
   if (exact) {
@@ -153,7 +154,7 @@ function matchLocale(
   const language = toLanguage(locale)
 
   return candidates.find((definition) => {
-    return definition.settings?.locales?.some((entry) => {
+    return readIndexLocales(definition.settings)?.some((entry) => {
       return toLanguage(entry) === language
     })
   })

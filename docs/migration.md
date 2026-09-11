@@ -11,6 +11,7 @@ cannot boot below it. Pick the line that matches your Medusa version:
 | `>= 2.15 < 2.19` | `@rokmohar/medusa-plugin-meilisearch@^1.4.3` (branch `v1.x`) |
 | `2.19.x`         | `@rokmohar/medusa-plugin-meilisearch@^2.0.0`                 |
 | `~2.20.0`        | `@rokmohar/medusa-plugin-meilisearch@^2.1.0`                 |
+| `~2.21.0`        | `@rokmohar/medusa-plugin-meilisearch@^2.2.0`                 |
 
 The upgrade is mostly deletion. In v1 the plugin ran its own module, 23 event subscribers, 24 workflows and 2 cron jobs
 to keep Meilisearch in step with the catalog. All of that now belongs to the Search Module: it creates and migrates
@@ -44,8 +45,8 @@ places.
 | `indexSettings.filterableAttributes`               | `.filterable()`, or `.facetable()` when you also want counts                |
 | `indexSettings.sortableAttributes`                 | `.sortable()`                                                               |
 | `indexSettings.displayedAttributes`                | every field, unless you mark it `.retrievable(false)`                       |
-| `indexSettings.synonyms`                           | `settings.synonyms`                                                         |
-| `indexSettings.stopWords`                          | `settings.stop_words`                                                       |
+| `indexSettings.synonyms`                           | `settings.provider_options.meilisearch.synonyms`                            |
+| `indexSettings.stopWords`                          | `settings.provider_options.meilisearch.stopWords`                           |
 | `indexSettings.typoTolerance`                      | `settings.typo_tolerance`                                                   |
 | anything else Meilisearch-specific                 | `settings.provider_options.meilisearch`                                     |
 | `transformer`                                      | `transform`                                                                 |
@@ -58,7 +59,7 @@ places.
 ## Install
 
 ```bash
-yarn add @medusajs/medusa@~2.20.0 @medusajs/framework@~2.20.0 @rokmohar/medusa-plugin-meilisearch@^2.1.0
+yarn add @medusajs/medusa@~2.21.0 @medusajs/framework@~2.21.0 @rokmohar/medusa-plugin-meilisearch@^2.2.0
 ```
 
 ## Rewriting medusa-config.ts
@@ -144,7 +145,7 @@ export default defineProductSearchIndex({
     brand: search.text().searchable({ weight: 3 }).facetable(),
   }),
   graph_fields: ['brand'],
-  settings: { synonyms: { trousers: ['pants'] } },
+  settings: { provider_options: { meilisearch: { synonyms: { trousers: ['pants'] } } } },
 })
 ```
 

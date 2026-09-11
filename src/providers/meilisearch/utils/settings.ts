@@ -1,6 +1,7 @@
 import type { SearchTypes } from '@medusajs/types'
 import { MedusaError } from '@medusajs/utils'
 import type { Embedders, Settings } from 'meilisearch'
+import { readIndexLocales } from '../../../indexes/locales'
 import type { MeilisearchProviderOptions } from '../types'
 import { shadowAttribute } from './documents'
 
@@ -118,8 +119,6 @@ export function buildIndexPlan(
 
 function buildDeclaredSettings(settings: SearchTypes.SearchIndexSettings): Settings {
   const declared: Settings = {
-    synonyms: settings.synonyms,
-    stopWords: settings.stop_words,
     distinctAttribute: settings.distinct_attribute,
   }
 
@@ -134,19 +133,10 @@ function buildDeclaredSettings(settings: SearchTypes.SearchIndexSettings): Setti
     })
   }
 
-  if (settings.faceting) {
-    declared.faceting = prune({
-      maxValuesPerFacet: settings.faceting.max_values_per_facet,
-      sortFacetValuesBy: settings.faceting.sort_by ? { '*': settings.faceting.sort_by } : undefined,
-    })
-  }
+  const locales = readIndexLocales(settings)
 
-  if (settings.pagination?.max_total_hits !== undefined) {
-    declared.pagination = { maxTotalHits: settings.pagination.max_total_hits }
-  }
-
-  if (settings.locales?.length) {
-    declared.localizedAttributes = [{ attributePatterns: ['*'], locales: settings.locales.map(toEngineLocale) }]
+  if (locales?.length) {
+    declared.localizedAttributes = [{ attributePatterns: ['*'], locales: locales.map(toEngineLocale) }]
   }
 
   return prune(declared)
@@ -182,7 +172,7 @@ function readIndexOverrides(settings: SearchTypes.SearchIndexSettings): Settings
     return {}
   }
 
-  const { embedders: _embedders, ...rest } = overrides
+  const { embedders: _embedders, locales: _locales, ...rest } = overrides
 
   return rest
 }
@@ -195,7 +185,7 @@ function readIndexEmbedders(settings: SearchTypes.SearchIndexSettings): Embedder
 
 function readProviderOptions(
   settings: SearchTypes.SearchIndexSettings,
-): (Settings & { embedders?: unknown }) | undefined {
+): (Settings & { embedders?: unknown; locales?: unknown }) | undefined {
   const options = settings.provider_options?.meilisearch
 
   return isRecord(options) ? options : undefined

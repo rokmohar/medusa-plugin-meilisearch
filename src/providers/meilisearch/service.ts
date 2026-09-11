@@ -75,19 +75,6 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
     })
   }
 
-  async swapIndex({ alias, index }: { alias: string; index: string }): Promise<SearchTypes.SearchTask> {
-    await this.ensureIndex(alias, await this.primaryKeyOf(this.client_.index(index)))
-
-    const swap = await this.client_.swapIndexes([{ indexes: [alias, index], rename: false }])
-    const settled = await this.waitForTask(fromEnqueuedTask(swap))
-
-    if (settled.status === 'succeeded') {
-      await this.deleteIndex({ index })
-    }
-
-    return settled
-  }
-
   override async upsertDocuments({
     index,
     documents,

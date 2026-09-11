@@ -20,7 +20,7 @@ filled.
 
 ## What you get
 
-- Every method of the provider contract, including atomic index swaps for rebuilds without downtime, batched
+- Every method of the provider contract, so the module can rebuild an index into a fresh version and activate it, batched
   multi-search, and write-task tracking so seeding knows when a batch has actually landed
 - Declared field weights compiled into Meilisearch relevance ordering, with filterable, sortable and facetable
   attributes derived from the same declaration
@@ -34,6 +34,7 @@ filled.
 
 | Plugin   | Medusa           | Meilisearch server | Node    |
 | -------- | ---------------- | ------------------ | ------- |
+| `^2.2.0` | `2.21.x`         | `>= 1.20`          | `>= 22` |
 | `^2.1.0` | `2.20.x`         | `>= 1.20`          | `>= 22` |
 | `^2.0.0` | `2.19.x`         | `>= 1.20`          | `>= 22` |
 | `^1.4.1` | `>= 2.15 < 2.19` | `>= 1.5`           | `>= 22` |
@@ -44,14 +45,13 @@ The 2.19 release removed the search interface the v1 line was written against, s
 at Medusa 2.18, v2 starts at 2.19. Coming from v1, work through [the upgrade guide](./docs/migration.md).
 
 Each Medusa minor has so far reshaped the Search Module, so every row above is exact rather than a floor. Medusa 2.20
-made `listIndexes()` asynchronous and made it resolve to index records, which 2.0.0 cannot read, so that release needs
-2.19 and 2.1.0 needs 2.20. Medusa 2.21 dropped further pieces this plugin builds on, among them the declaration
-settings behind localized indexes and the document shape the seed function yields; support for it lands in the next
-release.
+made `listIndexes()` asynchronous and made it resolve to index records, which 2.0.0 cannot read. Medusa 2.21 then
+narrowed index settings to what every engine can honour, changed the seed function to yield mutations rather than
+documents, and took over index swapping. Engine-specific settings, localized indexes included, now live under
+`settings.provider_options.meilisearch`.
 
-The `>= 1.20` server floor comes from index swapping: the plugin's `swap` reindex strategy uses the `rename` field that
-Meilisearch 1.20 added to `POST /swap-indexes`. Medusa 2.20 itself still runs on Node 20.19+, but this plugin is built
-and tested on Node 22 only.
+The `>= 1.20` server floor is the version this plugin is built and tested against. Medusa 2.21 itself still runs on
+Node 20.19+, but this plugin is built and tested on Node 22 only.
 
 The Meilisearch JS client stays on `^0.56.0`, the last version published as CommonJS.
 
@@ -143,21 +143,21 @@ in Meilisearch and are never recreated at startup.
 Both `defineProductSearchIndex()` and `defineCategorySearchIndex()` take the same options and always return an array of
 declarations (one per locale).
 
-| Option           | Default                                                               | Description                                                     |
-| ---------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `name`           | `products` / `categories`                                             | Base index name.                                                |
-| `provider`       | the module's default provider                                         | Provider identifier this index binds to.                        |
-| `primary_key`    | `id`                                                                  | Document primary key.                                           |
-| `fields`         | the default schema                                                    | Replaces the field schema. Use `search.define({ ... })`.        |
-| `settings`       | `{}`                                                                  | Index settings (synonyms, stop words, typo tolerance, …).       |
-| `graph_fields`   | the default selection                                                 | Extra `query.graph` paths to fetch while seeding and ingesting. |
-| `filters`        | `{ status: 'published' }` / `{ is_active: true, is_internal: false }` | `query.graph` filters.                                          |
-| `transform`      | pick of the declared paths                                            | Maps an entity to a search document. Synchronous.               |
-| `batch_size`     | `200`                                                                 | Seed page size.                                                 |
-| `events`         | product / category events, both namespaces                            | Events this index reacts to.                                    |
-| `consume`        | the default routing table                                             | Turns an event into index mutations.                            |
-| `locales`        | –                                                                     | BCP-47 locales; emits one index per locale.                     |
-| `default_locale` | first entry of `locales`                                              | Which locale keeps the bare index name.                         |
+| Option           | Default                                                               | Description                                                                                     |
+| ---------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `name`           | `products` / `categories`                                             | Base index name.                                                                                |
+| `provider`       | the module's default provider                                         | Provider identifier this index binds to.                                                        |
+| `primary_key`    | `id`                                                                  | Document primary key.                                                                           |
+| `fields`         | the default schema                                                    | Replaces the field schema. Use `search.define({ ... })`.                                        |
+| `settings`       | `{}`                                                                  | Typo tolerance and distinct attribute, plus `provider_options.meilisearch` for engine settings. |
+| `graph_fields`   | the default selection                                                 | Extra `query.graph` paths to fetch while seeding and ingesting.                                 |
+| `filters`        | `{ status: 'published' }` / `{ is_active: true, is_internal: false }` | `query.graph` filters.                                                                          |
+| `transform`      | pick of the declared paths                                            | Maps an entity to a search document. Synchronous.                                               |
+| `batch_size`     | `200`                                                                 | Seed page size.                                                                                 |
+| `events`         | product / category events, both namespaces                            | Events this index reacts to.                                                                    |
+| `consume`        | the default routing table                                             | Turns an event into index mutations.                                                            |
+| `locales`        | –                                                                     | BCP-47 locales; emits one index per locale.                                                     |
+| `default_locale` | first entry of `locales`                                              | Which locale keeps the bare index name.                                                         |
 
 Extending the default schema:
 
@@ -172,8 +172,12 @@ export default defineProductSearchIndex({
   }),
   graph_fields: ['brand'],
   settings: {
-    synonyms: { trousers: ['pants'] },
-    stop_words: ['the'],
+    provider_options: {
+      meilisearch: {
+        synonyms: { trousers: ['pants'] },
+        stopWords: ['the'],
+      },
+    },
   },
 })
 ```

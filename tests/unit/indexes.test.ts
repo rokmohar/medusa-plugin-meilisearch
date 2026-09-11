@@ -1,4 +1,5 @@
 import '@medusajs/modules-sdk'
+import type { SearchTypes } from '@medusajs/types'
 import { search } from '@medusajs/utils'
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
@@ -7,11 +8,13 @@ import {
   buildPathTree,
   projectPaths,
   createDefaultTransform,
+  createSeed,
   parseEventName,
   resolveEventIds,
 } from '../../src/indexes/graph'
-import { expandLocales, localeIndexName, resolveLocaleIndexName } from '../../src/indexes/locales'
+import { expandLocales, localeIndexName, readIndexLocales, resolveLocaleIndexName } from '../../src/indexes/locales'
 import { defineProductSearchIndex, PRODUCT_GRAPH_FIELDS } from '../../src/indexes/products'
+import type { ResolvedFactoryOptions } from '../../src/indexes/types'
 
 describe('defineProductSearchIndex', () => {
   it('declares one index bound to the product entity', () => {
@@ -63,8 +66,8 @@ describe('defineProductSearchIndex', () => {
       }),
       ['products', 'products-fr-FR'],
     )
-    assert.deepEqual(definitions[0].settings?.locales, ['en-US'])
-    assert.deepEqual(definitions[1].settings?.locales, ['fr-FR'])
+    assert.deepEqual(readIndexLocales(definitions[0].settings), ['en-US'])
+    assert.deepEqual(readIndexLocales(definitions[1].settings), ['fr-FR'])
   })
 
   it('produces a deterministic declaration, so the module does not reindex on every boot', () => {
@@ -82,12 +85,12 @@ describe('defineProductSearchIndex', () => {
       name: 'products-custom',
       provider: 'other',
       fields: search.define({ id: search.keyword().filterable() }),
-      settings: { synonyms: { trousers: ['pants'] } },
+      settings: { provider_options: { meilisearch: { synonyms: { trousers: ['pants'] } } } },
     })
 
     assert.equal(definition.provider, 'other')
     assert.deepEqual(Object.keys(definition.fields), ['id'])
-    assert.deepEqual(definition.settings?.synonyms, { trousers: ['pants'] })
+    assert.deepEqual(definition.settings?.provider_options?.meilisearch, { synonyms: { trousers: ['pants'] } })
   })
 })
 
@@ -120,6 +123,109 @@ describe('locales', () => {
       { name: 'products', locale: 'fr-FR' },
       { name: 'products-en-US', locale: 'en-US' },
     ])
+  })
+})
+
+function seedOptions(overrides: Partial<ResolvedFactoryOptions> = {}): ResolvedFactoryOptions {
+  return {
+    name: 'products',
+    entity: 'product',
+    primaryKey: 'id',
+    fields: search.define({ id: search.keyword().filterable() }),
+    settings: {},
+    graphFields: ['id', 'title'],
+    filters: { status: 'published' },
+    transform: (entity) => {
+      return { id: String(entity.id), title: entity.title as string }
+    },
+    batchSize: 2,
+    events: [],
+    ...overrides,
+  }
+}
+
+function fakeContainer(pages: Record<string, unknown>[][]) {
+  const calls: Record<string, unknown>[] = []
+
+  return {
+    calls,
+    container: {
+      query: {
+        graph: (input: Record<string, unknown>) => {
+          calls.push(input)
+
+          return Promise.resolve({ data: pages[calls.length - 1] ?? [] })
+        },
+      },
+    } as unknown as SearchTypes.SearchContainer,
+  }
+}
+
+async function collect(iterable: AsyncIterable<SearchTypes.SearchMutation[]>) {
+  const batches: SearchTypes.SearchMutation[][] = []
+
+  for await (const batch of iterable) {
+    batches.push(batch)
+  }
+
+  return batches
+}
+
+describe('createSeed', () => {
+  it('yields upsert mutations and pages by primary key under $and', async () => {
+    const { calls, container } = fakeContainer([
+      [
+        { id: 'p1', title: 'One' },
+        { id: 'p2', title: 'Two' },
+      ],
+      [{ id: 'p3', title: 'Three' }],
+    ])
+
+    const options = seedOptions()
+    const batches = await collect(createSeed(options)({ container, index: {} as never }))
+
+    assert.deepEqual(batches, [
+      [
+        {
+          action: 'upsert',
+          documents: [
+            { id: 'p1', title: 'One' },
+            { id: 'p2', title: 'Two' },
+          ],
+        },
+      ],
+      [{ action: 'upsert', documents: [{ id: 'p3', title: 'Three' }] }],
+    ])
+
+    assert.deepEqual(calls[0].filters, { status: 'published' })
+    assert.deepEqual(calls[1].filters, { status: 'published', $and: [{ id: { $gt: 'p2' } }] })
+    assert.deepEqual(calls[0].pagination, { take: 2, order: { id: 'ASC' } })
+    assert.equal(calls[0].withDeleted, false)
+  })
+
+  it('turns soft-deleted rows into a delete mutation during a catch-up pass', async () => {
+    const since = new Date('2026-09-11T00:00:00.000Z')
+    const { calls, container } = fakeContainer([
+      [
+        { id: 'p1', title: 'One' },
+        { id: 'p2', title: 'Two', deleted_at: '2026-09-11T10:00:00.000Z' },
+      ],
+    ])
+
+    const batches = await collect(
+      createSeed(seedOptions({ batchSize: 5 }))({ container, index: {} as never, catchup: { since } }),
+    )
+
+    assert.deepEqual(batches, [
+      [
+        { action: 'upsert', documents: [{ id: 'p1', title: 'One' }] },
+        { action: 'delete', filters: { id: ['p2'] } },
+      ],
+    ])
+
+    assert.deepEqual(calls[0].fields, ['id', 'title', 'deleted_at'])
+    assert.deepEqual(calls[0].filters, { status: 'published', $and: [{ updated_at: { $gte: since } }] })
+    assert.equal(calls[0].withDeleted, true)
   })
 })
 

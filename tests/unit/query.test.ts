@@ -202,6 +202,28 @@ describe('planSearch', () => {
     assert.deepEqual(assembled.metadata, { skip: 0, take: 20, count: 7, query: 'shirt', processing_time_ms: 3 })
   })
 
+  it('highlights every searchable attribute when highlight is true', () => {
+    const plan = planSearch(query({ search_options: { highlight: true } }), indexPlan)
+
+    assert.deepEqual(plan.queries[0].attributesToHighlight, indexPlan.searchableAttributes)
+    assert.equal(plan.queries[0].highlightPreTag, '<mark>')
+  })
+
+  it('narrows highlight: true to the attributes the query searches on', () => {
+    const plan = planSearch(
+      query({ search_options: { highlight: true, attributes_to_search_on: ['title'] } }),
+      indexPlan,
+    )
+
+    assert.deepEqual(plan.queries[0].attributesToHighlight, ['title'])
+  })
+
+  it('ignores highlight without a text query', () => {
+    const plan = planSearch(query({ q: undefined, search_options: { highlight: true } }), indexPlan)
+
+    assert.equal(plan.queries[0].attributesToHighlight, undefined)
+  })
+
   it('rejects what Meilisearch cannot express', () => {
     assert.throws(() => {
       return planSearch(query({ pagination: { cursor: 'abc' } }), indexPlan)

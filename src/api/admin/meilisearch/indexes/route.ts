@@ -1,4 +1,5 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
+import { readIndexLocales } from '../../../../indexes/locales'
 import { getRegisteredSearchIndexes } from '../../../utils/medusa'
 import { resolveSearchModule, toIndexNames } from '../../../utils/search'
 
@@ -25,7 +26,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<AdminIndexesRe
       return {
         name: definition.name,
         entity: definition.entity,
-        locales: definition.settings?.locales,
+        locales: readIndexLocales(definition.settings),
         retrievable_fields: searchModule.listRetrievableFields(definition.name),
       }
     })

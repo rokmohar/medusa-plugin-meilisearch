@@ -1,7 +1,7 @@
 import type { Event, SearchTypes } from '@medusajs/types'
 import { ProductEvents, defineSearchIndex, search } from '@medusajs/utils'
 import { createDefaultTransform, createSeed, parseEventName, reconcileIds, resolveEventIds } from './graph'
-import { expandLocales } from './locales'
+import { expandLocales, localizeSettings } from './locales'
 import type { ResolvedFactoryOptions, SearchIndexFactoryOptions } from './types'
 
 export const CATEGORY_INDEX_NAME = 'categories'
@@ -80,11 +80,8 @@ function resolveOptions(
   options: SearchIndexFactoryOptions,
 ): ResolvedFactoryOptions {
   const graphFields = [...new Set([...CATEGORY_GRAPH_FIELDS, ...(options.graph_fields ?? [])])]
-  const settings = { ...options.settings }
-
-  if (locale && !settings.locales) {
-    settings.locales = [locale]
-  }
+  const declared = { ...options.settings }
+  const settings = locale ? localizeSettings(declared, locale) : declared
 
   return {
     name,

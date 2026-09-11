@@ -6,6 +6,7 @@ import type {
   SearchForFacetValuesParams,
   SearchForFacetValuesResponse,
 } from 'meilisearch'
+import { readIndexLocales } from '../../../indexes/locales'
 import { shadowAttribute, stripShadowAttributes } from './documents'
 import { compileFilters } from './filters'
 import type { IndexPlan } from './settings'
@@ -135,13 +136,13 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
     base.showRankingScore = true
   }
 
-  const locales = options.locales ?? input.index.settings.locales
+  const locales = options.locales ?? readIndexLocales(input.index.settings)
 
   if (locales?.length) {
     base.locales = locales.map(toEngineLocaleTag)
   }
 
-  const highlight = options.highlight
+  const highlight = resolveHighlight(input, plan)
 
   if (highlight?.fields.length) {
     base.attributesToHighlight = highlight.fields
@@ -286,6 +287,23 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
   }
 
   return { index: plan.name, queries, facetSearches, assemble }
+}
+
+function resolveHighlight(
+  input: SearchTypes.ProviderSearchQuery,
+  plan: IndexPlan,
+): SearchTypes.SearchHighlightOptions | undefined {
+  const highlight = input.search_options?.highlight
+
+  if (!highlight || !input.q?.trim()) {
+    return undefined
+  }
+
+  if (highlight !== true) {
+    return highlight
+  }
+
+  return { fields: input.search_options?.attributes_to_search_on ?? plan.searchableAttributes }
 }
 
 function toSearchHit(

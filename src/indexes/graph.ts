@@ -8,7 +8,11 @@ interface GraphInput {
   fields: string[]
   filters?: Record<string, unknown>
   pagination?: { take?: number; skip?: number; order?: Record<string, 'ASC' | 'DESC'> }
+  withDeleted?: boolean
 }
+
+const DELETED_AT_FIELD = 'deleted_at'
+const UPDATED_AT_FIELD = 'updated_at'
 
 type GraphQuery = SearchTypes.SearchContainer['query']
 
@@ -70,36 +74,78 @@ export function createDefaultTransform(paths: string[]): SearchDocumentTransform
 }
 
 export function createSeed(options: ResolvedFactoryOptions): SearchTypes.SearchIndexDefinition['seed'] {
-  return async function* seed({ container, filters, last_key: lastKey }) {
+  const primaryKey = options.primaryKey
+
+  return async function* seed({ container, filters, last_key: lastKey, catchup }) {
+    const fields = catchup ? [...new Set([...options.graphFields, DELETED_AT_FIELD])] : options.graphFields
     let cursor = lastKey
 
     for (;;) {
       const data = await runGraph(container.query, options.locale, {
         entity: options.entity,
-        fields: options.graphFields,
-        filters: {
-          ...options.filters,
-          ...filters,
-          ...(cursor ? { id: { $gt: cursor } } : {}),
-        },
-        pagination: { take: options.batchSize, order: { id: 'ASC' } },
+        fields,
+        filters: withConstraints({ ...options.filters, ...filters }, [
+          ...(catchup ? [{ [UPDATED_AT_FIELD]: { $gte: catchup.since } }] : []),
+          ...(cursor !== undefined ? [{ [primaryKey]: { $gt: cursor } }] : []),
+        ]),
+        pagination: { take: options.batchSize, order: { [primaryKey]: 'ASC' } },
+        withDeleted: !!catchup,
       })
 
       if (!data.length) {
         return
       }
 
-      yield data.map((entity) => {
-        return options.transform(entity, { index: options.name, locale: options.locale })
-      })
+      const documents: SearchTypes.SearchDocument[] = []
+      const removedIds: string[] = []
+
+      for (const entity of data) {
+        if (catchup && entity[DELETED_AT_FIELD]) {
+          removedIds.push(String(entity[primaryKey]))
+          continue
+        }
+
+        documents.push(options.transform(entity, { index: options.name, locale: options.locale }))
+      }
+
+      const mutations: SearchTypes.SearchMutation[] = []
+
+      if (documents.length) {
+        mutations.push({ action: 'upsert', documents })
+      }
+
+      if (removedIds.length) {
+        mutations.push({ action: 'delete', filters: { [primaryKey]: removedIds } })
+      }
+
+      if (mutations.length) {
+        yield mutations
+      }
 
       if (data.length < options.batchSize) {
         return
       }
 
-      cursor = String(data[data.length - 1].id)
+      cursor = String(data[data.length - 1][primaryKey])
     }
   }
+}
+
+function withConstraints(
+  filters: Record<string, unknown>,
+  constraints: Record<string, unknown>[],
+): Record<string, unknown> {
+  if (!constraints.length) {
+    return filters
+  }
+
+  if (!Object.keys(filters).length) {
+    return Object.assign({}, ...constraints)
+  }
+
+  const existing = Array.isArray(filters.$and) ? filters.$and : []
+
+  return { ...filters, $and: [...existing, ...constraints] }
 }
 
 export async function reconcileIds(

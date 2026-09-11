@@ -8,7 +8,7 @@ import {
   resolveEventIds,
   resolveRelatedIds,
 } from './graph'
-import { expandLocales } from './locales'
+import { expandLocales, localizeSettings } from './locales'
 import type { ResolvedFactoryOptions, SearchIndexFactoryOptions } from './types'
 
 export const PRODUCT_INDEX_NAME = 'products'
@@ -165,11 +165,8 @@ function resolveOptions(
   options: SearchIndexFactoryOptions,
 ): ResolvedFactoryOptions {
   const graphFields = [...new Set([...PRODUCT_GRAPH_FIELDS, ...(options.graph_fields ?? [])])]
-  const settings = { ...options.settings }
-
-  if (locale && !settings.locales) {
-    settings.locales = [locale]
-  }
+  const declared = { ...options.settings }
+  const settings = locale ? localizeSettings(declared, locale) : declared
 
   return {
     name,
