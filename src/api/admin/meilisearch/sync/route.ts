@@ -1,7 +1,7 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import z from 'zod'
 import { ContainerRegistrationKeys, MedusaError } from '../../../utils/medusa'
-import { resolveSearchModule } from '../../../utils/search'
+import { resolveSearchModule, toIndexNames } from '../../../utils/search'
 
 export const AdminSyncSchema = z.object({
   index: z.union([z.string(), z.array(z.string())]).optional(),
@@ -15,7 +15,7 @@ export interface AdminSyncResponse {
   indexes: string[]
 }
 
-export function POST(req: MedusaRequest, res: MedusaResponse<AdminSyncResponse>) {
+export async function POST(req: MedusaRequest, res: MedusaResponse<AdminSyncResponse>) {
   const parsed = AdminSyncSchema.safeParse(req.body ?? {})
 
   if (!parsed.success) {
@@ -29,7 +29,8 @@ export function POST(req: MedusaRequest, res: MedusaResponse<AdminSyncResponse>)
   const searchModule = resolveSearchModule(req)
   const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER)
 
-  const requested = index === undefined ? searchModule.listIndexes() : Array.isArray(index) ? index : [index]
+  const requested =
+    index === undefined ? toIndexNames(await searchModule.listIndexes()) : Array.isArray(index) ? index : [index]
 
   void searchModule
     .reindex({ index, strategy })

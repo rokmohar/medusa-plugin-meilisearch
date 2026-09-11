@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { getRegisteredSearchIndexes } from '../../../utils/medusa'
-import { resolveSearchModule } from '../../../utils/search'
+import { resolveSearchModule, toIndexNames } from '../../../utils/search'
 
 export interface AdminSearchIndexInfo {
   name: string
@@ -13,9 +13,9 @@ export interface AdminIndexesResponse {
   indexes: AdminSearchIndexInfo[]
 }
 
-export function GET(req: MedusaRequest, res: MedusaResponse<AdminIndexesResponse>) {
+export async function GET(req: MedusaRequest, res: MedusaResponse<AdminIndexesResponse>) {
   const searchModule = resolveSearchModule(req)
-  const registered = searchModule.listIndexes()
+  const registered = toIndexNames(await searchModule.listIndexes())
 
   const indexes = getRegisteredSearchIndexes()
     .filter((definition) => {

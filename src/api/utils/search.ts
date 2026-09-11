@@ -84,13 +84,29 @@ export function resolveSearchModule(req: MedusaRequest): SearchTypes.ISearchModu
   return searchModule
 }
 
-export function resolveSearchIndexName(input: {
-  searchModule: Pick<SearchTypes.ISearchModuleService, 'listIndexes'>
+/**
+ * `listIndexes()` on the Search Module is async and resolves to index records
+ * since @medusajs/search 2.20 (earlier releases returned a synchronous `string[]`).
+ * Accepts either shape so the routes stay correct across the supported range.
+ */
+export function toIndexNames(indexes: ReadonlyArray<string | { name: string }>): string[] {
+  return indexes.map((index) => {
+    return typeof index === 'string' ? index : index.name
+  })
+}
+
+/** The subset of the Search Module the index resolver needs, across the 2.19 (`string[]`) and 2.20+ (`Promise<SearchIndexInfo[]>`) shapes. */
+export type SearchIndexLister = {
+  listIndexes(): ReadonlyArray<string | { name: string }> | Promise<ReadonlyArray<string | { name: string }>>
+}
+
+export async function resolveSearchIndexName(input: {
+  searchModule: SearchIndexLister
   entity: string
   locale?: string
   explicitIndex?: string
-}): string {
-  const registered = input.searchModule.listIndexes()
+}): Promise<string> {
+  const registered = toIndexNames(await input.searchModule.listIndexes())
 
   if (input.explicitIndex) {
     if (!registered.includes(input.explicitIndex)) {
@@ -242,7 +258,7 @@ export async function runHitsSearch(
   params: SearchRequestParams,
 ): Promise<MeiliHitsEnvelope> {
   const searchModule = resolveSearchModule(req)
-  const index = resolveSearchIndexName({
+  const index = await resolveSearchIndexName({
     searchModule,
     entity,
     locale: params.language ?? req.locale,
@@ -285,7 +301,7 @@ export async function searchDocumentIds(
   params: SearchRequestParams,
 ): Promise<{ ids: string[]; count: number }> {
   const searchModule = resolveSearchModule(req)
-  const index = resolveSearchIndexName({
+  const index = await resolveSearchIndexName({
     searchModule,
     entity,
     locale: params.language ?? req.locale,
