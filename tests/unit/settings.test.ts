@@ -1,12 +1,7 @@
 import type { SearchTypes } from '@medusajs/types'
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import {
-  assertIndexSupported,
-  buildIndexPlan,
-  flattenFields,
-  toEngineLocale,
-} from '../../src/providers/meilisearch/utils/settings'
+import { assertIndexSupported, buildIndexPlan, flattenFields } from '../../src/providers/meilisearch/utils/settings'
 
 function definition(
   overrides: Partial<SearchTypes.ResolvedSearchIndexDefinition> = {},
@@ -90,6 +85,23 @@ describe('buildIndexPlan', () => {
     assert.deepEqual(plan.settings.typoTolerance, { enabled: true, minWordSizeForTypos: { oneTypo: 4 } })
     assert.equal(plan.settings.distinctAttribute, 'handle')
     assert.deepEqual(plan.settings.localizedAttributes, [{ attributePatterns: ['*'], locales: ['fr'] }])
+  })
+
+  it('declares no localized attributes for a language Meilisearch does not tokenize', () => {
+    const plan = buildIndexPlan(
+      definition({
+        settings: {
+          provider_options: {
+            meilisearch: {
+              locales: ['is-IS'],
+            },
+          },
+        },
+      }),
+      { config: { host: 'http://localhost:7700' } },
+    )
+
+    assert.equal(plan.settings.localizedAttributes, undefined)
   })
 
   it('passes Meilisearch-only settings through from provider options, without the locales key', () => {
@@ -177,12 +189,5 @@ describe('flattenFields', () => {
     })
 
     assert.deepEqual(paths, ['variants', 'variants.sku'])
-  })
-})
-
-describe('toEngineLocale', () => {
-  it('reduces a BCP-47 tag to its language subtag', () => {
-    assert.equal(toEngineLocale('fr-FR'), 'fr')
-    assert.equal(toEngineLocale('en'), 'en')
   })
 })

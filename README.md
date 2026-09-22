@@ -206,6 +206,10 @@ This registers `products`, `products-fr-FR` and `products-de-DE`. Each index dec
 through `query.graph(..., { locale })` so documents carry the translated values, and tells Meilisearch which analyzer
 to use. Localized reads require Medusa's Translation Module (`featureFlags: { translation: true }`).
 
+Meilisearch ships analyzers for a fixed list of languages. A locale outside it — Icelandic, for one — still gets its
+own index, its translated documents and its locale routing; only the analyzer declaration is left out, so Meilisearch
+detects the language itself.
+
 Store requests select an index by locale: `?locale=fr-FR` (or the `x-medusa-locale` header). Region variants fall back
 to the same language, so `fr-CA` uses the `fr-FR` index when no `fr-CA` index exists, and an unknown locale falls back
 to the default index. `?index=products-fr-FR` addresses one index directly.

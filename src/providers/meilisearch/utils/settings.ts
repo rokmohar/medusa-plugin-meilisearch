@@ -4,6 +4,7 @@ import type { Embedders, Settings } from 'meilisearch'
 import { readIndexLocales } from '../../../indexes/locales'
 import type { MeilisearchProviderOptions } from '../types'
 import { shadowAttribute } from './documents'
+import { toEngineLocales } from './locales'
 
 export interface IndexAttribute {
   path: string
@@ -133,17 +134,13 @@ function buildDeclaredSettings(settings: SearchTypes.SearchIndexSettings): Setti
     })
   }
 
-  const locales = readIndexLocales(settings)
+  const locales = toEngineLocales(readIndexLocales(settings) ?? [])
 
-  if (locales?.length) {
-    declared.localizedAttributes = [{ attributePatterns: ['*'], locales: locales.map(toEngineLocale) }]
+  if (locales.length) {
+    declared.localizedAttributes = [{ attributePatterns: ['*'], locales }]
   }
 
   return prune(declared)
-}
-
-export function toEngineLocale(locale: string): string {
-  return locale.split(/[-_]/)[0].toLowerCase()
 }
 
 export function flattenFields(

@@ -155,6 +155,21 @@ describe('planSearch', () => {
     assert.deepEqual(plan.queries[0].hybrid, { embedder: 'default', semanticRatio: 0.3 })
   })
 
+  it('sends the declared locales Meilisearch tokenizes', () => {
+    const declared = { ...definition, settings: { provider_options: { meilisearch: { locales: ['pl-PL'] } } } }
+    const requested = query({ search_options: { locales: ['fr-FR'] } })
+
+    assert.deepEqual(planSearch(query({ index: declared }), indexPlan).queries[0].locales, ['pl'])
+    assert.deepEqual(planSearch(requested, indexPlan).queries[0].locales, ['fr'])
+  })
+
+  it('leaves out a locale Meilisearch does not tokenize, so it detects the language itself', () => {
+    const declared = { ...definition, settings: { provider_options: { meilisearch: { locales: ['is-IS'] } } } }
+
+    assert.equal(planSearch(query({ index: declared }), indexPlan).queries[0].locales, undefined)
+    assert.equal(planSearch(query({ search_options: { locales: ['is-IS'] } }), indexPlan).queries[0].locales, undefined)
+  })
+
   it('spreads raw provider options last', () => {
     const plan = planSearch(
       query({

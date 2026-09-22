@@ -9,6 +9,7 @@ import type {
 import { readIndexLocales } from '../../../indexes/locales'
 import { shadowAttribute, stripShadowAttributes } from './documents'
 import { compileFilters } from './filters'
+import { toEngineLocales } from './locales'
 import type { IndexPlan } from './settings'
 
 export type MeiliHit = Record<string, unknown> & { _formatted?: Record<string, unknown>; _rankingScore?: number }
@@ -136,10 +137,10 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
     base.showRankingScore = true
   }
 
-  const locales = options.locales ?? readIndexLocales(input.index.settings)
+  const locales = toEngineLocales(options.locales ?? readIndexLocales(input.index.settings) ?? [])
 
-  if (locales?.length) {
-    base.locales = locales.map(toEngineLocaleTag)
+  if (locales.length) {
+    base.locales = locales
   }
 
   const highlight = resolveHighlight(input, plan)
@@ -520,10 +521,6 @@ function withPrimaryKey(attributes: string[], primaryKey: string): string[] {
 
 function exhaustiveCount(result: MeiliResult | undefined): number | undefined {
   return result?.totalHits
-}
-
-function toEngineLocaleTag(locale: string): string {
-  return locale.split(/[-_]/)[0].toLowerCase()
 }
 
 function readProviderOverrides(
