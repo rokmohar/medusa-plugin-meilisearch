@@ -4,6 +4,7 @@ import type { Config, Embedders, Settings } from 'meilisearch'
 export const MEILISEARCH_PROVIDER_IDENTIFIER = 'meilisearch'
 
 export const DATE_SHADOW_SUFFIX = '__ts'
+export const VECTORS_ATTRIBUTE = '_vectors'
 
 export interface MeilisearchProviderOptions {
   config: Config

@@ -29,6 +29,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
   protected readonly options_: MeilisearchProviderOptions
   protected readonly client_: Meilisearch
   protected readonly primaryKeys_ = new Map<string, string>()
+  protected readonly provisioned_ = new Map<string, Promise<void>>()
 
   constructor({ logger }: MeilisearchProviderDependencies, options: MeilisearchProviderOptions) {
     super()
@@ -56,6 +57,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
 
   override async deleteIndex({ index }: { index: string }): Promise<SearchTypes.SearchTask> {
     this.primaryKeys_.delete(index)
+    this.provisioned_.delete(index)
 
     return fromEnqueuedTask(await this.client_.deleteIndex(index))
   }
@@ -76,13 +78,24 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
 
   override async upsertDocuments({
     index,
+    definition,
     documents,
   }: {
     index: string
+    definition: SearchTypes.ResolvedSearchIndexDefinition
     documents: SearchTypes.SearchDocument[]
   }): Promise<SearchTypes.SearchTask> {
     return guarded(async () => {
-      return fromEnqueuedTask(await this.client_.index(index).addDocuments(documents.map(encodeDocument)))
+      await this.provisionIndex(index, definition)
+
+      const plan = buildIndexPlan(definition, this.options_)
+      const encoded = documents.map((document) => {
+        return encodeDocument(document, plan)
+      })
+
+      return fromEnqueuedTask(
+        await this.client_.index(index).addDocuments(encoded, { primaryKey: definition.primary_key }),
+      )
     })
   }
 
@@ -186,6 +199,48 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
     const { results } = await this.client_.multiSearch<MultiSearchParams, MeiliHit>({ queries })
 
     return results
+  }
+
+  protected async provisionIndex(index: string, definition: SearchTypes.ResolvedSearchIndexDefinition): Promise<void> {
+    const pending = this.provisioned_.get(index)
+
+    if (pending) {
+      return pending
+    }
+
+    const provisioning = this.createMissingIndex(index, definition)
+
+    this.provisioned_.set(index, provisioning)
+
+    try {
+      await provisioning
+    } catch (error) {
+      this.provisioned_.delete(index)
+
+      throw error
+    }
+  }
+
+  protected async createMissingIndex(
+    index: string,
+    definition: SearchTypes.ResolvedSearchIndexDefinition,
+  ): Promise<void> {
+    const existing = await this.retrieveIndex(index)
+
+    if (existing?.primaryKey) {
+      return
+    }
+
+    this.logger_?.info(`[Meilisearch] Index "${index}" is not configured, configuring it before writing documents`)
+
+    const settled = await this.waitForTask(await this.upsertIndex({ index: { ...definition, physical_name: index } }))
+
+    if (settled.error) {
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        `Configuring Meilisearch index "${index}" failed: ${settled.error.message}`,
+      )
+    }
   }
 
   protected async ensureIndex(index: string, primaryKey: string): Promise<void> {

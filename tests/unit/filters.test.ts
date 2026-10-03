@@ -53,6 +53,23 @@ describe('compileFilters', () => {
     assert.equal(compileFilters({ created_at: { $lt: new Date(iso) } }), `created_at__ts < ${epoch}`)
   })
 
+  it('checks presence and null on the shadow of a date field', () => {
+    assert.equal(compileFilters({ created_at: { $exists: true } }, isDate), 'created_at__ts EXISTS')
+    assert.equal(compileFilters({ created_at: { $exists: false } }, isDate), 'created_at__ts NOT EXISTS')
+    assert.equal(compileFilters({ created_at: null }, isDate), 'created_at__ts IS NULL')
+    assert.equal(compileFilters({ created_at: { $ne: null } }, isDate), 'created_at__ts IS NOT NULL')
+  })
+
+  it('splits null out of $in and $nin', () => {
+    assert.equal(compileFilters({ type_id: { $in: ['a', null] } }), '(type_id IS NULL OR type_id IN ["a"])')
+    assert.equal(compileFilters({ type_id: { $nin: ['a', null] } }), 'NOT (type_id IS NULL OR type_id IN ["a"])')
+    assert.equal(compileFilters({ type_id: [null] }), 'type_id IS NULL')
+    assert.equal(
+      compileFilters({ created_at: { $in: [null, '2026-01-02T03:04:05.000Z'] } }, isDate),
+      `(created_at__ts IS NULL OR created_at__ts IN [${Date.parse('2026-01-02T03:04:05.000Z')}])`,
+    )
+  })
+
   it('escapes quotes and backslashes in string values', () => {
     assert.equal(compileFilters({ title: 'say "hi"' }), 'title = "say \\"hi\\""')
   })

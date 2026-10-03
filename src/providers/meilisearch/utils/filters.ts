@@ -113,7 +113,7 @@ function compileOperators(
         clauses.push(`NOT ${inClause(path, asArray(path, operator, operand), isDateAttribute)}`)
         break
       case '$exists':
-        clauses.push(operand === false ? `${path} NOT EXISTS` : `${path} EXISTS`)
+        clauses.push(`${filterPath(path, isDateAttribute)} ${operand === false ? 'NOT EXISTS' : 'EXISTS'}`)
         break
       case '$contains': {
         const values = Array.isArray(operand) ? operand : [operand]
@@ -147,7 +147,7 @@ function compileOperators(
 
 function comparison(path: string, operator: string, value: unknown, isDateAttribute: DateAttributePredicate): string {
   if (value === null) {
-    return operator === '!=' ? `${path} IS NOT NULL` : `${path} IS NULL`
+    return `${filterPath(path, isDateAttribute)} ${operator === '!=' ? 'IS NOT NULL' : 'IS NULL'}`
   }
 
   const target = resolveTarget(path, value, isDateAttribute)
@@ -156,6 +156,20 @@ function comparison(path: string, operator: string, value: unknown, isDateAttrib
 }
 
 function inClause(path: string, values: unknown[], isDateAttribute: DateAttributePredicate): string {
+  const present = values.filter((value) => {
+    return value !== null
+  })
+
+  if (present.length === values.length) {
+    return presentInClause(path, values, isDateAttribute)
+  }
+
+  const nullClause = `${filterPath(path, isDateAttribute)} IS NULL`
+
+  return present.length ? join([nullClause, presentInClause(path, present, isDateAttribute)], 'OR') : nullClause
+}
+
+function presentInClause(path: string, values: unknown[], isDateAttribute: DateAttributePredicate): string {
   if (!values.length) {
     return `${path} IN []`
   }
@@ -169,6 +183,10 @@ function inClause(path: string, values: unknown[], isDateAttribute: DateAttribut
       return target.literal
     })
     .join(', ')}]`
+}
+
+function filterPath(path: string, isDateAttribute: DateAttributePredicate): string {
+  return isDateAttribute(path) ? shadowAttribute(path) : path
 }
 
 function resolveTarget(

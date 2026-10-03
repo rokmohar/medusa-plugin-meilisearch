@@ -160,6 +160,18 @@ describe('buildIndexPlan', () => {
     assert.deepEqual(Object.keys(plan.settings.embedders ?? {}), ['default', 'embedding', 'custom'])
     assert.deepEqual(plan.settings.embedders?.embedding, { source: 'userProvided', dimensions: 384 })
   })
+
+  it('keeps vector fields out of the displayed attributes', () => {
+    const plan = buildIndexPlan(
+      definition({
+        fields: { id: { type: 'keyword' }, embedding: { type: 'vector', dimensions: 3, retrievable: true } },
+      }),
+      { config: { host: 'http://localhost:7700' } },
+    )
+
+    assert.deepEqual(plan.settings.displayedAttributes, ['id'])
+    assert.deepEqual([...plan.vectorAttributes.keys()], ['embedding'])
+  })
 })
 
 describe('assertIndexSupported', () => {
@@ -177,6 +189,14 @@ describe('assertIndexSupported', () => {
     assert.throws(() => {
       return assertIndexSupported(definition({ fields: { embedding: { type: 'vector' } } }))
     }, /dimensions/)
+
+    assert.throws(() => {
+      return assertIndexSupported(
+        definition({
+          fields: { meta: { type: 'object', fields: { embedding: { type: 'vector', dimensions: 3 } } } },
+        }),
+      )
+    }, /top-level/)
   })
 })
 

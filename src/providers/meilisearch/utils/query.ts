@@ -7,12 +7,16 @@ import type {
   SearchForFacetValuesResponse,
 } from 'meilisearch'
 import { readIndexLocales } from '../../../indexes/locales'
-import { shadowAttribute, stripShadowAttributes } from './documents'
+import { readVector, shadowAttribute, stripShadowAttributes } from './documents'
 import { compileFilters } from './filters'
 import { toEngineLocales } from './locales'
 import type { IndexPlan } from './settings'
 
-export type MeiliHit = Record<string, unknown> & { _formatted?: Record<string, unknown>; _rankingScore?: number }
+export type MeiliHit = Record<string, unknown> & {
+  _formatted?: Record<string, unknown>
+  _rankingScore?: number
+  _vectors?: unknown
+}
 export type MeiliResult = MultiSearchResult<MeiliHit>
 
 export interface FacetSearchRequest {
@@ -66,6 +70,14 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
     return plan.dateAttributes.has(path)
   }
 
+  const facetAttribute = (field: string): string => {
+    return isDateAttribute(field) ? shadowAttribute(field) : field
+  }
+
+  const facetValue = (field: string, value: string): string => {
+    return isDateAttribute(field) ? fromTimestamp(value) : value
+  }
+
   const skip = pagination.skip ?? 0
   const take = pagination.take ?? DEFAULT_TAKE
   const filter = compileFilters(input.filters, isDateAttribute)
@@ -75,7 +87,15 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
   const statsFacets = facets.filter(isStatsFacet)
   const countStrategy = options.count ?? 'estimated'
   const requestedAttributes = input.attributes_to_retrieve
-  const attributesToRetrieve = withPrimaryKey(requestedAttributes, plan.primaryKey)
+  const requestedVectors = requestedAttributes.filter((path) => {
+    return plan.vectorAttributes.has(path)
+  })
+  const attributesToRetrieve = withPrimaryKey(
+    requestedAttributes.filter((path) => {
+      return !plan.vectorAttributes.has(path)
+    }),
+    plan.primaryKey,
+  )
 
   const base: MultiSearchQuery = {
     indexUid: plan.name,
@@ -89,6 +109,10 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
     base.filter = filter
   }
 
+  if (requestedVectors.length) {
+    base.retrieveVectors = true
+  }
+
   const sort = buildSort(pagination.order, isDateAttribute)
 
   if (sort.length) {
@@ -97,10 +121,10 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
 
   const distributionFields = [
     ...valueFacets.map((facet) => {
-      return facet.field
+      return facetAttribute(facet.field)
     }),
     ...statsFacets.map((facet) => {
-      return facet.field
+      return facetAttribute(facet.field)
     }),
   ]
 
@@ -201,7 +225,7 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
       return {
         field: facet.field,
         params: {
-          facetName: facet.field,
+          facetName: facetAttribute(facet.field),
           facetQuery: facet.query,
           q: input.q ?? '',
           filter,
@@ -226,14 +250,20 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
         facetOutput[facet.field] = {
           type: 'value',
           values: (searched?.facetHits ?? []).slice(0, facet.limit).map((hit) => {
-            return { value: hit.value, count: hit.count }
+            return { value: facetValue(facet.field, hit.value), count: hit.count }
           }),
         }
 
         continue
       }
 
-      facetOutput[facet.field] = buildValueFacet(primary.facetDistribution?.[facet.field], facet)
+      facetOutput[facet.field] = buildValueFacet(
+        primary.facetDistribution?.[facetAttribute(facet.field)],
+        facet,
+        (value) => {
+          return facetValue(facet.field, value)
+        },
+      )
     }
 
     for (const facet of rangeFacets) {
@@ -255,7 +285,7 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
     }
 
     for (const { field, slot } of statsSlots) {
-      const stats = primary.facetStats?.[field]
+      const stats = primary.facetStats?.[facetAttribute(field)]
 
       facetOutput[field] = {
         type: 'stats',
@@ -274,7 +304,7 @@ export function planSearch(input: SearchTypes.ProviderSearchQuery, plan: IndexPl
 
     return {
       hits: primary.hits.map((hit) => {
-        return toSearchHit(hit, plan.primaryKey, requestedAttributes, highlight)
+        return toSearchHit(hit, plan.primaryKey, requestedAttributes, requestedVectors, highlight)
       }),
       facets: Object.keys(facetOutput).length ? facetOutput : undefined,
       metadata: {
@@ -311,10 +341,19 @@ function toSearchHit(
   hit: MeiliHit,
   primaryKey: string,
   requestedAttributes: string[],
+  requestedVectors: string[],
   highlight: SearchTypes.SearchHighlightOptions | undefined,
 ): SearchTypes.SearchHit {
-  const { _formatted, _rankingScore, ...rest } = hit
+  const { _formatted, _rankingScore, _vectors, ...rest } = hit
   const document = stripShadowAttributes(rest)
+
+  for (const path of requestedVectors) {
+    const vector = readVector(_vectors, path)
+
+    if (vector) {
+      document[path] = vector
+    }
+  }
 
   if (!requestedAttributes.includes(primaryKey)) {
     delete document[primaryKey]
@@ -378,9 +417,10 @@ function readPath(source: Record<string, unknown>, path: string): unknown {
 function buildValueFacet(
   distribution: Record<string, number> | undefined,
   facet: ValueFacet,
+  formatValue: (value: string) => string,
 ): SearchTypes.SearchFacetResult {
   const entries = Object.entries(distribution ?? {}).map(([value, count]) => {
-    return { value, count }
+    return { value: formatValue(value), count }
   })
 
   entries.sort((a, b) => {
@@ -430,7 +470,7 @@ function existsQuery(
 ): MultiSearchQuery {
   const target = isDate ? shadowAttribute(field) : field
 
-  return withFilter(countQuery(base), [filter, `${target} EXISTS`])
+  return withFilter(countQuery(base), [filter, `${target} EXISTS`, `${target} IS NOT NULL`])
 }
 
 function withFilter(query: MultiSearchQuery, clauses: (string | undefined)[]): MultiSearchQuery {
@@ -513,6 +553,12 @@ function buildSort(
   }
 
   return sort
+}
+
+function fromTimestamp(value: string): string {
+  const timestamp = Number(value)
+
+  return Number.isFinite(timestamp) ? new Date(timestamp).toISOString() : value
 }
 
 function withPrimaryKey(attributes: string[], primaryKey: string): string[] {

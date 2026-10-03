@@ -17,6 +17,7 @@ export interface IndexPlan {
   settings: Settings
   attributes: IndexAttribute[]
   dateAttributes: Set<string>
+  vectorAttributes: Map<string, SearchTypes.SearchFieldDefinition>
   searchableAttributes: string[]
 }
 
@@ -27,6 +28,14 @@ export function assertIndexSupported(index: SearchTypes.ResolvedSearchIndexDefin
         MedusaError.Types.INVALID_DATA,
         `Meilisearch only reads geo data from a top-level "_geo" attribute, but index "${index.name}" declares it as ` +
           `"${path}".`,
+      )
+    }
+
+    if (field.type === 'vector' && path.includes('.')) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Meilisearch stores embeddings per document, so the vector field "${path}" on index "${index.name}" must be ` +
+          `top-level.`,
       )
     }
 
@@ -46,6 +55,7 @@ export function buildIndexPlan(
   const attributes = flattenFields(index.fields)
   const primaryKey = index.primary_key
   const dateAttributes = new Set<string>()
+  const vectorAttributes = new Map<string, SearchTypes.SearchFieldDefinition>()
 
   const searchable: { path: string; weight: number }[] = []
   const filterable = new Set<string>([primaryKey])
@@ -56,6 +66,10 @@ export function buildIndexPlan(
   for (const { path, field } of attributes) {
     if (field.type === 'date') {
       dateAttributes.add(path)
+    }
+
+    if (field.type === 'vector') {
+      vectorAttributes.set(path, field)
     }
 
     if (field.searchable) {
@@ -70,7 +84,7 @@ export function buildIndexPlan(
       sortable.add(field.type === 'date' ? shadowAttribute(path) : path)
     }
 
-    if (field.retrievable !== false && field.type !== 'object') {
+    if (field.retrievable !== false && field.type !== 'object' && field.type !== 'vector') {
       displayed.add(path)
     }
 
@@ -114,6 +128,7 @@ export function buildIndexPlan(
     settings: { ...options.settings, ...prune(derived), ...readIndexOverrides(index.settings) },
     attributes,
     dateAttributes,
+    vectorAttributes,
     searchableAttributes,
   }
 }

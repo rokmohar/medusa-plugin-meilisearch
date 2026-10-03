@@ -134,6 +134,63 @@ describe('planSearch', () => {
     })
   })
 
+  it('facets date fields on their shadow and reports the values as dates', () => {
+    const iso = '2026-01-02T03:04:05.000Z'
+    const epoch = Date.parse(iso)
+    const plan = planSearch(
+      query({ search_options: { facets: ['created_at', { field: 'created_at', type: 'stats' }] } }),
+      indexPlan,
+    )
+
+    assert.deepEqual(plan.queries[0].facets, ['created_at__ts'])
+    assert.equal(plan.queries[1].filter, '(created_at__ts EXISTS AND created_at__ts IS NOT NULL)')
+
+    const facets = plan.assemble(
+      [
+        result({
+          facetDistribution: { created_at__ts: { [epoch]: 3 } },
+          facetStats: { created_at__ts: { min: epoch, max: epoch } },
+        }),
+        result({ totalHits: 3 }),
+      ],
+      [],
+    ).facets
+
+    assert.deepEqual(facets?.created_at, { type: 'stats', min: epoch, max: epoch, count: 3 })
+
+    const valuePlan = planSearch(query({ search_options: { facets: ['created_at'] } }), indexPlan)
+    const values = valuePlan.assemble([result({ facetDistribution: { created_at__ts: { [epoch]: 3 } } })], []).facets
+
+    assert.deepEqual(values?.created_at, { type: 'value', values: [{ value: iso, count: 3 }], other_count: undefined })
+  })
+
+  it('retrieves requested vector fields through _vectors', () => {
+    const vectorDefinition = {
+      ...definition,
+      fields: { ...definition.fields, embedding: { type: 'vector' as const, dimensions: 3, retrievable: true } },
+    }
+    const plan = planSearch(
+      query({ index: vectorDefinition, attributes_to_retrieve: ['title', 'embedding'] }),
+      buildIndexPlan(vectorDefinition, { config: { host: 'http://localhost:7700' } }),
+    )
+
+    assert.equal(plan.queries[0].retrieveVectors, true)
+    assert.deepEqual(plan.queries[0].attributesToRetrieve, ['id', 'title'])
+
+    const hit = plan.assemble(
+      [
+        result({
+          hits: [
+            { id: 'prod_1', title: 'Shirt', _vectors: { embedding: { embeddings: [[1, 2, 3]], regenerate: false } } },
+          ],
+        }),
+      ],
+      [],
+    ).hits[0]
+
+    assert.deepEqual(hit.document, { title: 'Shirt', embedding: [1, 2, 3] })
+  })
+
   it('requests facet values through a facet search when the facet is queried', () => {
     const plan = planSearch(query({ search_options: { facets: [{ field: 'status', query: 'pub' }] } }), indexPlan)
 
