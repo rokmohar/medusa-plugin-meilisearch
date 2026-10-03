@@ -1,8 +1,7 @@
 import type { Logger, SearchTypes } from '@medusajs/types'
 import { AbstractSearchProviderService, MedusaError } from '@medusajs/utils'
 import {
-  MeiliSearch,
-  MeiliSearchApiError,
+  Meilisearch,
   type Index,
   type MultiSearchParams,
   type MultiSearchQuery,
@@ -14,12 +13,12 @@ import {
   type MeilisearchProviderOptions,
 } from './types'
 import { encodeDocument } from './utils/documents'
+import { INDEX_NOT_FOUND, guarded, indexNotFound, isIndexNotFound } from './utils/errors'
 import { compileFilters, extractPrimaryKeyIds } from './utils/filters'
 import { planSearch, type MeiliHit, type MeiliResult, type QueryPlan } from './utils/query'
 import { assertIndexSupported, buildIndexPlan } from './utils/settings'
 import { fromEnqueuedTask, fromSettledTask } from './utils/tasks'
 
-const INDEX_NOT_FOUND = 'index_not_found'
 const DEFAULT_TASK_TIMEOUT_MS = 120_000
 const DEFAULT_TASK_POLLING_INTERVAL_MS = 500
 
@@ -28,7 +27,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
 
   protected readonly logger_?: Logger
   protected readonly options_: MeilisearchProviderOptions
-  protected readonly client_: MeiliSearch
+  protected readonly client_: Meilisearch
   protected readonly primaryKeys_ = new Map<string, string>()
 
   constructor({ logger }: MeilisearchProviderDependencies, options: MeilisearchProviderOptions) {
@@ -38,7 +37,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
 
     this.logger_ = logger
     this.options_ = options
-    this.client_ = new MeiliSearch(options.config)
+    this.client_ = new Meilisearch(options.config)
   }
 
   override async upsertIndex({
@@ -82,34 +81,40 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
     index: string
     documents: SearchTypes.SearchDocument[]
   }): Promise<SearchTypes.SearchTask> {
-    return fromEnqueuedTask(await this.client_.index(index).addDocuments(documents.map(encodeDocument)))
+    return guarded(async () => {
+      return fromEnqueuedTask(await this.client_.index(index).addDocuments(documents.map(encodeDocument)))
+    })
   }
 
   override async deleteDocuments({
     index,
     filters,
   }: SearchTypes.SearchDeleteDocumentsInput): Promise<SearchTypes.SearchTask> {
-    const target = this.client_.index(index)
-    const ids = extractPrimaryKeyIds(filters, await this.primaryKeyOf(target))
+    return guarded(async () => {
+      const target = this.client_.index(index)
+      const ids = extractPrimaryKeyIds(filters, await this.primaryKeyOf(target))
 
-    if (ids) {
-      return fromEnqueuedTask(await target.deleteDocuments(ids))
-    }
+      if (ids) {
+        return fromEnqueuedTask(await target.deleteDocuments(ids))
+      }
 
-    const filter = compileFilters(filters)
+      const filter = compileFilters(filters)
 
-    if (!filter) {
-      throw new MedusaError(
-        MedusaError.Types.INVALID_DATA,
-        `Deleting from Meilisearch index "${index}" requires filters that select something.`,
-      )
-    }
+      if (!filter) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Deleting from Meilisearch index "${index}" requires filters that select something.`,
+        )
+      }
 
-    return fromEnqueuedTask(await target.deleteDocuments({ filter }))
+      return fromEnqueuedTask(await target.deleteDocuments({ filter }))
+    })
   }
 
   override async clearIndex({ index }: { index: string }): Promise<SearchTypes.SearchTask> {
-    return fromEnqueuedTask(await this.client_.index(index).deleteAllDocuments())
+    return guarded(async () => {
+      return fromEnqueuedTask(await this.client_.index(index).deleteAllDocuments())
+    })
   }
 
   override async search(input: SearchTypes.ProviderSearchQuery): Promise<SearchTypes.SearchResult> {
@@ -131,16 +136,18 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
       return plan.queries
     })
 
-    const [results, facetResults] = await Promise.all([
-      this.runQueries(queries),
-      Promise.all(
-        plans.flatMap((plan) => {
-          return plan.facetSearches.map(async (request) => {
-            return this.client_.index(plan.index).searchForFacetValues(request.params)
-          })
-        }),
-      ),
-    ])
+    const [results, facetResults] = await guarded(async () => {
+      return Promise.all([
+        this.runQueries(queries),
+        Promise.all(
+          plans.flatMap((plan) => {
+            return plan.facetSearches.map(async (request) => {
+              return this.client_.index(plan.index).searchForFacetValues(request.params)
+            })
+          }),
+        ),
+      ])
+    })
 
     let queryOffset = 0
     let facetOffset = 0
@@ -161,10 +168,16 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
       return task
     }
 
-    const settled = await this.client_.tasks.waitForTask(Number(task.id), {
-      timeout: options?.timeout_ms ?? this.options_.task_timeout_ms ?? DEFAULT_TASK_TIMEOUT_MS,
-      interval: this.options_.task_polling_interval_ms ?? DEFAULT_TASK_POLLING_INTERVAL_MS,
+    const settled = await guarded(async () => {
+      return this.client_.tasks.waitForTask(Number(task.id), {
+        timeout: options?.timeout_ms ?? this.options_.task_timeout_ms ?? DEFAULT_TASK_TIMEOUT_MS,
+        interval: this.options_.task_polling_interval_ms ?? DEFAULT_TASK_POLLING_INTERVAL_MS,
+      })
     })
+
+    if (settled.status === 'failed' && settled.error?.code === INDEX_NOT_FOUND) {
+      throw indexNotFound(settled.error.message)
+    }
 
     return fromSettledTask(settled)
   }
@@ -193,7 +206,7 @@ export class MeilisearchSearchProviderService extends AbstractSearchProviderServ
     try {
       return await this.client_.getRawIndex(index)
     } catch (error) {
-      if (error instanceof MeiliSearchApiError && error.cause?.code === INDEX_NOT_FOUND) {
+      if (isIndexNotFound(error)) {
         return undefined
       }
 

@@ -79,7 +79,8 @@ function resolveOptions(
   locale: string | undefined,
   options: SearchIndexFactoryOptions,
 ): ResolvedFactoryOptions {
-  const graphFields = [...new Set([...CATEGORY_GRAPH_FIELDS, ...(options.graph_fields ?? [])])]
+  const primaryKey = options.primary_key ?? 'id'
+  const graphFields = [...new Set([...CATEGORY_GRAPH_FIELDS, ...(options.graph_fields ?? []), primaryKey])]
   const declared = { ...options.settings }
   const settings = locale ? localizeSettings(declared, locale) : declared
 
@@ -87,12 +88,13 @@ function resolveOptions(
     name,
     entity: CATEGORY_ENTITY,
     provider: options.provider,
-    primaryKey: options.primary_key ?? 'id',
+    primaryKey,
     fields: options.fields ?? search.define(categorySearchSchema()),
     settings,
     graphFields,
     filters: options.filters ?? { is_active: true, is_internal: false },
     transform: options.transform ?? createDefaultTransform(graphFields),
+    queryContext: options.query_context,
     batchSize: options.batch_size ?? 200,
     events: options.events ?? CATEGORY_EVENTS,
     locale,
@@ -102,7 +104,7 @@ function resolveOptions(
 function createCategoryConsume(
   options: ResolvedFactoryOptions,
 ): NonNullable<SearchTypes.SearchIndexDefinition['consume']> {
-  return async (event: Event<unknown>, { container }) => {
+  return async (event: Event<unknown>, context) => {
     const ids = resolveEventIds(event)
 
     if (!ids.length) {
@@ -115,6 +117,6 @@ function createCategoryConsume(
       return [{ action: 'delete', filters: { id: ids } }]
     }
 
-    return reconcileIds(container.query, options, ids)
+    return reconcileIds(context.container.query, options, ids, context)
   }
 }

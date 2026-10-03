@@ -11,7 +11,8 @@ cannot boot below it. Pick the line that matches your Medusa version:
 | `>= 2.15 < 2.19` | `@rokmohar/medusa-plugin-meilisearch@^1.4.3` (branch `v1.x`) |
 | `2.19.x`         | `@rokmohar/medusa-plugin-meilisearch@^2.0.0`                 |
 | `~2.20.0`        | `@rokmohar/medusa-plugin-meilisearch@^2.1.0`                 |
-| `~2.21.0`        | `@rokmohar/medusa-plugin-meilisearch@^2.2.0`                 |
+| `2.21.0`         | `@rokmohar/medusa-plugin-meilisearch@^2.2.0`                 |
+| `~2.21.1`        | `@rokmohar/medusa-plugin-meilisearch@^2.3.0`                 |
 
 The upgrade is mostly deletion. In v1 the plugin ran its own module, 23 event subscribers, 24 workflows and 2 cron jobs
 to keep Meilisearch in step with the catalog. All of that now belongs to the Search Module: it creates and migrates
@@ -59,7 +60,7 @@ places.
 ## Install
 
 ```bash
-yarn add @medusajs/medusa@~2.21.0 @medusajs/framework@~2.21.0 @rokmohar/medusa-plugin-meilisearch@^2.2.0
+yarn add @medusajs/medusa@~2.21.2 @medusajs/framework@~2.21.2 @rokmohar/medusa-plugin-meilisearch@^2.3.0
 ```
 
 ## Rewriting medusa-config.ts
@@ -287,6 +288,19 @@ the new indexes serve traffic, then drop the leftovers:
 ```bash
 curl -X DELETE 'http://localhost:7700/indexes/products' -H 'Authorization: Bearer <MEILISEARCH_API_KEY>'
 ```
+
+## Already on v2: 2.2 to 2.3
+
+- Medusa 2.21.1 or newer and Node 22.12 or newer. The Meilisearch client moved to its ES-module-only releases, which the
+  CommonJS build loads through `require(esm)`.
+- The product declaration gains `sales_channel_ids`, so the Search Module sees a changed declaration and rebuilds the
+  product indexes on the next migration. Expose them to the storefront through `configureStoreSearch` as described in
+  the README.
+- A custom `transform` must return a document with an `id`; a missing one now fails the batch instead of quietly
+  deleting the row from the index.
+- Deleting a variant or a product option re-indexes its product rather than leaving stale values on it, and a catch-up
+  pass now removes rows that stopped matching the index `filters` while a rebuild was running.
+- `query_context` passes a `query.graph` context, such as a pricing context, to every seed and ingestion read.
 
 ## If you are staying on v1 for now
 

@@ -1,4 +1,5 @@
-import type { Event, SearchTypes } from '@medusajs/types'
+import type { Event, QueryContextType, SearchTypes } from '@medusajs/types'
+import { MedusaError } from '@medusajs/utils'
 import type { ResolvedFactoryOptions, SearchDocumentTransform } from './types'
 
 type PathTree = Map<string, PathTree>
@@ -9,9 +10,10 @@ interface GraphInput {
   filters?: Record<string, unknown>
   pagination?: { take?: number; skip?: number; order?: Record<string, 'ASC' | 'DESC'> }
   withDeleted?: boolean
+  context?: QueryContextType
 }
 
-const DELETED_AT_FIELD = 'deleted_at'
+const ID_FIELD = 'id'
 const UPDATED_AT_FIELD = 'updated_at'
 
 type GraphQuery = SearchTypes.SearchContainer['query']
@@ -76,47 +78,30 @@ export function createDefaultTransform(paths: string[]): SearchDocumentTransform
 export function createSeed(options: ResolvedFactoryOptions): SearchTypes.SearchIndexDefinition['seed'] {
   const primaryKey = options.primaryKey
 
-  return async function* seed({ container, filters, last_key: lastKey, catchup }) {
-    const fields = catchup ? [...new Set([...options.graphFields, DELETED_AT_FIELD])] : options.graphFields
+  return async function* seed(context) {
+    const { container, filters, last_key: lastKey, catchup } = context
     let cursor = lastKey
 
     for (;;) {
       const data = await runGraph(container.query, options.locale, {
         entity: options.entity,
-        fields,
-        filters: withConstraints({ ...options.filters, ...filters }, [
+        fields: catchup ? [...new Set([ID_FIELD, primaryKey])] : options.graphFields,
+        filters: withConstraints(catchup ? { ...filters } : { ...options.filters, ...filters }, [
           ...(catchup ? [{ [UPDATED_AT_FIELD]: { $gte: catchup.since } }] : []),
           ...(cursor !== undefined ? [{ [primaryKey]: { $gt: cursor } }] : []),
         ]),
         pagination: { take: options.batchSize, order: { [primaryKey]: 'ASC' } },
         withDeleted: !!catchup,
+        ...(catchup ? {} : resolveQueryContext(options, context)),
       })
 
       if (!data.length) {
         return
       }
 
-      const documents: SearchTypes.SearchDocument[] = []
-      const removedIds: string[] = []
-
-      for (const entity of data) {
-        if (catchup && entity[DELETED_AT_FIELD]) {
-          removedIds.push(String(entity[primaryKey]))
-          continue
-        }
-
-        documents.push(options.transform(entity, { index: options.name, locale: options.locale }))
-      }
-
-      const mutations: SearchTypes.SearchMutation[] = []
-
-      if (documents.length) {
-        mutations.push({ action: 'upsert', documents })
-      }
-
-      if (removedIds.length) {
-        mutations.push({ action: 'delete', filters: { [primaryKey]: removedIds } })
-      }
+      const mutations = catchup
+        ? await reconcileIds(container.query, options, readIds(data), context)
+        : upsertMutations(toDocuments(data, options))
 
       if (mutations.length) {
         yield mutations
@@ -152,6 +137,7 @@ export async function reconcileIds(
   query: GraphQuery,
   options: ResolvedFactoryOptions,
   ids: string[],
+  context: SearchTypes.SearchIngestionContext,
 ): Promise<SearchTypes.SearchMutation[]> {
   if (!ids.length) {
     return []
@@ -160,16 +146,14 @@ export async function reconcileIds(
   const data = await runGraph(query, options.locale, {
     entity: options.entity,
     fields: options.graphFields,
-    filters: { ...options.filters, id: ids },
+    filters: { ...options.filters, [ID_FIELD]: ids },
+    ...resolveQueryContext(options, context),
   })
 
-  const documents = data.map((entity) => {
-    return options.transform(entity, { index: options.name, locale: options.locale })
-  })
-
+  const documents = toDocuments(data, options)
   const found = new Set(
     documents.map((document) => {
-      return document.id
+      return String(document.id)
     }),
   )
 
@@ -177,27 +161,58 @@ export async function reconcileIds(
     return !found.has(id)
   })
 
-  const mutations: SearchTypes.SearchMutation[] = []
-
-  if (documents.length) {
-    mutations.push({ action: 'upsert', documents })
-  }
+  const mutations = upsertMutations(documents)
 
   if (missing.length) {
-    mutations.push({ action: 'delete', filters: { id: missing } })
+    mutations.push({ action: 'delete', filters: { [ID_FIELD]: missing } })
   }
 
   return mutations
 }
 
+function toDocuments(data: Record<string, unknown>[], options: ResolvedFactoryOptions): SearchTypes.SearchDocument[] {
+  return data.map((entity) => {
+    const document = options.transform(entity, { index: options.name, locale: options.locale })
+
+    if (!document.id) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        `Search index "${options.name}": transform returned a document without an "id".`,
+      )
+    }
+
+    return document
+  })
+}
+
+function upsertMutations(documents: SearchTypes.SearchDocument[]): SearchTypes.SearchMutation[] {
+  return documents.length ? [{ action: 'upsert', documents }] : []
+}
+
+function readIds(data: Record<string, unknown>[]): string[] {
+  return data.map((entity) => {
+    return String(entity[ID_FIELD])
+  })
+}
+
+function resolveQueryContext(
+  options: ResolvedFactoryOptions,
+  context: SearchTypes.SearchIngestionContext,
+): { context?: QueryContextType } {
+  const resolved = typeof options.queryContext === 'function' ? options.queryContext(context) : options.queryContext
+
+  return resolved ? { context: resolved } : {}
+}
+
 export async function resolveRelatedIds(
   query: GraphQuery,
-  input: { entity: string; field: string; filters: Record<string, unknown> },
+  input: { entity: string; field: string; filters: Record<string, unknown>; withDeleted?: boolean },
 ): Promise<string[]> {
   const data = await runGraph(query, undefined, {
     entity: input.entity,
     fields: [input.field],
     filters: input.filters,
+    withDeleted: input.withDeleted,
   })
 
   const ids = data.flatMap((entity) => {

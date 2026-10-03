@@ -5,8 +5,8 @@
     "outDir": "./.medusa/server",
     "lib": ["es2022"],
     "target": "es2022",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node20",
+    "moduleResolution": "node16",
     "jsx": "react-jsx",
     "strict": true,
     "allowJs": true,
@@ -34,6 +34,10 @@
   "exclude": [".cache", ".medusa/admin", ".medusa/server", "node_modules", "src/admin"],
   "include": ["**/*", ".medusa/types/*"],
   "ts-node": {
-    "swc": true
+    "swc": true,
+    "compilerOptions": {
+      "module": "commonjs",
+      "moduleResolution": "node10"
+    }
   }
 }

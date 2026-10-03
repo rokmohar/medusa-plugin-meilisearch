@@ -49,6 +49,31 @@ describe('defineProductSearchIndex', () => {
     assert.ok(definition.events?.includes('product.product-variant.deleted'))
   })
 
+  it('declares sales channel ids so the native store route can scope by publishable key', () => {
+    const [definition] = defineProductSearchIndex()
+
+    assert.deepEqual(definition.fields.sales_channel_ids, { type: 'keyword', array: true, filterable: true })
+    assert.ok(PRODUCT_GRAPH_FIELDS.includes('sales_channels.id'))
+  })
+
+  it('flattens sales channels into sales_channel_ids, also behind a custom transform', async () => {
+    const row = { id: 'p1', title: 'One', sales_channels: [{ id: 'sc_1' }, { id: 'sc_2' }] }
+    const custom = defineProductSearchIndex({
+      transform: (entity) => {
+        return { id: String(entity.id), title: String(entity.title) }
+      },
+    })
+
+    for (const [definition] of [defineProductSearchIndex(), custom]) {
+      const { container } = fakeContainer([[row]])
+      const [[mutation]] = await collect(definition.seed!({ container, index: {} as never }))
+
+      assert.equal(mutation.action, 'upsert')
+      assert.deepEqual(mutation.action === 'upsert' && mutation.documents[0].sales_channel_ids, ['sc_1', 'sc_2'])
+      assert.equal(mutation.action === 'upsert' && 'sales_channels' in mutation.documents[0], false)
+    }
+  })
+
   it('defaults to published products only', () => {
     const [definition] = defineProductSearchIndex()
     const [custom] = defineProductSearchIndex({ name: 'catalog', filters: { status: 'draft' } })
@@ -203,13 +228,11 @@ describe('createSeed', () => {
     assert.equal(calls[0].withDeleted, false)
   })
 
-  it('turns soft-deleted rows into a delete mutation during a catch-up pass', async () => {
+  it('reconciles a catch-up page against the index filters, deleting soft-deleted and filtered-out rows', async () => {
     const since = new Date('2026-09-11T00:00:00.000Z')
     const { calls, container } = fakeContainer([
-      [
-        { id: 'p1', title: 'One' },
-        { id: 'p2', title: 'Two', deleted_at: '2026-09-11T10:00:00.000Z' },
-      ],
+      [{ id: 'p1' }, { id: 'p2', deleted_at: '2026-09-11T10:00:00.000Z' }, { id: 'p3' }],
+      [{ id: 'p1', title: 'One' }],
     ])
 
     const batches = await collect(
@@ -219,13 +242,74 @@ describe('createSeed', () => {
     assert.deepEqual(batches, [
       [
         { action: 'upsert', documents: [{ id: 'p1', title: 'One' }] },
-        { action: 'delete', filters: { id: ['p2'] } },
+        { action: 'delete', filters: { id: ['p2', 'p3'] } },
       ],
     ])
 
-    assert.deepEqual(calls[0].fields, ['id', 'title', 'deleted_at'])
-    assert.deepEqual(calls[0].filters, { status: 'published', $and: [{ updated_at: { $gte: since } }] })
+    assert.deepEqual(calls[0].fields, ['id'])
+    assert.deepEqual(calls[0].filters, { updated_at: { $gte: since } })
     assert.equal(calls[0].withDeleted, true)
+    assert.deepEqual(calls[1].filters, { status: 'published', id: ['p1', 'p2', 'p3'] })
+    assert.equal(calls[1].withDeleted, undefined)
+  })
+
+  it('pages by a custom primary key and passes the query context', async () => {
+    const { calls, container } = fakeContainer([
+      [
+        { id: 'p1', handle: 'a', title: 'One' },
+        { id: 'p2', handle: 'b', title: 'Two' },
+      ],
+      [],
+    ])
+
+    const options = seedOptions({ primaryKey: 'handle', queryContext: () => ({ region_id: 'reg_1' }) })
+
+    await collect(createSeed(options)({ container, index: {} as never }))
+
+    assert.deepEqual(calls[0].context, { region_id: 'reg_1' })
+    assert.deepEqual(calls[1].filters, { status: 'published', $and: [{ handle: { $gt: 'b' } }] })
+  })
+
+  it('rejects a transform that drops the document id', async () => {
+    const { container } = fakeContainer([[{ id: 'p1', title: 'One' }]])
+    const options = seedOptions({
+      transform: (entity) => {
+        return { id: '', title: String(entity.title) }
+      },
+    })
+
+    await assert.rejects(collect(createSeed(options)({ container, index: {} as never })), /without an "id"/)
+  })
+})
+
+describe('product consume', () => {
+  it('reindexes the parent product when a variant is deleted', async () => {
+    const [definition] = defineProductSearchIndex()
+    const { calls, container } = fakeContainer([[{ product_id: 'p1' }], [{ id: 'p1', title: 'One' }]])
+
+    const mutations = await definition.consume!(
+      { name: 'product-variant.deleted', data: { id: 'variant_1' } },
+      { container, index: {} as never },
+    )
+
+    assert.equal(calls[0].entity, 'product_variant')
+    assert.equal(calls[0].withDeleted, true)
+    assert.deepEqual(calls[1].filters, { status: 'published', id: ['p1'] })
+    assert.equal(mutations.length, 1)
+    assert.equal(mutations[0].action, 'upsert')
+  })
+
+  it('deletes a deleted product without reading it back', async () => {
+    const [definition] = defineProductSearchIndex()
+    const { calls, container } = fakeContainer([])
+
+    const mutations = await definition.consume!(
+      { name: 'product.deleted', data: { id: 'p1' } },
+      { container, index: {} as never },
+    )
+
+    assert.deepEqual(mutations, [{ action: 'delete', filters: { id: ['p1'] } }])
+    assert.equal(calls.length, 0)
   })
 })
 

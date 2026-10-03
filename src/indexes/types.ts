@@ -1,4 +1,4 @@
-import type { SearchTypes } from '@medusajs/types'
+import type { QueryContextType, SearchTypes } from '@medusajs/types'
 
 export interface SearchTransformContext {
   index: string
@@ -10,6 +10,9 @@ export type SearchDocumentTransform = (
   context: SearchTransformContext,
 ) => SearchTypes.SearchDocument
 
+export type SearchQueryContext =
+  QueryContextType | ((context: SearchTypes.SearchIngestionContext) => QueryContextType | undefined)
+
 export interface SearchIndexFactoryOptions {
   name?: string
   provider?: string
@@ -19,6 +22,7 @@ export interface SearchIndexFactoryOptions {
   graph_fields?: string[]
   filters?: Record<string, unknown>
   transform?: SearchDocumentTransform
+  query_context?: SearchQueryContext
   batch_size?: number
   events?: string[]
   consume?: SearchTypes.SearchIndexDefinition['consume']
@@ -36,6 +40,7 @@ export interface ResolvedFactoryOptions {
   graphFields: string[]
   filters: Record<string, unknown>
   transform: SearchDocumentTransform
+  queryContext?: SearchQueryContext
   batchSize: number
   events: string[]
   locale?: string

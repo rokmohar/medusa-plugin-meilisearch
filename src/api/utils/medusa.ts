@@ -1,10 +1,3 @@
-/**
- * Single coupling point to non-public Medusa internals: these symbols live on
- * subpaths the plugin's classic `moduleResolution: "node"` cannot resolve as
- * imports, so they are `require()`d and typed by hand.
- *
- * Verified against @medusajs/medusa ^2.19.0.
- */
 import type { MedusaRequest, MedusaResponse, MedusaNextFunction, MedusaStoreRequest } from '@medusajs/framework'
 import type { SearchTypes } from '@medusajs/types'
 

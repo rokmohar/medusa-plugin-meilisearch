@@ -22,3 +22,13 @@ Before turning one into the other: check whether the returned value is mutated b
 
 A type error against a hand-written type often means the production type is wrong: the `fields` collision with Medusa's
 reserved `RequestQueryFields.fields` surfaced only because the test named the real request type.
+
+## Read an option's semantics in the source, not off its name
+
+The 2.3.0 plan proposed meilisearch-js `skipCreation` to stop writes from recreating dropped index versions. In the
+client's types it means "update existing documents only", so it would have silently dropped every new product. The
+same review claimed `reconcileIds` should key by `primary_key`; event payloads and native `graphConsume`'s transform
+contract both key by `id`, so the hardcoded `id` was right and only the seed cursor needed the primary key.
+
+Before a plan relies on a third-party option or a "native does X" comparison: open the `.d.ts`/source in
+`node_modules` and trace where the value comes from end to end.

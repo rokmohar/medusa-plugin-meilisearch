@@ -9,7 +9,7 @@ import {
   resolveRelatedIds,
 } from './graph'
 import { expandLocales, localizeSettings } from './locales'
-import type { ResolvedFactoryOptions, SearchIndexFactoryOptions } from './types'
+import type { ResolvedFactoryOptions, SearchDocumentTransform, SearchIndexFactoryOptions } from './types'
 
 export const PRODUCT_INDEX_NAME = 'products'
 export const PRODUCT_ENTITY = 'product'
@@ -42,6 +42,7 @@ export const PRODUCT_GRAPH_FIELDS = [
   'variants.title',
   'variants.sku',
   'variants.barcode',
+  'sales_channels.id',
 ]
 
 export const PRODUCT_EVENTS = [
@@ -136,6 +137,7 @@ export function productSearchSchema() {
       .sortable()
       .facetable({ types: ['range'] }),
     updated_at: search.date().filterable().sortable(),
+    sales_channel_ids: search.keyword().array().filterable(),
   }
 }
 
@@ -164,7 +166,8 @@ function resolveOptions(
   locale: string | undefined,
   options: SearchIndexFactoryOptions,
 ): ResolvedFactoryOptions {
-  const graphFields = [...new Set([...PRODUCT_GRAPH_FIELDS, ...(options.graph_fields ?? [])])]
+  const primaryKey = options.primary_key ?? 'id'
+  const graphFields = [...new Set([...PRODUCT_GRAPH_FIELDS, ...(options.graph_fields ?? []), primaryKey])]
   const declared = { ...options.settings }
   const settings = locale ? localizeSettings(declared, locale) : declared
 
@@ -172,22 +175,41 @@ function resolveOptions(
     name,
     entity: PRODUCT_ENTITY,
     provider: options.provider,
-    primaryKey: options.primary_key ?? 'id',
+    primaryKey,
     fields: options.fields ?? search.define(productSearchSchema()),
     settings,
     graphFields,
     filters: options.filters ?? { status: 'published' },
-    transform: options.transform ?? createDefaultTransform(graphFields),
+    transform: withSalesChannelIds(options.transform ?? createDefaultTransform(graphFields)),
+    queryContext: options.query_context,
     batchSize: options.batch_size ?? 200,
     events: options.events ?? PRODUCT_EVENTS,
     locale,
   }
 }
 
+function withSalesChannelIds(transform: SearchDocumentTransform): SearchDocumentTransform {
+  return (entity, context) => {
+    const { sales_channels: _salesChannels, ...document } = transform(entity, context)
+
+    return { ...document, sales_channel_ids: readSalesChannelIds(entity) }
+  }
+}
+
+function readSalesChannelIds(entity: Record<string, unknown>): string[] {
+  const channels = Array.isArray(entity.sales_channels) ? entity.sales_channels : []
+
+  return channels.flatMap((channel: unknown) => {
+    return typeof channel === 'object' && channel !== null && 'id' in channel && typeof channel.id === 'string'
+      ? [channel.id]
+      : []
+  })
+}
+
 function createProductConsume(
   options: ResolvedFactoryOptions,
 ): NonNullable<SearchTypes.SearchIndexDefinition['consume']> {
-  return async (event: Event<unknown>, { container }) => {
+  return async (event: Event<unknown>, context) => {
     const ids = resolveEventIds(event)
 
     if (!ids.length) {
@@ -201,16 +223,12 @@ function createProductConsume(
         return [{ action: 'delete', filters: { id: ids } }]
       }
 
-      return reconcileIds(container.query, options, ids)
+      return reconcileIds(context.container.query, options, ids, context)
     }
 
-    if (action === 'deleted') {
-      return []
-    }
+    const productIds = await resolveProductIds(context.container.query, entity, ids, action === 'deleted')
 
-    const productIds = await resolveProductIds(container.query, entity, ids)
-
-    return reconcileIds(container.query, options, productIds)
+    return reconcileIds(context.container.query, options, productIds, context)
   }
 }
 
@@ -218,18 +236,37 @@ async function resolveProductIds(
   query: SearchTypes.SearchContainer['query'],
   entity: string,
   ids: string[],
+  deleted: boolean,
 ): Promise<string[]> {
   switch (entity) {
     case 'product-variant':
-      return resolveRelatedIds(query, { entity: 'product_variant', field: 'product_id', filters: { id: ids } })
+      return resolveRelatedIds(query, {
+        entity: 'product_variant',
+        field: 'product_id',
+        filters: { id: ids },
+        withDeleted: deleted,
+      })
     case 'product-option':
-      return resolveRelatedIds(query, { entity: 'product_option', field: 'product_id', filters: { id: ids } })
+      return resolveRelatedIds(query, {
+        entity: 'product_option',
+        field: 'product_id',
+        filters: { id: ids },
+        withDeleted: deleted,
+      })
     case 'product-option-value':
       return resolveRelatedIds(query, {
         entity: 'product_option_value',
         field: 'option.product_id',
         filters: { id: ids },
+        withDeleted: deleted,
       })
+  }
+
+  if (deleted) {
+    return []
+  }
+
+  switch (entity) {
     case 'product-category':
       return resolveRelatedIds(query, { entity: PRODUCT_ENTITY, field: 'id', filters: { categories: { id: ids } } })
     case 'product-collection':

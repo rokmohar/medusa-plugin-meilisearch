@@ -28,18 +28,21 @@ filled.
 - Hybrid search over Meilisearch embedders — OpenAI, Ollama, Hugging Face, a REST endpoint, or vectors you compute
 - One index per locale, translated through Medusa's Translation Module
 - An escape hatch at every level: raw Meilisearch settings per index, raw Meilisearch parameters per query
+- Drop-in engine for Medusa's own `POST /store/search` and `@medusajs/instantsearch-adapter`, with product hits scoped
+  to the publishable key's sales channels
 - Store endpoints that keep native pricing, tax, `variants.inventory_quantity`, sales-channel scoping, filters and sorts
 
 ## Compatibility
 
-| Plugin   | Medusa           | Meilisearch server | Node    |
-| -------- | ---------------- | ------------------ | ------- |
-| `^2.2.0` | `2.21.x`         | `>= 1.20`          | `>= 22` |
-| `^2.1.0` | `2.20.x`         | `>= 1.20`          | `>= 22` |
-| `^2.0.0` | `2.19.x`         | `>= 1.20`          | `>= 22` |
-| `^1.4.1` | `>= 2.15 < 2.19` | `>= 1.5`           | `>= 22` |
-| `^1.3.7` | `^2.13.4`        | `>= 1.5`           | `>= 20` |
-| `^1.0.1` | `^2.4.0`         | `>= 1.5`           | `>= 20` |
+| Plugin   | Medusa            | Meilisearch server | Node       |
+| -------- | ----------------- | ------------------ | ---------- |
+| `^2.3.0` | `2.21.1 – 2.21.x` | `>= 1.20`          | `>= 22.12` |
+| `^2.2.0` | `2.21.x`          | `>= 1.20`          | `>= 22`    |
+| `^2.1.0` | `2.20.x`          | `>= 1.20`          | `>= 22`    |
+| `^2.0.0` | `2.19.x`          | `>= 1.20`          | `>= 22`    |
+| `^1.4.1` | `>= 2.15 < 2.19`  | `>= 1.5`           | `>= 22`    |
+| `^1.3.7` | `^2.13.4`         | `>= 1.5`           | `>= 20`    |
+| `^1.0.1` | `^2.4.0`          | `>= 1.5`           | `>= 20`    |
 
 The 2.19 release removed the search interface the v1 line was written against, so the two lines do not overlap: v1 stops
 at Medusa 2.18, v2 starts at 2.19. Coming from v1, work through [the upgrade guide](./docs/migration.md).
@@ -50,10 +53,13 @@ narrowed index settings to what every engine can honour, changed the seed functi
 documents, and took over index swapping. Engine-specific settings, localized indexes included, now live under
 `settings.provider_options.meilisearch`.
 
+Starting with 2.3.0 the floor is Medusa 2.21.1, the patch that shipped `POST /store/search` and `configureStoreSearch`.
+
 The `>= 1.20` server floor is the version this plugin is built and tested against. Medusa 2.21 itself still runs on
 Node 20.19+, but this plugin is built and tested on Node 22 only.
 
-The Meilisearch JS client stays on `^0.56.0`, the last version published as CommonJS.
+The Meilisearch JS client is `^0.62.0`, which is published as ES modules only. The plugin's CommonJS build loads it via
+Node's `require(esm)`, hence the Node 22.12 floor.
 
 ## Installation
 
@@ -152,7 +158,8 @@ declarations (one per locale).
 | `settings`       | `{}`                                                                  | Typo tolerance and distinct attribute, plus `provider_options.meilisearch` for engine settings. |
 | `graph_fields`   | the default selection                                                 | Extra `query.graph` paths to fetch while seeding and ingesting.                                 |
 | `filters`        | `{ status: 'published' }` / `{ is_active: true, is_internal: false }` | `query.graph` filters.                                                                          |
-| `transform`      | pick of the declared paths                                            | Maps an entity to a search document. Synchronous.                                               |
+| `transform`      | pick of the declared paths                                            | Maps an entity to a search document. Synchronous; the document must keep `id`.                  |
+| `query_context`  | –                                                                     | `query.graph` context (e.g. a pricing context), or a function of the ingestion context.         |
 | `batch_size`     | `200`                                                                 | Seed page size.                                                                                 |
 | `events`         | product / category events, both namespaces                            | Events this index reacts to.                                                                    |
 | `consume`        | the default routing table                                             | Turns an event into index mutations.                                                            |
@@ -269,7 +276,54 @@ Reindex on demand:
 await search.reindex({ index: 'products', strategy: 'swap' })
 ```
 
+## Storefront search with `POST /store/search`
+
+Medusa's own store search route works against these indexes once you allow them. Add the native middleware to your
+application's `src/api/middlewares.ts`:
+
+```ts
+import { configureStoreSearch, defineMiddlewares } from '@medusajs/framework/http'
+
+export default defineMiddlewares({
+  routes: [
+    {
+      matcher: '/store/search',
+      middlewares: [
+        configureStoreSearch({
+          allowed_indexes: {
+            products: true,
+            categories: true,
+          },
+        }),
+      ],
+    },
+  ],
+})
+```
+
+Allowed names are the registered index names, so a localized setup lists each one (`products-fr-FR` and so on) and the
+storefront picks the index for its locale.
+
+Medusa narrows every product index to `status = published` and to the sales channels of the request's publishable key.
+The product declaration carries a filterable `sales_channel_ids` for that, filled from `sales_channels.id`. Editing a
+product's channels emits `product.updated` and re-indexes it; adding products from the sales channel side emits
+nothing, so reindex after bulk assignments.
+
+The route returns indexed fields only, so anything a storefront card shows has to be declared on the index. For
+calculated prices, inventory and other per-request values use `GET /store/meilisearch/products` below.
+
+The [InstantSearch adapter](https://www.npmjs.com/package/@medusajs/instantsearch-adapter) speaks to the same route:
+
+```ts
+import { createInstantSearchAdapter } from '@medusajs/instantsearch-adapter'
+
+const { searchClient } = createInstantSearchAdapter({ sdk, path: '/store/search' })
+```
+
 ## Store API endpoints
+
+The `*-hits` endpoints predate the native route and overlap with it; prefer `POST /store/search` in new storefronts.
+The hydrated `products` and `categories` endpoints remain the way to combine Meilisearch ranking with native pricing.
 
 All four endpoints accept the Meilisearch-specific parameters `query`, `index`, `language`, `semanticSearch`,
 `semanticRatio`, `embedder` and `filter` (a raw Meilisearch filter expression).
