@@ -22,6 +22,7 @@ import {
   listProductQueryConfig,
   StoreProductCategoriesParams,
   listProductCategoryConfig,
+  applyCategoryFilters,
 } from './utils/medusa'
 import { StoreSearchCategoriesSchema } from './store/meilisearch/categories-hits/route'
 import { StoreSearchProductsSchema } from './store/meilisearch/products-hits/route'
@@ -125,13 +126,14 @@ export default defineMiddlewares({
         clearFiltersByKey(['region_id', 'country_code', 'province', 'cart_id']),
       ],
     },
-    // Mirrors native `/store/product-categories` (validate/transform only).
+    // Mirrors native `/store/product-categories`: active, public categories only.
     {
       methods: ['GET'],
       matcher: '/store/meilisearch/categories',
       middlewares: [
         extractMeiliParams,
         validateAndTransformQuery(StoreProductCategoriesParams, listProductCategoryConfig),
+        applyCategoryFilters,
       ],
     },
     {

@@ -1,9 +1,10 @@
-import '@medusajs/modules-sdk'
+import { MedusaModule } from '@medusajs/modules-sdk'
 import assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { afterEach, describe, it } from 'node:test'
 import type { MedusaStoreRequest } from '@medusajs/framework'
 import { GET, ProductsResponse } from '../../src/api/store/meilisearch/products/route'
 import type { MeiliParams } from '../../src/api/types'
+import { defineProductSearchIndex } from '../../src/indexes/products'
 import { createQuery, createRequest, createResponse, createSearchModule, QUERY_KEY, SEARCH_KEY } from './support/routes'
 
 const PRICE_FIELDS = ['id', 'title', 'variants.calculated_price.calculated_amount']
@@ -15,6 +16,9 @@ function harness(options: {
   products?: Record<string, unknown>[]
   fields?: string[]
   pagination?: { skip: number; take: number }
+  filterableFields?: Record<string, unknown>
+  validatedQuery?: Record<string, unknown>
+  salesChannelIds?: string[]
 }) {
   const query = createQuery(options.products ?? [{ id: 'prod_1' }])
   const searchModule = createSearchModule({
@@ -26,10 +30,11 @@ function harness(options: {
         fields: options.fields ?? PRICE_FIELDS,
         pagination: options.pagination ?? { skip: 0, take: 20 },
       },
+      filterableFields: options.filterableFields ?? {},
       pricingContext: options.pricingContext,
       meiliParams: options.meiliParams,
-      publishable_key_context: { key: 'pk_test', sales_channel_ids: ['sc_1'] },
-      validatedQuery: {},
+      publishable_key_context: { key: 'pk_test', sales_channel_ids: options.salesChannelIds ?? ['sc_1'] },
+      validatedQuery: options.validatedQuery ?? {},
     },
     { [QUERY_KEY]: query, [SEARCH_KEY]: searchModule },
   )
@@ -38,7 +43,70 @@ function harness(options: {
   return { req, res, payloads, query, searchModule }
 }
 
+afterEach(() => {
+  MedusaModule.clearInstances()
+})
+
 describe('GET /store/meilisearch/products', () => {
+  it('scopes the engine query to the sales channels the request asked for', async () => {
+    defineProductSearchIndex()
+
+    const { req, res, searchModule } = harness({
+      meiliParams: { query: 'shirt', index: 'products', semanticSearch: false, semanticRatio: 0.5 },
+      hits: ['prod_1'],
+      salesChannelIds: ['sc_1', 'sc_2'],
+      validatedQuery: { sales_channel_id: 'sc_2' },
+    })
+
+    await GET(req, res)
+
+    assert.deepEqual(searchModule.searchCalls[0].filters, {
+      q: 'shirt',
+      status: 'published',
+      sales_channel_ids: ['sc_2'],
+    })
+  })
+
+  it("keeps only the matches inside the key's sales channels", async () => {
+    const { req, res, query } = harness({
+      meiliParams: { query: 'shirt', index: 'products', semanticSearch: false, semanticRatio: 0.5 },
+      hits: ['prod_2', 'prod_1'],
+      filterableFields: { id: ['prod_1', 'prod_3'] },
+    })
+
+    await GET(req, res)
+
+    assert.deepEqual(query.calls[0].filters, { id: { $in: ['prod_1'] } })
+  })
+
+  it("scopes the engine query to published products in the key's sales channels", async () => {
+    defineProductSearchIndex()
+
+    const { req, res, searchModule } = harness({
+      meiliParams: {
+        query: 'shirt',
+        index: 'products',
+        filter: 'brand = "acme"',
+        semanticSearch: false,
+        semanticRatio: 0.5,
+      },
+      hits: ['prod_1'],
+    })
+
+    await GET(req, res)
+
+    assert.deepEqual(searchModule.searchCalls[0].filters, {
+      q: 'shirt',
+      status: 'published',
+      sales_channel_ids: ['sc_1'],
+    })
+    assert.deepEqual(searchModule.searchCalls[0].search_options, {
+      provider_options: {
+        meilisearch: { filter: '(brand = "acme") AND (status = "published" AND sales_channel_ids IN ["sc_1"])' },
+      },
+    })
+  })
+
   it('forwards the customer groups resolved from the session into query.graph', async () => {
     const { req, res, query, searchModule } = harness({
       pricingContext: {
@@ -115,7 +183,7 @@ describe('GET /store/meilisearch/products', () => {
     assert.deepEqual(query.calls[0].context, {})
   })
 
-  it('strips the virtual inventory field from the graph query', async () => {
+  it('swaps the virtual inventory field for the fields the inventory wrapper needs', async () => {
     const { req, res, query } = harness({
       fields: ['id', 'title', 'variants.inventory_quantity'],
       products: [{ id: 'prod_1', variants: [] }],
@@ -123,7 +191,7 @@ describe('GET /store/meilisearch/products', () => {
 
     await GET(req, res)
 
-    assert.deepEqual(query.calls[0].fields, ['id', 'title'])
+    assert.deepEqual(query.calls[0].fields, ['id', 'title', 'variants.id', 'variants.manage_inventory'])
   })
 
   it('answers with an empty page without hitting the database when nothing matched', async () => {

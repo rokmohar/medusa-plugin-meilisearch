@@ -47,19 +47,25 @@ export default defineProductSearchIndex({
 
 `graph_fields` is what makes the price rows available to `transform`; without those paths the variants arrive without
 prices. Excluding `price_list_id` keeps promotional prices out of the sort key, which is usually what a "from" price
-should show.
+should show. Spreading `...product` also stores the raw `variants[].prices` rows in the document; strip them in
+`transform` if you only want the computed field.
 
 Sorting and filtering then work through the normal query options:
 
 ```ts
-await search.search({
+import { Modules } from '@medusajs/framework/utils'
+
+const searchModule = container.resolve(Modules.SEARCH)
+
+await searchModule.search({
   entity: 'products',
   filters: { q: 'shirt', min_price_usd: { $lte: 5000 } },
   pagination: { order: { min_price_usd: 'ASC' } },
 })
 ```
 
-Or through a store request: `?query=shirt&sort=min_price_usd:asc&filter=min_price_usd%20%3C%3D%205000`.
+Or through the raw-hits store route, which takes a Meilisearch `sort`:
+`GET /store/meilisearch/products-hits?query=shirt&sort=min_price_usd:asc&filter=min_price_usd%20%3C%3D%205000`.
 
 ## Keeping the value current
 
@@ -69,17 +75,21 @@ index a price:
 
 ```ts
 import { PricingEvents } from '@medusajs/framework/utils'
-import { PRODUCT_EVENTS } from '@rokmohar/medusa-plugin-meilisearch/indexes'
+import { defineProductSearchIndex, PRODUCT_EVENTS } from '@rokmohar/medusa-plugin-meilisearch/indexes'
 
 export default defineProductSearchIndex({
   // fields, graph_fields and transform as above
   events: [...PRODUCT_EVENTS, PricingEvents.PRICE_CREATED, PricingEvents.PRICE_UPDATED, PricingEvents.PRICE_DELETED],
   consume: async (event, context) => {
-    // resolve the affected product ids for a price event, then return
-    // [{ action: 'upsert', documents }] for them
+    // handle the product events too, then resolve the products affected by a price event
+    // and return [{ action: 'upsert', documents }] for them
+    return []
   },
 })
 ```
+
+Setting `consume` replaces the default consumer entirely, so your function also has to turn the product events into
+mutations; the default one is not exported to delegate to.
 
 A price event carries a price id, so `consume` has to walk back to the product — price set, then variant, then product —
 using `context.container.query`. If that traversal is more than you want to own, leave price events out and rebuild

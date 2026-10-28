@@ -1,8 +1,9 @@
 import type { MedusaRequest } from '@medusajs/framework'
 import type { SearchTypes } from '@medusajs/types'
-import { MedusaError, Modules } from '@medusajs/utils'
+import { MedusaError, Modules, ProductStatus } from '@medusajs/utils'
 import z from 'zod'
 import { readIndexLocales } from '../../indexes/locales'
+import { compileFilters } from '../../providers/meilisearch/utils/filters'
 import { getRegisteredSearchIndexes } from './medusa'
 
 export interface MeiliHitsEnvelope {
@@ -33,6 +34,7 @@ export interface SearchRequestParams {
 }
 
 const DEFAULT_EMBEDDER = 'default'
+const PRODUCT_ENTITY = 'product'
 const DEFAULT_LIMIT = 20
 
 export const HitsSearchSchema = z.object({
@@ -198,10 +200,26 @@ export function buildSearchOptions(input: {
   }
 
   if (params.semanticSearch && params.semanticRatio > 0) {
-    const vectorField = findVectorField(definition)
+    // A named embedder runs a hybrid search even when the index also holds a vector field.
+    const vector = params.embedder ? undefined : findVectorField(definition)
 
-    if (vectorField) {
-      options.vector = { field: vectorField, semantic_ratio: params.semanticRatio }
+    if (vector) {
+      if (!vector.field.embed) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Search index "${definition?.name}" holds pre-computed embeddings in "${vector.path}", so semanticSearch ` +
+            'has no vector to compare them with. Search it from code with `search_options.vector.value`.',
+        )
+      }
+
+      if (!params.query) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `semanticSearch on search index "${definition?.name}" needs a query to embed.`,
+        )
+      }
+
+      options.vector = { field: vector.path, query: params.query, semantic_ratio: params.semanticRatio }
     } else {
       providerOptions.hybrid = {
         embedder: params.embedder ?? findEmbedderName(definition) ?? DEFAULT_EMBEDDER,
@@ -217,14 +235,45 @@ export function buildSearchOptions(input: {
   return options
 }
 
-export function findVectorField(definition: SearchTypes.SearchIndexDefinition | undefined): string | undefined {
+export function findVectorField(
+  definition: SearchTypes.SearchIndexDefinition | undefined,
+): { path: string; field: SearchTypes.SearchFieldDefinition } | undefined {
   if (!definition) {
     return undefined
   }
 
-  return Object.entries(definition.fields).find(([, field]) => {
+  const entry = Object.entries(definition.fields).find(([, field]) => {
     return field.type === 'vector'
-  })?.[0]
+  })
+
+  return entry ? { path: entry[0], field: entry[1] } : undefined
+}
+
+/**
+ * Mirrors the scope native `POST /store/search` puts on product indexes: published products in the publishable key's
+ * sales channels, for each of the two fields the index declares filterable.
+ */
+export function productScopeFilters(
+  definition: SearchTypes.SearchIndexDefinition | undefined,
+  salesChannelIds: string[] | undefined,
+): SearchTypes.SearchFilters {
+  const filters: SearchTypes.SearchFilters = {}
+
+  if (definition?.entity !== PRODUCT_ENTITY) {
+    return filters
+  }
+
+  const fields: Partial<Record<string, SearchTypes.SearchFieldDefinition>> = definition.fields
+
+  if (fields.status?.filterable === true) {
+    filters.status = ProductStatus.PUBLISHED
+  }
+
+  if (salesChannelIds?.length && fields.sales_channel_ids?.filterable === true) {
+    filters.sales_channel_ids = salesChannelIds
+  }
+
+  return filters
 }
 
 export function findEmbedderName(definition: SearchTypes.SearchIndexDefinition | undefined): string | undefined {
@@ -294,6 +343,7 @@ export async function searchDocumentIds(
   req: MedusaRequest,
   entity: string,
   params: SearchRequestParams,
+  scope: { salesChannelIds?: string[] } = {},
 ): Promise<{ ids: string[]; count: number }> {
   const searchModule = resolveSearchModule(req)
   const index = await resolveSearchIndexName({
@@ -303,13 +353,17 @@ export async function searchDocumentIds(
     explicitIndex: params.index,
   })
   const definition = findSearchIndexDefinition(index)
+  const scopeFilters = productScopeFilters(definition, scope.salesChannelIds)
+  // A raw filter replaces the structured ones in the provider, so the scope is ANDed into it as well.
+  const scopeFilter = compileFilters(scopeFilters)
+  const filter = params.filter && scopeFilter ? `(${params.filter}) AND ${scopeFilter}` : params.filter
 
   const result = await searchModule.search({
     entity: index,
     fields: ['id'],
-    filters: { q: params.query ?? '' },
+    filters: { q: params.query ?? '', ...scopeFilters },
     pagination: { skip: params.offset ?? 0, take: params.limit ?? DEFAULT_LIMIT },
-    search_options: buildSearchOptions({ definition, params }),
+    search_options: buildSearchOptions({ definition, params: { ...params, filter } }),
   })
 
   return {
@@ -332,4 +386,36 @@ export function toStringArray(value: string | string[] | undefined): string[] | 
   return entries.filter((entry) => {
     return entry.length > 0
   })
+}
+
+/**
+ * Narrows the engine's ids to an `id` filter already on the request (the products of the allowed sales channels, or ids
+ * the caller asked for), keeping the engine's order.
+ */
+export function restrictIds(ids: string[], existing: unknown): string[] {
+  const allowed = toIdSet(existing)
+
+  return allowed
+    ? ids.filter((id) => {
+        return allowed.has(id)
+      })
+    : ids
+}
+
+function toIdSet(value: unknown): Set<string> | undefined {
+  const ids = isRecord(value) && '$in' in value ? value.$in : value
+
+  if (typeof ids === 'string') {
+    return new Set([ids])
+  }
+
+  if (Array.isArray(ids)) {
+    return new Set(
+      ids.filter((id): id is string => {
+        return typeof id === 'string'
+      }),
+    )
+  }
+
+  return undefined
 }

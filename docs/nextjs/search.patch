@@ -1,0 +1,85 @@
+diff --git a/apps/storefront/src/app/[countryCode]/(main)/search/page.tsx b/apps/storefront/src/app/[countryCode]/(main)/search/page.tsx
+index 4fe14f4..117990b 100644
+--- a/apps/storefront/src/app/[countryCode]/(main)/search/page.tsx
++++ b/apps/storefront/src/app/[countryCode]/(main)/search/page.tsx
+@@ -1,8 +1,8 @@
+ import { Metadata } from "next"
+ import { notFound } from "next/navigation"
+ 
+-import { listProducts } from "@lib/data/products"
+ import { getRegion } from "@lib/data/regions"
++import { searchProducts } from "@lib/data/search"
+ import ProductPreview from "@modules/products/components/product-preview"
+ import SearchForm from "@modules/search/components/search-form"
+ 
+@@ -33,12 +33,11 @@ export default async function SearchPage(props: Props) {
+     notFound()
+   }
+ 
+-  const { response } = query
+-    ? await listProducts({
+-        countryCode,
+-        queryParams: { q: query, limit: RESULT_LIMIT },
+-      })
+-    : { response: { products: [], count: 0 } }
++  const response = await searchProducts({
++    query,
++    countryCode,
++    limit: RESULT_LIMIT,
++  })
+ 
+   return (
+     <div className="content-container py-6" data-testid="search-container">
+diff --git a/apps/storefront/src/lib/data/search.ts b/apps/storefront/src/lib/data/search.ts
+new file mode 100644
+index 0000000..b2e0a12
+--- /dev/null
++++ b/apps/storefront/src/lib/data/search.ts
+@@ -0,0 +1,47 @@
++"use server"
++
++import { sdk } from "@lib/config"
++import { HttpTypes } from "@medusajs/types"
++import { getAuthHeaders } from "./cookies"
++import { getRegion } from "./regions"
++
++/**
++ * Meilisearch ranks the matches; Medusa returns them as regular store products,
++ * priced for the region and scoped to the publishable key's sales channels.
++ */
++export const searchProducts = async ({
++  query,
++  countryCode,
++  limit = 24,
++  offset = 0,
++}: {
++  query: string
++  countryCode: string
++  limit?: number
++  offset?: number
++}): Promise<{ products: HttpTypes.StoreProduct[]; count: number }> => {
++  const region = await getRegion(countryCode)
++
++  if (!region || !query) {
++    return { products: [], count: 0 }
++  }
++
++  return sdk.client.fetch<{
++    products: HttpTypes.StoreProduct[]
++    count: number
++  }>(`/store/meilisearch/products`, {
++    method: "GET",
++    query: {
++      query,
++      limit,
++      offset,
++      region_id: region.id,
++      fields:
++        "*variants.calculated_price,+variants.inventory_quantity,*variants.images,*variants.options,+metadata,+tags",
++    },
++    headers: {
++      ...(await getAuthHeaders()),
++    },
++    cache: "no-store",
++  })
++}

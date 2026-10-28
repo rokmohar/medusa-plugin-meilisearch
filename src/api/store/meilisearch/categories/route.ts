@@ -1,10 +1,13 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { ProductCategoryDTO } from '@medusajs/types'
-import { ContainerRegistrationKeys } from '../../../utils/medusa'
-import { searchDocumentIds } from '../../../utils/search'
+import { ContainerRegistrationKeys, publishedProductsContext } from '../../../utils/medusa'
+import { restrictIds, searchDocumentIds } from '../../../utils/search'
 import '../../../types'
 
 export interface CategoriesResponse {
+  /** The key native `/store/product-categories` answers with. */
+  product_categories: ProductCategoryDTO[]
+  /** Same list, under the key earlier versions of this route used. */
   categories: ProductCategoryDTO[]
   count: number
   limit?: number
@@ -43,12 +46,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
     totalCount = result.count
 
     if (!categoryIds.length) {
-      res.json({ categories: [], count: 0, limit, offset })
+      res.json({ product_categories: [], categories: [], count: 0, limit, offset })
 
       return
     }
 
-    filters.id = { $in: categoryIds }
+    filters.id = { $in: restrictIds(categoryIds, filters.id) }
     graphPagination = { ...pagination, skip: 0, take: categoryIds.length }
   }
 
@@ -56,6 +59,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
     {
       entity: 'product_category',
       fields,
+      // Same as native: products reached through a category are published ones only.
+      context: publishedProductsContext(),
       filters,
       pagination: graphPagination,
     },
@@ -73,6 +78,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse<CategoriesResp
   }
 
   res.json({
+    product_categories: orderedCategories,
     categories: orderedCategories,
     count: isSearch ? totalCount : (metadata?.count ?? categories.length),
     offset: isSearch ? offset : (metadata?.skip ?? offset),

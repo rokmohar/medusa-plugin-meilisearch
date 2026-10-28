@@ -1,19 +1,22 @@
 # Getting prices back from a search
 
-`/store/meilisearch/products` hydrates its results through Medusa exactly like `/store/products` does, so prices come
-from the pricing module and not from the index. Ask for them with the usual parameters:
+`/store/meilisearch/products` hydrates its results through Medusa the way `/store/products` does, so prices come from
+the pricing module and not from the index. With a `query`, Meilisearch decides the order and the `count`, and native
+filters apply to the page it returns (see the [README](../README.md#get-storemeilisearchproducts)). Pricing follows the
+native route. Ask for prices with the usual parameters:
 
 ```bash
 curl 'http://localhost:9000/store/meilisearch/products?query=shirt&region_id=reg_1&fields=id,title,handle,*variants.calculated_price' \
   -H 'x-publishable-api-key: pk_...'
 ```
 
-| Parameter       | Effect                                                            |
-| --------------- | ----------------------------------------------------------------- |
-| `fields`        | Which price fields to include, e.g. `*variants.calculated_price`. |
-| `region_id`     | Region whose prices and tax rules apply.                          |
-| `currency_code` | Currency to calculate in.                                         |
-| `country_code`  | Refines tax calculation.                                          |
+| Parameter      | Effect                                                            |
+| -------------- | ----------------------------------------------------------------- |
+| `fields`       | Which price fields to include, e.g. `*variants.calculated_price`. |
+| `region_id`    | Region whose currency, prices and tax rules apply.                |
+| `country_code` | Refines tax calculation.                                          |
+| `province`     | Refines tax calculation within the country.                       |
+| `cart_id`      | Prices and taxes for the cart's region and address.               |
 
 ## Customer and customer-group prices
 
@@ -52,11 +55,9 @@ If group prices still do not show up, check in order:
 - the customer is actually a member of that group,
 - the request carried the customer's token — an anonymous request prices from region and currency alone.
 
-`-hits` responses can never carry group prices: index documents are shared by every caller. Search there for speed, then
-hydrate through this route when the page needs prices.
-
-The response carries calculated prices, tax-inclusive amounts and `variants.inventory_quantity` on the same terms as
-the native route:
+The response carries calculated prices on the same terms as the native route. Tax-inclusive amounts such as
+`calculated_amount_with_tax` need a tax context, for example `country_code`, and stock needs
+`+variants.inventory_quantity` in `fields`:
 
 ```json
 {
@@ -83,7 +84,9 @@ the native route:
 }
 ```
 
-`/store/meilisearch/products-hits` is different: it answers straight from the engine without touching the database, so
-it returns only indexed fields and never prices. Use it for autocomplete and facet browsing, and the full route when the
-page needs prices. If you want price data on the hits route, it has to be in the index — see
-[indexing variant prices](./faq-product-variant-prices.md).
+## Prices and the `*-hits` routes
+
+`/store/meilisearch/products-hits` answers straight from the engine without touching the database, so it returns only
+indexed fields and never calculated or customer-group prices; index documents are shared by every caller. Use it for
+autocomplete and facet browsing, and this route when the page needs prices. If you want price data on the hits route,
+it has to be in the index: see [indexing variant prices](./faq-product-variant-prices.md).

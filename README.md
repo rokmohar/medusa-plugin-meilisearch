@@ -1,7 +1,31 @@
-# MedusaJS v2 Meilisearch plugin
+# Meilisearch plugin for Medusa
 
-Meilisearch for Medusa v2 catalogs: full-text and hybrid search over products and categories, plus store endpoints you
-can swap in for `/store/products` and `/store/product-categories` without your storefront noticing.
+[![npm version](https://img.shields.io/npm/v/@rokmohar/medusa-plugin-meilisearch)](https://www.npmjs.com/package/@rokmohar/medusa-plugin-meilisearch)
+[![npm downloads](https://img.shields.io/npm/dm/@rokmohar/medusa-plugin-meilisearch)](https://www.npmjs.com/package/@rokmohar/medusa-plugin-meilisearch)
+[![CI](https://github.com/rokmohar/medusa-plugin-meilisearch/actions/workflows/ci.yml/badge.svg)](https://github.com/rokmohar/medusa-plugin-meilisearch/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/npm/l/@rokmohar/medusa-plugin-meilisearch)](./LICENSE)
+
+Meilisearch for Medusa v2 catalogs: full-text and hybrid search over products and categories, plus store endpoints that
+mirror `/store/products` and `/store/product-categories` with Meilisearch ranking.
+
+- [How it fits together](#how-it-fits-together)
+- [What you get](#what-you-get)
+- [Compatibility](#compatibility)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Internationalization](#internationalization)
+- [Semantic search](#semantic-search)
+- [Querying from code](#querying-from-code)
+- [Storefront search with `POST /store/search`](#storefront-search-with-post-storesearch)
+- [Store API endpoints](#store-api-endpoints)
+- [Admin API endpoints](#admin-api-endpoints)
+- [Environment variables](#environment-variables)
+- [docker-compose](#docker-compose)
+- [Documentation](#documentation)
+- [Changelog](#changelog)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
 
 ## How it fits together
 
@@ -30,33 +54,35 @@ filled.
 - An escape hatch at every level: raw Meilisearch settings per index, raw Meilisearch parameters per query
 - Drop-in engine for Medusa's own `POST /store/search` and `@medusajs/instantsearch-adapter`, with product hits scoped
   to the publishable key's sales channels
-- Store endpoints that keep native pricing, tax, `variants.inventory_quantity`, sales-channel scoping, filters and sorts
+- Store endpoints that keep native pricing, tax, `variants.inventory_quantity` and sales-channel scoping
 
 ## Compatibility
 
 | Plugin   | Medusa            | Meilisearch server | Node       |
 | -------- | ----------------- | ------------------ | ---------- |
-| `^2.3.0` | `2.21.1 – 2.21.x` | `>= 1.20`          | `>= 22.12` |
-| `^2.2.0` | `2.21.x`          | `>= 1.20`          | `>= 22`    |
-| `^2.1.0` | `2.20.x`          | `>= 1.20`          | `>= 22`    |
-| `^2.0.0` | `2.19.x`          | `>= 1.20`          | `>= 22`    |
-| `^1.4.1` | `>= 2.15 < 2.19`  | `>= 1.5`           | `>= 22`    |
-| `^1.3.7` | `^2.13.4`         | `>= 1.5`           | `>= 20`    |
-| `^1.0.1` | `^2.4.0`          | `>= 1.5`           | `>= 20`    |
+| `~2.4.0` | `2.22.x`          | `>= 1.20`          | `>= 22.12` |
+| `~2.3.0` | `2.21.1 – 2.21.x` | `>= 1.20`          | `>= 22.12` |
+| `~2.2.0` | `2.21.x`          | `>= 1.20`          | `>= 22`    |
+| `~2.1.0` | `2.20.x`          | `>= 1.20`          | `>= 22`    |
+| `~2.0.0` | `2.19.x`          | `>= 1.20`          | `>= 22`    |
+| `~1.4.3` | `>= 2.15 < 2.19`  | `>= 1.5`           | `>= 22`    |
+| `~1.3.7` | `^2.13.4`         | `>= 1.5`           | `>= 20`    |
+| `~1.0.1` | `^2.4.0`          | `>= 1.5`           | `>= 20`    |
 
 The 2.19 release removed the search interface the v1 line was written against, so the two lines do not overlap: v1 stops
 at Medusa 2.18, v2 starts at 2.19. Coming from v1, work through [the upgrade guide](./docs/migration.md).
 
-Each Medusa minor has so far reshaped the Search Module, so every row above is exact rather than a floor. Medusa 2.20
-made `listIndexes()` asynchronous and made it resolve to index records, which 2.0.0 cannot read. Medusa 2.21 then
+Every 2.x row is pinned to one Medusa minor rather than a floor, because the Search Module has changed between minors,
+and the ranges are `~` so a newer plugin minor built for another Medusa minor is never installed by accident. Medusa
+2.20 made `listIndexes()` asynchronous and made it resolve to index records, which 2.0.0 cannot read. Medusa 2.21 then
 narrowed index settings to what every engine can honour, changed the seed function to yield mutations rather than
 documents, and took over index swapping. Engine-specific settings, localized indexes included, now live under
-`settings.provider_options.meilisearch`.
+`settings.provider_options.meilisearch`. Medusa 2.22 left the module unchanged; 2.4.0 moves the peer range to it.
 
-Starting with 2.3.0 the floor is Medusa 2.21.1, the patch that shipped `POST /store/search` and `configureStoreSearch`.
+Within the 2.21 line, 2.3.0 requires Medusa 2.21.1, the patch that shipped `POST /store/search` and
+`configureStoreSearch`.
 
-The `>= 1.20` server floor is the version this plugin is built and tested against. Medusa 2.21 itself still runs on
-Node 20.19+, but this plugin is built and tested on Node 22 only.
+Meilisearch 1.20 is the minimum supported server version. CI runs on Node 22.
 
 The Meilisearch JS client is `^0.62.0`, which is published as ES modules only. The plugin's CommonJS build loads it via
 Node's `require(esm)`, hence the Node 22.12 floor.
@@ -64,10 +90,15 @@ Node's `require(esm)`, hence the Node 22.12 floor.
 ## Installation
 
 ```bash
-npm install --save @rokmohar/medusa-plugin-meilisearch
+npm install @rokmohar/medusa-plugin-meilisearch
 # or
 yarn add @rokmohar/medusa-plugin-meilisearch
+# or
+pnpm add @rokmohar/medusa-plugin-meilisearch
 ```
+
+Medusa itself is a peer dependency, so pick the plugin version that matches your Medusa minor from the
+[compatibility table](#compatibility).
 
 ## Configuration
 
@@ -75,7 +106,7 @@ Register the plugin (for its API routes and admin page) and the Search Module wi
 
 ```ts
 // medusa-config.ts
-import { defineConfig, Modules } from '@medusajs/framework/utils'
+import { defineConfig } from '@medusajs/framework/utils'
 
 export default defineConfig({
   plugins: [
@@ -194,8 +225,8 @@ become that ordering.
 
 ### Worker mode
 
-Seeding and event ingestion run outside `worker_mode: 'server'`. In a split deployment, install and configure the
-plugin on the worker instance too, or its indexes will stay empty.
+Seeding and event ingestion run on instances whose `projectConfig.workerMode` is `shared` or `worker`, not `server`. In a
+split deployment, install and configure the plugin on the worker instance too, or its indexes will stay empty.
 
 ## Internationalization
 
@@ -241,18 +272,21 @@ options: {
 ```
 
 Declare embedders under `settings.provider_options.meilisearch.embedders` on an index to scope them to that index — the
-admin status card reads declarations, so per-index embedders also show up there. Pre-computed embeddings are supported
+**AI-Powered Semantic Search** card on the admin page reads declarations, so per-index embedders also show up there. Pre-computed embeddings are supported
 by declaring a `search.vector(dimensions)` field. See [docs/semantic-search.md](./docs/semantic-search.md) for Ollama
 and OpenAI walkthroughs.
 
 ## Querying from code
 
+In an API route, workflow step or subscriber, resolve the Search Module from the container:
+
 ```ts
 import { Modules } from '@medusajs/framework/utils'
 
-const search = container.resolve(Modules.SEARCH)
+// e.g. inside an API route handler
+const searchModule = req.scope.resolve(Modules.SEARCH)
 
-const { hits, facets, metadata } = await search.search({
+const { hits, facets, metadata } = await searchModule.search({
   entity: 'products',
   fields: ['id', 'title'],
   filters: { q: 'shirt', status: 'published' },
@@ -273,7 +307,7 @@ through `search_options.provider_options.meilisearch`.
 Reindex on demand:
 
 ```ts
-await search.reindex({ index: 'products', strategy: 'swap' })
+await searchModule.reindex({ index: 'products', strategy: 'swap' })
 ```
 
 ## Storefront search with `POST /store/search`
@@ -322,17 +356,30 @@ const { searchClient } = createInstantSearchAdapter({ sdk, path: '/store/search'
 
 ## Store API endpoints
 
-The `*-hits` endpoints predate the native route and overlap with it; prefer `POST /store/search` in new storefronts.
-The hydrated `products` and `categories` endpoints remain the way to combine Meilisearch ranking with native pricing.
+Every store request needs the `x-publishable-api-key` header.
+
+The hydrated `products` and `categories` endpoints are the way to combine Meilisearch ranking with native pricing. The
+`*-hits` endpoints predate the native route and overlap with it; prefer `POST /store/search` in new storefronts.
 
 All four endpoints accept the Meilisearch-specific parameters `query`, `index`, `language`, `semanticSearch`,
-`semanticRatio`, `embedder` and `filter` (a raw Meilisearch filter expression).
+`semanticRatio`, `embedder` and `filter` (a raw Meilisearch filter expression). `sort`, `facets` and index `fields`
+belong to the `*-hits` endpoints only; the hydrated endpoints validate the rest of their query like the native routes.
 
 ### `GET /store/meilisearch/products`
 
-Everything the native `/store/products` accepts, plus the parameters above. Without `query` it behaves exactly like the
-native route. With one, Meilisearch supplies the matching product ids and their ranking, and the response is hydrated
-natively — calculated prices, tax, `variants.inventory_quantity`, sales-channel scoping.
+Everything the native `/store/products` accepts, plus the parameters above. Without `query` or `semanticSearch` it
+behaves like the native route. With either, Meilisearch supplies the matching product ids, their ranking and the
+`count`, and the response is hydrated natively: calculated prices, tax and `variants.inventory_quantity`. Currency
+follows `region_id`; request `+variants.inventory_quantity` for stock.
+
+Like `POST /store/search`, the search is narrowed to published products and to the request's sales channels (the
+`sales_channel_id` you pass, or every channel of the publishable key), on each of `status` and `sales_channel_ids` the
+index declares filterable. The default product index declares both. When searching:
+
+- Results come back in relevance order; a native `order` is ignored.
+- Native filters such as `category_id` or `collection_id` apply to the page Meilisearch returns, so a page can hold fewer
+  than `limit` products and `count` does not reflect them. Express such filters through `filter` on indexed fields to
+  keep paging exact.
 
 ```bash
 curl 'http://localhost:9000/store/meilisearch/products?query=shirt&limit=10&region_id=reg_1&fields=id,title,*variants.calculated_price' \
@@ -343,13 +390,17 @@ Response: `{ products, count, limit, offset }`.
 
 ### `GET /store/meilisearch/categories`
 
-Same idea against the native `/store/product-categories`. Response: `{ categories, count, limit, offset }`.
+Same idea against the native `/store/product-categories`: active, public categories only, and products reached through
+them are published ones. Response: `{ product_categories, count, limit, offset }` like the native route, plus the same
+list under `categories`, the key earlier versions used.
 
 ### `GET /store/meilisearch/products-hits` and `GET /store/meilisearch/categories-hits`
 
 Raw engine hits, with no database read: `{ hits, query, processingTimeMs, estimatedTotalHits, limit, offset }`, plus
 `facets` when requested and `hybridSearch` / `semanticRatio` for a hybrid query. Each hit carries the index's
-retrievable fields and `_score`. Additional parameters: `limit`, `offset`, `sort`, `facets`, `fields`.
+retrievable fields and `_score`. Additional parameters: `limit`, `offset`, `sort`, `facets`, `fields`. These endpoints
+are not narrowed to the key's sales channels; pass a `filter` on `sales_channel_ids` yourself, or use
+`POST /store/search`.
 
 ```bash
 curl 'http://localhost:9000/store/meilisearch/products-hits?query=shirt&limit=5&facets=categories.name' \
@@ -393,27 +444,30 @@ volumes:
   meilisearch:
 ```
 
-## Add search to the Medusa Next.js starter
+## Documentation
 
-See [nextjs/README.md](./nextjs/README.md).
-
-## FAQ
-
-- [Product categories and tags](./docs/faq-product-categories-and-tags.md)
-- [Product variant prices](./docs/faq-product-variant-prices.md)
-- [Product search prices](./docs/faq-product-search-prices.md)
+- [Add search to the Medusa DTC starter](./docs/nextjs/README.md)
 - [Semantic search](./docs/semantic-search.md)
-- [Migrating from v1](./docs/migration.md)
+- [Upgrading from v1, and between v2 minors](./docs/migration.md)
+- FAQ:
+  - [Product categories and tags](./docs/faq-product-categories-and-tags.md)
+  - [Product variant prices](./docs/faq-product-variant-prices.md)
+  - [Product search prices](./docs/faq-product-search-prices.md)
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) and the [GitHub releases](https://github.com/rokmohar/medusa-plugin-meilisearch/releases).
 
 ## Contributing
 
-Issues and pull requests are welcome at
-[github.com/rokmohar/medusa-plugin-meilisearch](https://github.com/rokmohar/medusa-plugin-meilisearch).
+Issues and pull requests are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) covers the development setup, trying changes
+in a Medusa app, and the pull request checklist. Everyone taking part follows the
+[code of conduct](./CODE_OF_CONDUCT.md).
 
-```bash
-yarn install
-yarn lint
-yarn typecheck
-yarn test
-yarn build
-```
+## Security
+
+Report vulnerabilities privately, as described in [SECURITY.md](./SECURITY.md).
+
+## License
+
+[MIT](./LICENSE) © Rok Mohar

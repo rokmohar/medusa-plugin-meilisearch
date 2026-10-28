@@ -11,6 +11,7 @@ function harness(options: {
   categories?: Record<string, unknown>[]
   pagination?: { skip: number; take: number }
   locale?: string
+  filterableFields?: Record<string, unknown>
 }) {
   const query = createQuery(options.categories ?? [{ id: 'pcat_1' }])
   const searchModule = createSearchModule({
@@ -23,6 +24,7 @@ function harness(options: {
         fields: ['id', 'name', 'handle'],
         pagination: options.pagination ?? { skip: 0, take: 20 },
       },
+      filterableFields: options.filterableFields ?? {},
       meiliParams: options.meiliParams,
       locale: options.locale,
     },
@@ -82,7 +84,7 @@ describe('GET /store/meilisearch/categories', () => {
     await GET(req, res)
 
     assert.equal(query.calls.length, 0)
-    assert.deepEqual(payloads[0], { categories: [], count: 0, limit: 20, offset: 0 })
+    assert.deepEqual(payloads[0], { product_categories: [], categories: [], count: 0, limit: 20, offset: 0 })
   })
 
   it('searches the category entity, not products', async () => {
@@ -95,5 +97,34 @@ describe('GET /store/meilisearch/categories', () => {
 
     assert.equal(searchModule.searchCalls[0].entity, 'categories')
     assert.deepEqual(searchModule.searchCalls[0].fields, ['id'])
+  })
+
+  it('answers under the native key and the earlier one', async () => {
+    const { req, res, payloads } = harness({ categories: [{ id: 'pcat_1' }] })
+
+    await GET(req, res)
+
+    assert.deepEqual(payloads[0].product_categories, [{ id: 'pcat_1' }])
+    assert.deepEqual(payloads[0].categories, [{ id: 'pcat_1' }])
+  })
+
+  it('asks for published products only, like the native route', async () => {
+    const { req, res, query } = harness({})
+
+    await GET(req, res)
+
+    assert.deepEqual(query.calls[0].context, { products: { published: true }, __type: 'QueryContext' })
+  })
+
+  it('keeps an id filter the caller passed while searching', async () => {
+    const { req, res, query } = harness({
+      meiliParams: { query: 'shoes', index: 'categories', semanticSearch: false, semanticRatio: 0.5 },
+      hits: ['pcat_2', 'pcat_1'],
+      filterableFields: { id: ['pcat_1'] },
+    })
+
+    await GET(req, res)
+
+    assert.deepEqual(query.calls[0].filters, { id: { $in: ['pcat_1'] } })
   })
 })

@@ -30,6 +30,11 @@ interface NativeHttp {
 
 interface NativeMiddlewares {
   filterByValidSalesChannels: () => MiddlewareFn
+  transformAndValidateSalesChannelIds: (req: MedusaStoreRequest) => string[]
+  prepareInventoryQuantityFields: (
+    fields: string[],
+    options?: { relation?: string },
+  ) => { fields: string[]; withInventoryQuantity: boolean }
   normalizeDataForContext: (options?: ContextOptions) => MiddlewareFn
   setPricingContext: (options?: ContextOptions) => MiddlewareFn
   setTaxContext: (options?: ContextOptions) => MiddlewareFn
@@ -50,6 +55,8 @@ const productsValidators = require('@medusajs/medusa/api/store/products/validato
 const productsHelpers = require('@medusajs/medusa/api/store/products/helpers')
 const categoriesQueryConfig = require('@medusajs/medusa/api/store/product-categories/query-config')
 const categoriesValidators = require('@medusajs/medusa/api/store/product-categories/validators')
+const categoriesHelpers = require('@medusajs/medusa/api/store/product-categories/helpers')
+const publishedProducts = require('@medusajs/medusa/api/store/utils/published-products-context')
 const modulesSdk: NativeModulesSdk = require('@medusajs/framework/modules-sdk')
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -59,6 +66,8 @@ export const clearFiltersByKey = http.clearFiltersByKey
 export const maybeApplyLinkFilter = http.maybeApplyLinkFilter
 
 export const filterByValidSalesChannels = nativeMw.filterByValidSalesChannels
+export const transformAndValidateSalesChannelIds = nativeMw.transformAndValidateSalesChannelIds
+export const prepareInventoryQuantityFields = nativeMw.prepareInventoryQuantityFields
 export const normalizeDataForContext = nativeMw.normalizeDataForContext
 export const setPricingContext = nativeMw.setPricingContext
 export const setTaxContext = nativeMw.setTaxContext
@@ -72,6 +81,8 @@ export const wrapProductsWithTaxPrices: (req: MedusaRequest, products: unknown[]
   productsHelpers.wrapProductsWithTaxPrices
 export const listProductCategoryConfig = categoriesQueryConfig.listProductCategoryConfig
 export const StoreProductCategoriesParams = categoriesValidators.StoreProductCategoriesParams
+export const applyCategoryFilters: MiddlewareFn = categoriesHelpers.applyCategoryFilters
+export const publishedProductsContext: () => Record<string, unknown> = publishedProducts.publishedProductsContext
 
 export function getRegisteredSearchIndexes(): SearchTypes.SearchIndexDefinition[] {
   return modulesSdk.MedusaModule.getSearchIndexes?.() ?? []

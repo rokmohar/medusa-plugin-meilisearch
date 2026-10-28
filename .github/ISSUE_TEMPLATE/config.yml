@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/rokmohar/medusa-plugin-meilisearch#readme
+    about: Configuration, store routes, internationalization, semantic search and FAQs.
+  - name: Report a security vulnerability
+    url: https://github.com/rokmohar/medusa-plugin-meilisearch/security/advisories/new
+    about: Report vulnerabilities privately, not in public issues.

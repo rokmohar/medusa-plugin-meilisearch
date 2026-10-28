@@ -1,4 +1,6 @@
-# Upgrading from v1 to v2
+# Upgrade guide
+
+This guide covers the move from v1 to v2, then the [changes between v2 minors](#already-on-v2-22-to-23).
 
 ## Why the upgrade is a rewrite
 
@@ -8,11 +10,12 @@ cannot boot below it. Pick the line that matches your Medusa version:
 
 | Your Medusa      | Use                                                          |
 | ---------------- | ------------------------------------------------------------ |
-| `>= 2.15 < 2.19` | `@rokmohar/medusa-plugin-meilisearch@^1.4.3` (branch `v1.x`) |
-| `2.19.x`         | `@rokmohar/medusa-plugin-meilisearch@^2.0.0`                 |
-| `~2.20.0`        | `@rokmohar/medusa-plugin-meilisearch@^2.1.0`                 |
-| `2.21.0`         | `@rokmohar/medusa-plugin-meilisearch@^2.2.0`                 |
-| `~2.21.1`        | `@rokmohar/medusa-plugin-meilisearch@^2.3.0`                 |
+| `>= 2.15 < 2.19` | `@rokmohar/medusa-plugin-meilisearch@~1.4.3` (branch `v1.x`) |
+| `2.19.x`         | `@rokmohar/medusa-plugin-meilisearch@~2.0.0`                 |
+| `~2.20.0`        | `@rokmohar/medusa-plugin-meilisearch@~2.1.0`                 |
+| `2.21.0`         | `@rokmohar/medusa-plugin-meilisearch@~2.2.0`                 |
+| `~2.21.1`        | `@rokmohar/medusa-plugin-meilisearch@~2.3.0`                 |
+| `~2.22.0`        | `@rokmohar/medusa-plugin-meilisearch@~2.4.0`                 |
 
 The upgrade is mostly deletion. In v1 the plugin ran its own module, 23 event subscribers, 24 workflows and 2 cron jobs
 to keep Meilisearch in step with the catalog. All of that now belongs to the Search Module: it creates and migrates
@@ -34,33 +37,34 @@ places.
 
 ### Reference table
 
-| v1 option                                          | v2 home                                                                     |
-| -------------------------------------------------- | --------------------------------------------------------------------------- |
-| `config`                                           | provider `options.config`                                                   |
-| `settings.<index>`                                 | a file under `src/search` calling a factory                                 |
-| `settings.<index>.type`                            | which factory you call                                                      |
-| `settings.<index>.enabled: false`                  | delete the file                                                             |
-| `settings.<index>.fields`                          | `graph_fields` — what to read from the database                             |
-| `settings.<index>.primaryKey`                      | `primary_key`                                                               |
-| `indexSettings.searchableAttributes`               | `.searchable({ weight })` per field; the weights become the attribute order |
-| `indexSettings.filterableAttributes`               | `.filterable()`, or `.facetable()` when you also want counts                |
-| `indexSettings.sortableAttributes`                 | `.sortable()`                                                               |
-| `indexSettings.displayedAttributes`                | every field, unless you mark it `.retrievable(false)`                       |
-| `indexSettings.synonyms`                           | `settings.provider_options.meilisearch.synonyms`                            |
-| `indexSettings.stopWords`                          | `settings.provider_options.meilisearch.stopWords`                           |
-| `indexSettings.typoTolerance`                      | `settings.typo_tolerance`                                                   |
-| anything else Meilisearch-specific                 | `settings.provider_options.meilisearch`                                     |
-| `transformer`                                      | `transform`                                                                 |
-| `i18n.strategy: 'separate-index'`                  | `locales`                                                                   |
-| `i18n.strategy: 'field-suffix'`                    | no equivalent — see [Localized indexes](#localized-indexes)                 |
-| `i18n.translatableFields`, translation transformer | Medusa's Translation Module                                                 |
-| `vectorSearch`                                     | Meilisearch `embedders`                                                     |
-| `meilisearch.sync` event, cron jobs, subscribers   | `searchModule.reindex()` and the declaration's `events` / `consume`         |
+| v1 option                                          | v2 home                                                                                              |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `config`                                           | provider `options.config`                                                                            |
+| `settings.<index>`                                 | a file under `src/search` calling a factory                                                          |
+| `settings.<index>.type`                            | which factory you call                                                                               |
+| `settings.<index>.enabled: false`                  | delete the file                                                                                      |
+| `settings.<index>.fields`                          | `graph_fields` — what to read from the database                                                      |
+| `settings.<index>.primaryKey`                      | `primary_key`                                                                                        |
+| `indexSettings.searchableAttributes`               | `.searchable({ weight })` per field; the weights become the attribute order                          |
+| `indexSettings.filterableAttributes`               | `.filterable()`, or `.facetable()` when you also want counts                                         |
+| `indexSettings.sortableAttributes`                 | `.sortable()`                                                                                        |
+| `indexSettings.displayedAttributes`                | every field, unless you mark it `.retrievable(false)`                                                |
+| `indexSettings.synonyms`                           | `settings.provider_options.meilisearch.synonyms`                                                     |
+| `indexSettings.stopWords`                          | `settings.provider_options.meilisearch.stopWords`                                                    |
+| `indexSettings.typoTolerance`                      | `settings.typo_tolerance`                                                                            |
+| anything else Meilisearch-specific                 | `settings.provider_options.meilisearch`                                                              |
+| `transformer`                                      | `transform`                                                                                          |
+| `i18n.strategy: 'separate-index'`                  | `locales`                                                                                            |
+| `i18n.languages`, `i18n.defaultLanguage`           | `locales`, `default_locale`                                                                          |
+| `i18n.strategy: 'field-suffix'`                    | no equivalent — see [Localized indexes](#localized-indexes)                                          |
+| `i18n.translatableFields`, translation transformer | Medusa's Translation Module                                                                          |
+| `vectorSearch`                                     | Meilisearch `embedders`                                                                              |
+| `meilisearch.sync` event, cron jobs, subscribers   | `searchModule.reindex()`, `POST /admin/meilisearch/sync`, and the declaration's `events` / `consume` |
 
 ## Install
 
 ```bash
-yarn add @medusajs/medusa@~2.21.2 @medusajs/framework@~2.21.2 @rokmohar/medusa-plugin-meilisearch@^2.3.0
+yarn add @medusajs/medusa@~2.22.1 @medusajs/framework@~2.22.1 @rokmohar/medusa-plugin-meilisearch@~2.4.0
 ```
 
 ## Rewriting medusa-config.ts
@@ -145,7 +149,8 @@ export default defineProductSearchIndex({
     ...productSearchSchema(),
     brand: search.text().searchable({ weight: 3 }).facetable(),
   }),
-  graph_fields: ['brand'],
+  // `brand` is a linked record here; the transform in the next section flattens it to its name
+  graph_fields: ['brand.name'],
   settings: { provider_options: { meilisearch: { synonyms: { trousers: ['pants'] } } } },
 })
 ```
@@ -178,9 +183,16 @@ which is also why the container is no longer passed in. The second argument give
 
 Remove anything you wrote to drive indexing: subscribers on product events, sync workflows, cron jobs, and any code
 emitting `meilisearch.sync`. The declaration's `events` and `consume` replace them, and the Search Module runs them.
-Where you previously triggered a full sync, call the module:
+
+v1 also re-indexed products on price and inventory changes. The default product declaration reacts to product events
+only, so if you index prices or stock, follow [the variant prices FAQ](./faq-product-variant-prices.md) to keep them
+current.
+
+Where you previously triggered a full sync, call the module, or `POST /admin/meilisearch/sync` from the admin:
 
 ```ts
+import { Modules } from '@medusajs/framework/utils'
+
 await container.resolve(Modules.SEARCH).reindex({ index: 'products', strategy: 'swap' })
 ```
 
@@ -191,7 +203,8 @@ npx medusa db:migrate   # creates and migrates the physical indexes
 npx medusa develop      # seeds whatever is new, empty, or drifted
 ```
 
-Seeding and ingestion do not run in `worker_mode: 'server'`, exactly as v1's subscribers and jobs did not.
+Seeding and ingestion do not run on instances with `projectConfig.workerMode: 'server'`, exactly as v1's subscribers
+and jobs did not.
 
 ## Reading results in your own code
 
@@ -201,8 +214,8 @@ const meili = container.resolve(MEILISEARCH_MODULE)
 const { hits, estimatedTotalHits } = await meili.search('products', 'shirt', { paginationOptions: { limit: 20 } })
 
 // v2
-const search = container.resolve(Modules.SEARCH)
-const { hits, metadata } = await search.search({
+const searchModule = container.resolve(Modules.SEARCH)
+const { hits, metadata } = await searchModule.search({
   entity: 'products',
   filters: { q: 'shirt' },
   pagination: { take: 20 },
@@ -228,7 +241,9 @@ All four `/store/meilisearch/*` routes survive with their response envelopes int
   address a specific one.
 - Hits carry the index's retrievable fields, not your old transformer's output. If the storefront reads a field that is
   no longer indexed, declare it in the schema and add its path to `graph_fields`.
-- New parameters: `index`, `facets`, `fields`, `embedder`. `filter` and `sort` still accept raw Meilisearch syntax.
+- New parameters on every route: `index` and `embedder`. `filter` still accepts raw Meilisearch syntax.
+- New on the `*-hits` routes only: `facets` and `fields`, next to `sort`. The hydrated `products` and `categories`
+  routes validate the rest of their query like the native routes, where `fields` means Medusa fields.
 - `language` keeps working and is now interchangeable with Medusa's standard `?locale=`.
 - Each hit includes `_score`, and `facets` comes back when requested.
 
@@ -277,13 +292,21 @@ embedders: {
 ```
 
 `embeddingFields` becomes `documentTemplate`. Query-time usage is unchanged: `semanticSearch=true` with an optional
-`semanticRatio`, or `search_options.vector` from code. Full walkthroughs are in
-[docs/semantic-search.md](./semantic-search.md).
+`semanticRatio`. From code, pass the embedder through `search_options.provider_options.meilisearch.hybrid`. Full
+walkthroughs are in [Semantic search](./semantic-search.md).
 
 ## Removing the old indexes
 
-v1's indexes were named after the keys of your `settings` object, and v2 will only reuse a name if you kept it. Confirm
-the new indexes serve traffic, then drop the leftovers:
+v1's indexes were named after the keys of your `settings` object. Whether v2 reuses them depends on your Medusa version:
+
+- **Medusa 2.21 and later:** the Search Module stores every index under a versioned physical name,
+  `<index_prefix>_<name>_v<N>`, or `<name>_v<N>` without a prefix (for example `products_v1`), so v2 never writes to the v1 indexes and they are all
+  leftovers.
+- **Medusa 2.19 and 2.20:** the physical index takes the declared name, as `<index_prefix>_<name>` when a prefix is set, so a v2 index whose
+  physical name matches a v1 one (such as `products`) reuses it. Only the v1 indexes you did not redeclare are leftovers.
+
+List what Meilisearch holds with `curl 'http://localhost:7700/indexes'`. Confirm the new indexes serve traffic, then
+drop the leftovers:
 
 ```bash
 curl -X DELETE 'http://localhost:7700/indexes/products' -H 'Authorization: Bearer <MEILISEARCH_API_KEY>'
@@ -295,13 +318,28 @@ curl -X DELETE 'http://localhost:7700/indexes/products' -H 'Authorization: Beare
   CommonJS build loads through `require(esm)`.
 - The product declaration gains `sales_channel_ids`, so the Search Module sees a changed declaration and rebuilds the
   product indexes on the next migration. Expose them to the storefront through `configureStoreSearch` as described in
-  the README.
+  the [README](../README.md#storefront-search-with-post-storesearch).
 - A custom `transform` must return a document with an `id`; a missing one now fails the batch instead of quietly
   deleting the row from the index.
 - Deleting a variant or a product option re-indexes its product rather than leaving stale values on it, and a catch-up
   pass now removes rows that stopped matching the index `filters` while a rebuild was running.
 - `query_context` passes a `query.graph` context, such as a pricing context, to every seed and ingestion read.
+- 2.3.1 stores vectors under `_vectors`, where Meilisearch reads them. The declaration hash does not change, so rebuild
+  indexes with vector fields once: `searchModule.reindex({ index, strategy: 'swap' })`.
+
+## Already on v2: 2.3 to 2.4
+
+- Medusa 2.22. The peer range moves to `~2.22.0`; nothing in the declarations or provider options changes.
+- `GET /store/meilisearch/products?query=` is narrowed to published products and to the request's sales channels, like
+  `POST /store/search`, on each of `status` and `sales_channel_ids` the index declares filterable. Earlier versions
+  could return products from other sales channels, so result sets and counts may shrink.
+- `GET /store/meilisearch/categories` now matches the native route: active, public categories only, with published
+  related products. It also answers under `product_categories`; `categories` still carries the same list.
+- `fields=variants.inventory_quantity` returns stock without the `+` prefix, as on the native route.
+- `semanticSearch=true` on an index with a vector field now embeds the query when the field declares `embed()`, and
+  answers with a 400 when it holds pre-computed embeddings, which are searched from code with
+  `search_options.vector.value`. A request that names an `embedder` runs a hybrid search against it either way.
 
 ## If you are staying on v1 for now
 
-Pin `@rokmohar/medusa-plugin-meilisearch@^1.4.3` and Medusa 2.18 or earlier. The v1 line is kept on the `v1.x` branch.
+Pin `@rokmohar/medusa-plugin-meilisearch@~1.4.3` and Medusa 2.15 to 2.18. The v1 line is kept on the `v1.x` branch.

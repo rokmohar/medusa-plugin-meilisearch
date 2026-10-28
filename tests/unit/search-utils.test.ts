@@ -4,11 +4,13 @@ import assert from 'node:assert/strict'
 import { afterEach, describe, it } from 'node:test'
 import {
   buildSearchOptions,
+  productScopeFilters,
   resolveSearchIndexName,
   toHitsEnvelope,
   toStringArray,
   type SearchRequestParams,
 } from '../../src/api/utils/search'
+import { defineCategorySearchIndex } from '../../src/indexes/categories'
 import { defineProductSearchIndex, productSearchSchema } from '../../src/indexes/products'
 import { createSearchModule } from './support/routes'
 
@@ -90,14 +92,55 @@ describe('buildSearchOptions', () => {
     assert.deepEqual(buildSearchOptions({ params: params({ semanticSearch: true, semanticRatio: 0 }) }), {})
   })
 
-  it('uses a declared vector field over a raw hybrid query', () => {
+  it('embeds the query into a declared vector field that the engine embeds', () => {
+    const [definition] = defineProductSearchIndex({
+      fields: search.define({ ...productSearchSchema(), embedding: search.vector(768).embed() }),
+    })
+
+    assert.deepEqual(
+      buildSearchOptions({
+        definition,
+        params: params({ query: 'warm jacket', semanticSearch: true, semanticRatio: 0.7 }),
+      }),
+      { vector: { field: 'embedding', query: 'warm jacket', semantic_ratio: 0.7 } },
+    )
+  })
+
+  it('rejects semantic search over pre-computed embeddings, which have no query vector', () => {
     const [definition] = defineProductSearchIndex({
       fields: search.define({ ...productSearchSchema(), embedding: search.vector(768) }),
     })
 
-    assert.deepEqual(buildSearchOptions({ definition, params: params({ semanticSearch: true, semanticRatio: 0.7 }) }), {
-      vector: { field: 'embedding', semantic_ratio: 0.7 },
+    assert.throws(() => {
+      return buildSearchOptions({
+        definition,
+        params: params({ query: 'warm jacket', semanticSearch: true, semanticRatio: 0.7 }),
+      })
+    }, /pre-computed embeddings in "embedding"/)
+  })
+
+  it('runs a hybrid search when the request names an embedder, even next to a vector field', () => {
+    const [definition] = defineProductSearchIndex({
+      fields: search.define({ ...productSearchSchema(), embedding: search.vector(768) }),
     })
+
+    assert.deepEqual(
+      buildSearchOptions({
+        definition,
+        params: params({ query: 'warm jacket', semanticSearch: true, semanticRatio: 0.7, embedder: 'default' }),
+      }),
+      { provider_options: { meilisearch: { hybrid: { embedder: 'default', semanticRatio: 0.7 } } } },
+    )
+  })
+
+  it('rejects semantic search over an embedded vector field without a query', () => {
+    const [definition] = defineProductSearchIndex({
+      fields: search.define({ ...productSearchSchema(), embedding: search.vector(768).embed() }),
+    })
+
+    assert.throws(() => {
+      return buildSearchOptions({ definition, params: params({ semanticSearch: true, semanticRatio: 0.7 }) })
+    }, /needs a query to embed/)
   })
 
   it('names the embedder declared on the index when there is no vector field', () => {
@@ -115,6 +158,37 @@ describe('buildSearchOptions', () => {
       buildSearchOptions({ params: params({ semanticSearch: true, semanticRatio: 0.4, embedder: 'openai' }) }),
       { provider_options: { meilisearch: { hybrid: { embedder: 'openai', semanticRatio: 0.4 } } } },
     )
+  })
+})
+
+describe('productScopeFilters', () => {
+  it("narrows a product index to published products in the key's sales channels", () => {
+    const [definition] = defineProductSearchIndex()
+
+    assert.deepEqual(productScopeFilters(definition, ['sc_1', 'sc_2']), {
+      status: 'published',
+      sales_channel_ids: ['sc_1', 'sc_2'],
+    })
+  })
+
+  it('only filters on fields the index declares filterable', () => {
+    const [definition] = defineProductSearchIndex({
+      fields: search.define({ id: search.keyword().filterable(), title: search.text().searchable() }),
+    })
+
+    assert.deepEqual(productScopeFilters(definition, ['sc_1']), {})
+  })
+
+  it('leaves the sales channels out when the key has none', () => {
+    const [definition] = defineProductSearchIndex()
+
+    assert.deepEqual(productScopeFilters(definition, []), { status: 'published' })
+  })
+
+  it('leaves other entities alone', () => {
+    const [definition] = defineCategorySearchIndex()
+
+    assert.deepEqual(productScopeFilters(definition, ['sc_1']), {})
   })
 })
 
