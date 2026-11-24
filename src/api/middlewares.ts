@@ -34,7 +34,7 @@ import './types'
  * Meilisearch-only params are not part of the native Medusa validators (which are
  * strict and reject unknown keys). Pull them off `req.query` BEFORE the native
  * `validateAndTransformQuery` runs, and stash them on `req.meiliParams` for the
- * route handler. Express 4: `req.query` is a mutable plain object.
+ * route handler. Medusa replaces Express 5's `req.query` getter with a mutable plain object.
  */
 function extractMeiliParams(req: MedusaRequest, _res: MedusaResponse, next: MedusaNextFunction) {
   const q = req.query

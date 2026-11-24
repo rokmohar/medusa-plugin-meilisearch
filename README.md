@@ -60,6 +60,7 @@ filled.
 
 | Plugin   | Medusa            | Meilisearch server | Node       |
 | -------- | ----------------- | ------------------ | ---------- |
+| `~2.5.0` | `2.23.x`          | `>= 1.20`          | `>= 22.12` |
 | `~2.4.0` | `2.22.x`          | `>= 1.20`          | `>= 22.12` |
 | `~2.3.0` | `2.21.1 – 2.21.x` | `>= 1.20`          | `>= 22.12` |
 | `~2.2.0` | `2.21.x`          | `>= 1.20`          | `>= 22`    |
@@ -78,13 +79,15 @@ and the ranges are `~` so a newer plugin minor built for another Medusa minor is
 narrowed index settings to what every engine can honour, changed the seed function to yield mutations rather than
 documents, and took over index swapping. Engine-specific settings, localized indexes included, now live under
 `settings.provider_options.meilisearch`. Medusa 2.22 left the module unchanged; 2.4.0 moves the peer range to it.
+Medusa 2.23 left it unchanged too, but moved the admin to React 19 and Vite 8; 2.5.0 moves the peer range to it and is
+rebuilt with its admin bundler.
 
 Within the 2.21 line, 2.3.0 requires Medusa 2.21.1, the patch that shipped `POST /store/search` and
 `configureStoreSearch`.
 
 Meilisearch 1.20 is the minimum supported server version. CI runs on Node 22.
 
-The Meilisearch JS client is `^0.62.0`, which is published as ES modules only. The plugin's CommonJS build loads it via
+The Meilisearch JS client is `^0.63.0`, which is published as ES modules only. The plugin's CommonJS build loads it via
 Node's `require(esm)`, hence the Node 22.12 floor.
 
 ## Installation

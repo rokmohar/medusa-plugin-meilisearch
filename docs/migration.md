@@ -16,6 +16,7 @@ cannot boot below it. Pick the line that matches your Medusa version:
 | `2.21.0`         | `@rokmohar/medusa-plugin-meilisearch@~2.2.0`                 |
 | `~2.21.1`        | `@rokmohar/medusa-plugin-meilisearch@~2.3.0`                 |
 | `~2.22.0`        | `@rokmohar/medusa-plugin-meilisearch@~2.4.0`                 |
+| `~2.23.0`        | `@rokmohar/medusa-plugin-meilisearch@~2.5.0`                 |
 
 The upgrade is mostly deletion. In v1 the plugin ran its own module, 23 event subscribers, 24 workflows and 2 cron jobs
 to keep Meilisearch in step with the catalog. All of that now belongs to the Search Module: it creates and migrates
@@ -64,7 +65,7 @@ places.
 ## Install
 
 ```bash
-yarn add @medusajs/medusa@~2.22.1 @medusajs/framework@~2.22.1 @rokmohar/medusa-plugin-meilisearch@~2.4.0
+yarn add @medusajs/medusa@~2.23.0 @medusajs/framework@~2.23.0 @rokmohar/medusa-plugin-meilisearch@~2.5.0
 ```
 
 ## Rewriting medusa-config.ts
@@ -339,6 +340,13 @@ curl -X DELETE 'http://localhost:7700/indexes/products' -H 'Authorization: Beare
 - `semanticSearch=true` on an index with a vector field now embeds the query when the field declares `embed()`, and
   answers with a 400 when it holds pre-computed embeddings, which are searched from code with
   `search_options.vector.value`. A request that names an `embedder` runs a hybrid search against it either way.
+
+## Already on v2: 2.4 to 2.5
+
+- Medusa 2.23. The peer ranges move to `~2.23.0`, with React `^19.3.1` and `@medusajs/ui` `^4.3.0`; nothing in the
+  declarations or provider options changes.
+- The admin bundle is rebuilt for Medusa 2.23's React 19 and Vite 8 admin; earlier versions are built for React 18.
+- The Meilisearch client moves to `^0.63.0`.
 
 ## If you are staying on v1 for now
 

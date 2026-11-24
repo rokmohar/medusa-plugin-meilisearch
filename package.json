@@ -1,6 +1,6 @@
 {
   "name": "@rokmohar/medusa-plugin-meilisearch",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Meilisearch plugin for Medusa 2",
   "author": "Rok Mohar",
   "license": "MIT",
@@ -50,43 +50,43 @@
     "format:fix": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\" --cache --cache-strategy content --log-level warn"
   },
   "dependencies": {
-    "meilisearch": "^0.62.0"
+    "meilisearch": "^0.63.0"
   },
   "devDependencies": {
-    "@medusajs/admin-sdk": "~2.22.1",
-    "@medusajs/cli": "~2.22.1",
-    "@medusajs/framework": "~2.22.1",
-    "@medusajs/medusa": "~2.22.1",
-    "@medusajs/types": "~2.22.1",
-    "@medusajs/ui": "^4.2.8",
-    "@medusajs/utils": "~2.22.1",
-    "@swc/core": "^1.16.20",
-    "@tanstack/react-query": "5.64.2",
+    "@medusajs/admin-sdk": "2.23.0",
+    "@medusajs/cli": "2.23.0",
+    "@medusajs/framework": "2.23.0",
+    "@medusajs/medusa": "2.23.0",
+    "@medusajs/types": "2.23.0",
+    "@medusajs/ui": "4.3.0",
+    "@medusajs/utils": "2.23.0",
+    "@swc/core": "^1.16.22",
+    "@tanstack/react-query": "5.107.1",
     "@types/node": "^22.20.5",
-    "@types/react": "^18.3.31",
-    "awilix": "^8.0.1",
-    "eslint": "^10.13.0",
+    "@types/react": "^19.3.0",
+    "awilix": "^13.0.7",
+    "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.13.0",
-    "prettier": "^3.9.10",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.72.1",
+    "typescript-eslint": "^8.74.0",
     "yalc": "^1.0.0-pre.53",
-    "zod": "4.2.0"
+    "zod": "4.6.7"
   },
   "peerDependencies": {
-    "@medusajs/admin-sdk": "~2.22.0",
-    "@medusajs/framework": "~2.22.0",
-    "@medusajs/medusa": "~2.22.0",
-    "@medusajs/ui": "^4.2.6",
-    "@tanstack/react-query": "5.64.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@medusajs/admin-sdk": "~2.23.0",
+    "@medusajs/framework": "~2.23.0",
+    "@medusajs/medusa": "~2.23.0",
+    "@medusajs/ui": "^4.3.0",
+    "@tanstack/react-query": "^5.107.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "engines": {
     "node": ">=22.12"
